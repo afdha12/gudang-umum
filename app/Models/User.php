@@ -20,9 +20,11 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'username',
-        'section',
+        'division',
         'email',
+        'role',
         'password',
+        'password_changed',
     ];
 
     /**
@@ -51,6 +53,11 @@ class User extends Authenticatable
     public function isAdmin()
     {
         return $this->role === 'admin';
+    }
+
+    public function hasChangedPassword()
+    {
+        return !is_null($this->password_changed_at); // Misalnya, ada kolom `password_changed_at`
     }
 
 }

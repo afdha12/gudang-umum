@@ -16,6 +16,12 @@ class RoleMiddleware
      */
     public function handle($request, Closure $next, $role)
     {
+        // if (Auth::check() && Auth::user()->role === $role) {
+        //     return $next($request);
+        // }
+
+        // return redirect('/'); // Redirect jika tidak punya akses
+
         // Cek apakah user sudah login dan memiliki role yang sesuai
         if (!Auth::check() || Auth::user()->role !== $role) {
             // Redirect ke dashboard sesuai role

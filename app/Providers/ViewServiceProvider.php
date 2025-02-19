@@ -21,10 +21,15 @@ class ViewServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Kirim data role ke semua view yang menyertakan 'nav.sidebar'
-        View::composer('nav.sidebar', function ($view) {
+        View::composer(['nav.sidebar', 'errors.layout'], function ($view) {
             $role = Auth::check() ? Auth::user()->role : null;
-            $view->with('role', $role);
+
+            // Pastikan hanya mengirim jika user login
+            if (Auth::check()) {
+                $view->with('role', $role);
+            }
         });
+
+
     }
 }

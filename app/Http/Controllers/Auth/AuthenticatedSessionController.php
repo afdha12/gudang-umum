@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\LoginRequest;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\RedirectResponse;
+use App\Http\Requests\Auth\LoginRequest;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -24,21 +25,28 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
+        // Autentikasi pengguna
         $request->authenticate();
-
         $request->session()->regenerate();
 
-        // return redirect()->intended(route('dashboard', absolute: false));
+        // Ambil pengguna yang sedang login
         $user = Auth::user();
 
-        // // Redirect berdasarkan role
-        // if ($user->role === 'admin') {
-        //     return redirect()->intended(route('admin.dashboard'));
-        // } else {
-        //     return redirect()->intended(route('user.dashboard'));
-        // }
-        return redirect()->intended($this->redirectTo());
+        // Pastikan user yang login memiliki role yang valid
+        if (!$user || !isset($user->role)) {
+            Auth::logout();
+            return redirect()->route('login')->with('error', 'Akun tidak memiliki role yang valid.');
+        }
+
+        // Memeriksa apakah password yang dimasukkan pengguna sesuai dengan hash di database
+        if (Hash::check('Hermina32', $user->password)) {
+            return redirect()->route('change-password.edit', $user->id); // Arahkan ke halaman ganti password
+        }
+
+        // Redirect ke halaman yang sesuai berdasarkan peran
+        return redirect()->intended($this->redirectTo($user));
     }
+
 
     /**
      * Destroy an authenticated session.
@@ -54,16 +62,12 @@ class AuthenticatedSessionController extends Controller
         return redirect('/');
     }
 
-    protected function redirectTo()
+    protected function redirectTo($user)
     {
-        $user = Auth::user();
-
-        if ($user->role === 'admin') {
-            return route('admin.dashboard');
-        } elseif ($user->role === 'user') {
-            return route('user.dashboard');
-        }
-
-        return '/'; // Default jika role tidak terdefinisi
+        return match ($user->role) {
+            'admin' => route('admin.dashboard'),
+            'user' => route('user.dashboard'),
+            default => '/',
+        };
     }
 }
