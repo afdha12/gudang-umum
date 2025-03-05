@@ -21,7 +21,7 @@ class ViewServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        View::composer(['nav.sidebar', 'errors.layout'], function ($view) {
+        View::composer(['nav.sidebar', 'errors.404'], function ($view) {
             $role = Auth::check() ? Auth::user()->role : null;
 
             // Pastikan hanya mengirim jika user login

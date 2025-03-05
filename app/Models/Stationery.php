@@ -14,19 +14,11 @@ class Stationery extends Model
         'kode_barang',
         'nama_barang',
         'harga_barang',
+        'jenis_barang',
         'satuan',
         'masuk',
         'keluar',
         'stok',
-    ];
-
-    // Tentukan tipe data atribut
-    protected $casts = [
-        'harga_barang' => 'string',
-        'satuan' => 'integer',
-        'masuk' => 'integer',
-        'keluar' => 'integer',
-        'stok' => 'integer',
     ];
 
     protected static function boot()
@@ -69,4 +61,10 @@ class Stationery extends Model
         }
         return implode('', $letters);
     }
+
+    public function getFormattedHargaAttribute()
+    {
+        return 'Rp ' . number_format($this->harga_barang, 0, ',', '.');
+    }
+
 }

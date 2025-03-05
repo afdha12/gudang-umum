@@ -15,10 +15,11 @@ return new class extends Migration {
             $table->string('kode_barang')->unique();
             $table->string('nama_barang');
             $table->string('harga_barang');
-            $table->integer('satuan');
-            $table->integer('masuk');
-            $table->integer('keluar');
-            $table->integer('stok');
+            $table->integer('jenis_barang');
+            $table->string('satuan')->nullable();
+            $table->integer('masuk')->nullable();
+            $table->integer('keluar')->nullable();
+            $table->integer('stok')->nullable();
             $table->timestamps();
         });
     }

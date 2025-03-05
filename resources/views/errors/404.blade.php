@@ -15,13 +15,11 @@
                             Looks like you've found the
                             doorway to the great nothing
                         </h1>
-                        <p class="my-2 text-gray-800">Sorry about that! Please visit our hompage to get where you need to go.
+                        <p class="pb-4 my-2 text-gray-800">Sorry about that! Please visit our hompage to get where you need to go.
                         </p>
-                        <form action="/user/dashboard">
-                            <button type="submit" class="sm:w-full lg:w-auto my-2 border rounded md py-4 px-8 text-center bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-700 focus:ring-opacity-50">Take me there!</button>
-                        </form>
-                        {{-- <a class="sm:w-full lg:w-auto my-2 border rounded md py-4 px-8 text-center bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-700 focus:ring-opacity-50"
-                            href="/user/dashboard">Take me there!</a> --}}
+                        {{-- <button class="sm:w-full lg:w-auto my-2 border rounded md py-4 px-8 text-center bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-700 focus:ring-opacity-50"><a href="{{ route('redirect.dashboard') }}">back</a></button> --}}
+                        <a class="sm:w-full lg:w-auto my-2 border rounded md py-4 px-8 text-center bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-700 focus:ring-opacity-50"
+                            href="{{ route('redirect.dashboard') }}">Take me there!</a>
                     </div>
                 </div>
                 <div>

@@ -1,15 +1,9 @@
 <div class="sidebar-header border-bottom">
     <div class="sidebar-brand">
-        {{-- <img class="sidebar-brand-full" width="88" height="32" alt="CoreUI Logo">
-            <use xlink:href="assets/icons/hermina_logo.png#full"></use>
-        </img> --}}
         <img src="{{ asset('assets/icons/hermina_logo.png') }}" class="sidebar-brand-full" width="28" height="32"
             alt="CoreUI Logo">
         <img src="{{ asset('assets/icons/hermina_logo.png') }}" class="sidebar-brand-narrow" width="28" height="32"
             alt="CoreUI Logo">
-        {{-- <svg class="sidebar-brand-narrow" width="32" height="32" alt="CoreUI Logo">
-            <use xlink:href="assets/brand/coreui.svg#signet"></use>
-        </svg> --}}
     </div>
     <button class="btn-close d-lg-none" type="button" data-coreui-dismiss="offcanvas" data-coreui-theme="dark"
         aria-label="Close"
@@ -22,109 +16,19 @@
         @if (!Auth::user()->password_changed)
             <!-- Hanya tampilkan menu dashboard saat password belum diganti -->
             <li class="nav-item"><a class="nav-link" href="{{ route('change-password.edit', $data->id) }}">
-                    <svg class="nav-icon">
-                        <use xlink:href="{{ asset('modules/coreui/icons/sprites/free.svg#cil-speedometer') }}">
-                        </use>
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                        fill="currentColor" class="bi bi-key" viewBox="0 0 16 16">
+                        <path
+                            d="M0 8a4 4 0 0 1 7.465-2H14a.5.5 0 0 1 .354.146l1.5 1.5a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0L13 9.207l-.646.647a.5.5 0 0 1-.708 0L11 9.207l-.646.647a.5.5 0 0 1-.708 0L9 9.207l-.646.647A.5.5 0 0 1 8 10h-.535A4 4 0 0 1 0 8m4-3a3 3 0 1 0 2.712 4.285A.5.5 0 0 1 7.163 9h.63l.853-.854a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .708 0l.646.647.793-.793-1-1h-6.63a.5.5 0 0 1-.451-.285A3 3 0 0 0 4 5" />
+                        <path d="M4 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0" />
                     </svg> Ganti Password</a></li>
         @else
-            {{-- Menu untuk Admin --}}
             @if ($role === 'admin')
-                {{-- <li><a href="{{ route('admin.dashboard') }}">Admin Dashboard</a></li>
-            <li><a href="{{ route('admin.users') }}">Manajemen User</a></li>
-            <li><a href="{{ route('admin.reports') }}">Laporan</a></li> --}}
-                <li class="nav-item"><a class="nav-link" href="{{ route('admin.dashboard') }}">
-                        <svg class="nav-icon">
-                            <use xlink:href="{{ asset('modules/coreui/icons/sprites/free.svg#cil-speedometer') }}">
-                            </use>
-                        </svg> Dashboard</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ route('users-management.index') }}">
-                        <svg class="nav-icon">
-                            <use xlink:href="{{ asset('modules/coreui/icons/sprites/free.svg#cil-apps') }}"></use>
-                        </svg> User Manajemen</a></li>
-                <li class="nav-group"><a class="nav-link nav-group-toggle" href="#">
-                        <svg class="nav-icon">
-                            <use xlink:href="{{ asset('modules/coreui/icons/sprites/free.svg#cil-puzzle') }}"></use>
-                        </svg> Data Stok Barang</a>
-                    <ul class="nav-group-items compact">
-                        <li class="nav-item"><a class="nav-link" href="{{ route('stationeries.index') }}"><span class="nav-icon"><span
-                                        class="nav-icon-bullet"></span></span> Alat Tulis & Form</a></li>
-                        <li class="nav-item"><a class="nav-link" href="base/cards.html"><span class="nav-icon"><span
-                                        class="nav-icon-bullet"></span></span> Perlengkapan Lainnya</a></li>
-                    </ul>
-                </li>
-                {{-- <li class="nav-title">Theme</li>
-            <li class="nav-item"><a class="nav-link" href="colors.html">
-                    <svg class="nav-icon">
-                        <use xlink:href="{{ asset('modules/coreui/icons/sprites/free.svg#cil-drop') }}"></use>
-                    </svg> Colors</a></li>
-            <li class="nav-item"><a class="nav-link" href="typography.html">
-                    <svg class="nav-icon">
-                        <use xlink:href="{{ asset('modules/coreui/icons/sprites/free.svg#cil-pencil') }}"></use>
-                    </svg> Typography</a></li> --}}
-                <li class="nav-title">Components</li>
-                <li class="nav-group"><a class="nav-link nav-group-toggle" href="#">
-                        <svg class="nav-icon">
-                            <use xlink:href="{{ asset('modules/coreui/icons/sprites/free.svg#cil-cursor') }}"></use>
-                        </svg> Buttons</a>
-                    <ul class="nav-group-items compact">
-                        <li class="nav-item"><a class="nav-link" href="buttons/buttons.html"><span
-                                    class="nav-icon"><span class="nav-icon-bullet"></span></span> Buttons</a></li>
-                        <li class="nav-item"><a class="nav-link" href="buttons/button-group.html"><span
-                                    class="nav-icon"><span class="nav-icon-bullet"></span></span> Buttons Group</a></li>
-                        <li class="nav-item"><a class="nav-link" href="buttons/dropdowns.html"><span
-                                    class="nav-icon"><span class="nav-icon-bullet"></span></span> Dropdowns</a></li>
-                    </ul>
-                </li>
+                @include('layouts.menu.admin-menu')
+            @elseif ($role === 'manager')
+                @include('layouts.menu.manager-menu')
             @elseif ($role === 'user')
-                {{-- <li><a href="{{ route('user.dashboard') }}">User Dashboard</a></li>
-            <li><a href="{{ route('user.profile') }}">Profil Saya</a></li>
-            <li><a href="{{ route('user.activities') }}">Aktivitas</a></li> --}}
-
-                <li class="nav-item"><a class="nav-link" href="{{ route('user.dashboard') }}">
-                        <svg class="nav-icon">
-                            <use xlink:href="{{ asset('modules/coreui/icons/sprites/free.svg#cil-speedometer') }}">
-                            </use>
-                        </svg> Dashboard</a></li>
-                {{-- <li class="nav-title">Theme</li>
-            <li class="nav-item"><a class="nav-link" href="colors.html">
-                    <svg class="nav-icon">
-                        <use xlink:href="{{ asset('modules/coreui/icons/sprites/free.svg#cil-drop') }}"></use>
-                    </svg> Colors</a></li>
-            <li class="nav-item"><a class="nav-link" href="typography.html">
-                    <svg class="nav-icon">
-                        <use xlink:href="{{ asset('modules/coreui/icons/sprites/free.svg#cil-pencil') }}"></use>
-                    </svg> Typography</a></li> --}}
-                <li class="nav-title">Components</li>
-                <li class="nav-group"><a class="nav-link nav-group-toggle" href="#">
-                        <svg class="nav-icon">
-                            <use xlink:href="{{ asset('modules/coreui/icons/sprites/free.svg#cil-puzzle') }}"></use>
-                        </svg> Base</a>
-                    <ul class="nav-group-items compact">
-                        <li class="nav-item"><a class="nav-link" href="{{ route('data-pengajuan.index') }}"><span
-                                    class="nav-icon"><span class="nav-icon-bullet"></span></span> Data Pengajuan
-                                Barang</a></li>
-                        <li class="nav-item"><a class="nav-link" href="base/breadcrumb.html"><span
-                                    class="nav-icon"><span class="nav-icon-bullet"></span></span> Breadcrumb</a></li>
-                        <li class="nav-item"><a class="nav-link" href="base/cards.html"><span class="nav-icon"><span
-                                        class="nav-icon-bullet"></span></span> Cards</a></li>
-                        <li class="nav-item"><a class="nav-link" href="base/carousel.html"><span
-                                    class="nav-icon"><span class="nav-icon-bullet"></span></span> Carousel</a></li>
-                    </ul>
-                </li>
-                <li class="nav-group"><a class="nav-link nav-group-toggle" href="#">
-                        <svg class="nav-icon">
-                            <use xlink:href="{{ asset('modules/coreui/icons/sprites/free.svg#cil-cursor') }}"></use>
-                        </svg> Buttons</a>
-                    <ul class="nav-group-items compact">
-                        <li class="nav-item"><a class="nav-link" href="buttons/buttons.html"><span
-                                    class="nav-icon"><span class="nav-icon-bullet"></span></span> Buttons</a></li>
-                        <li class="nav-item"><a class="nav-link" href="buttons/button-group.html"><span
-                                    class="nav-icon"><span class="nav-icon-bullet"></span></span> Buttons Group</a>
-                        </li>
-                        <li class="nav-item"><a class="nav-link" href="buttons/dropdowns.html"><span
-                                    class="nav-icon"><span class="nav-icon-bullet"></span></span> Dropdowns</a></li>
-                    </ul>
-                </li>
+                @include('layouts.menu.user-menu')
             @endif
         @endif
     @endif

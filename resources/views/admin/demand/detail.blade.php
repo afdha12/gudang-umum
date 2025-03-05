@@ -1,41 +1,58 @@
 @extends('layouts.main')
 
-@section('title', 'Users Management')
+@section('title', 'Detail Permintaan Barang')
 
 @section('content')
 
     <div class="max-h-200 overflow-y-auto border shadow-lg rounded-lg">
-        <div class="m-3">
-            <a class="btn btn-primary" href="{{ route('users-management.create', ['type' => 'supplies']) }}">Tambah User</a>
-        </div>
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead class="bg-gray-200 sticky top-0">
                     <tr class="border-b border-gray-300">
                         <th class="py-3 px-4 text-left">No</th>
-                        <th class="py-3 px-4 text-left">Nama</th>
-                        <th class="py-3 px-4 text-left">Username</th>
-                        <th class="py-3 px-4 text-left">Email</th>
-                        <th class="py-3 px-4 text-left">Divisi</th>
-                        <th class="py-3 px-4 text-left">Role</th>
-                        <th class="py-3 px-4 text-center">Aksi</th>
+                        <th class="py-3 px-4 text-left">Tanggal Permintaan</th>
+                        <th class="py-3 px-4 text-left">Nama Barang</th>
+                        <th class="py-3 px-4 text-left">Jumlah</th>
+                        <th class="py-3 px-4 text-left">Persetujuan Manager</th>
+                        <th class="py-3 px-4 text-left">Status</th>
+                        <th class="py-3 px-4 text-left">Action</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-300">
-                    @foreach ($data as $item)
+                    @foreach ($userDemands as $item)
                         <tr>
                             <td class="py-3 px-4">{{ $loop->iteration }}</td>
-                            <td class="py-3 px-4">{{ $item->name }}</td>
-                            <td class="py-3 px-4">{{ $item->username }}</td>
-                            <td class="py-3 px-4">{{ $item->email }}</td>
-                            <td class="py-3 px-4">{{ $item->division }}</td>
-                            <td class="py-3 px-4">{{ $item->role }}</td>
-                            <td class="py-3 px-4 text-center">
-                                <a href="{{ route('users-management.edit', $item->id) }}"
-                                    class="btn btn-outline-primary btn-sm mr-2"><i class="bi bi-pencil"></i></i></a>
-                                <a href="{{ route('users-management.destroy', $item->id) }}"
-                                    class="btn btn-outline-danger btn-sm" data-confirm-delete="true"><i
-                                        class="bi bi-trash"></i></a>
+                            <td class="py-3 px-4">{{ date('d M Y', strtotime($item->dos)) }}</td>
+                            <td class="py-3 px-4">{{ $item->stationery->nama_barang }}</td>
+                            <td class="py-3 px-4">{{ $item->amount }}</td>
+                            <td class="py-3 px-4">
+                                @if ($item->manager_approval)
+                                    <span class="badge bg-success">Disetujui</span>
+                                @else
+                                    <span class="badge bg-warning">Menunggu</span>
+                                @endif
+                            </td>
+                            <td class="py-3 px-4">
+                                @if ($item->status == 0)
+                                    <span class="badge bg-warning">Belum Disetujui</span>
+                                @else
+                                    <span class="badge bg-success">Disetujui</span>
+                                @endif
+                            <td class="py-3 px-4">
+                                @if (!$item->status)
+                                    @if ($item->manager_approval == 1)
+                                        <form action="{{ route('demand.update', $item->id) }}" method="POST"
+                                            class="approve-form">
+                                            @csrf
+                                            @method('PUT')
+                                            <button type="submit" class="btn btn-outline-primary btn-sm">Setujui</button>
+                                        </form>
+                                    @else
+                                        <button class="btn btn-danger btn-sm" disabled>Menunggu Approval</button>
+                                    @endif
+                                @else
+                                    <button class="btn btn-secondary btn-sm" disabled>Sudah Disetujui</button>
+                                @endif
                             </td>
                         </tr>
                     @endforeach
@@ -52,17 +69,17 @@
                 <div class="sm:flex sm:flex-1 sm:items-center sm:justify-between">
                     <div class="text-sm">
                         Showing
-                        <span class="font-medium">{{ $data->firstItem() }}</span>
+                        <span class="font-medium">{{ $userDemands->firstItem() }}</span>
                         to
-                        <span class="font-medium">{{ $data->lastItem() }}</span>
+                        <span class="font-medium">{{ $userDemands->lastItem() }}</span>
                         of
-                        <span class="font-medium">{{ $data->total() }}</span>
+                        <span class="font-medium">{{ $userDemands->total() }}</span>
                         results
                     </div>
                     <div>
                         <nav class="isolate inline-flex -space-x-px rounded-md shadow-xs" aria-label="Pagination">
                             {{-- Tombol Previous --}}
-                            @if ($data->onFirstPage())
+                            @if ($userDemands->onFirstPage())
                                 <span
                                     class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-gray-300 ring-inset cursor-not-allowed">
                                     <svg class="size-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -72,7 +89,7 @@
                                     </svg>
                                 </span>
                             @else
-                                <a href="{{ $data->previousPageUrl() }}"
+                                <a href="{{ $userDemands->previousPageUrl() }}"
                                     class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-gray-300 ring-inset hover:bg-gray-50">
                                     <svg class="size-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                         <path fill-rule="evenodd"
@@ -83,8 +100,8 @@
                             @endif
 
                             {{-- Nomor Halaman --}}
-                            @foreach ($data->links()->elements[0] as $page => $url)
-                                @if ($page == $data->currentPage())
+                            @foreach ($userDemands->links()->elements[0] as $page => $url)
+                                @if ($page == $userDemands->currentPage())
                                     <span
                                         class="relative z-10 inline-flex items-center bg-indigo-600 px-4 py-2 text-sm font-semibold text-white">
                                         {{ $page }}
@@ -98,8 +115,8 @@
                             @endforeach
 
                             {{-- Tombol Next --}}
-                            @if ($data->hasMorePages())
-                                <a href="{{ $data->nextPageUrl() }}"
+                            @if ($userDemands->hasMorePages())
+                                <a href="{{ $userDemands->nextPageUrl() }}"
                                     class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-gray-300 ring-inset hover:bg-gray-50">
                                     <svg class="size-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                         <path fill-rule="evenodd"
@@ -122,8 +139,60 @@
                 </div>
             </div>
         </div>
-        <div class="mx-auto max-w-none">
-        </div>
     </div>
+
+    @if (session('error'))
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: '{{ session('error') }}'
+            });
+        </script>
+    @endif
+
+    @if (session('success'))
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: '{{ session('success') }}'
+            });
+        </script>
+    @endif
+
+    @if (session('warning'))
+        <script>
+            Swal.fire({
+                icon: 'warning',
+                title: 'Perhatian!',
+                text: '{{ session('warning') }}'
+            });
+        </script>
+    @endif
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            document.querySelectorAll(".approve-form").forEach(form => {
+                form.addEventListener("submit", function(event) {
+                    event.preventDefault(); // Hentikan submit default
+
+                    Swal.fire({
+                        title: "Apakah Anda yakin?",
+                        text: "Setelah disetujui, stok akan berkurang!",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#3085d6",
+                        cancelButtonColor: "#d33",
+                        confirmButtonText: "Ya, setujui!"
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit(); // Lanjutkan submit jika dikonfirmasi
+                        }
+                    });
+                });
+            });
+        });
+    </script>
 
 @endsection

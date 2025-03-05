@@ -14,6 +14,10 @@ class UserController extends Controller
      */
     public function index()
     {
+        $title = 'Delete User!';
+        $text = "Are you sure you want to delete?";
+        confirmDelete($title, $text);
+        
         $data = User::paginate(20);
         return view('admin.users.index', compact('data'));
     }
@@ -35,7 +39,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users,username',
             'email' => 'required|string|email|max:255',
-            'role' => 'required|in:admin,user',
+            'role' => 'required|in:admin,user,manager',
             'division' => 'nullable|string|max:255',
         ]);
 
@@ -96,8 +100,11 @@ class UserController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy($id)
     {
-        //
+        $user = User::findOrFail($id);
+        $user->delete();
+
+        return redirect()->route('users-management.index')->with('success', 'User berhasil dihapus.');
     }
 }

@@ -8,6 +8,9 @@
     <title>@yield('title')</title>
     <link rel="icon" type="image/x-icon" href="{{ asset('assets/favicon/favicon-96x96.png') }}">
 
+    <script src="{{ asset('js/app.js') }}"></script>
+
+
     {{-- Bootstrap Icon --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
@@ -34,10 +37,13 @@
         integrity="sha384-k90VzuFAoyBG5No1d5yn30abqlaxr9+LfAPp6pjrd7U3T77blpvmsS8GqS70xcnH" crossorigin="anonymous">
     </script>
 
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 
 </head>
 
 <body>
+    @include('sweetalert::alert')
     <div class="sidebar sidebar-dark sidebar-fixed border-end" id="sidebar">
         @include('layouts.nav.sidebar')
         {{-- @if (Auth::user() && Auth::user()->password_changed)
@@ -50,7 +56,6 @@
 
         <div class="body flex-grow-1">
             <div class="px-4">
-                @include('sweetalert::alert')
                 @yield('content')
             </div>
         </div>
@@ -80,7 +85,6 @@
     <script src="{{ asset('modules/coreui/chartjs/dist/js/coreui-chartjs.js') }}"></script>
     <script src="{{ asset('modules/coreui/utils/dist/umd/index.js') }}"></script>
     <script src="{{ asset('js/main.js') }}"></script>
-    <script></script>
 </body>
 
 </html>

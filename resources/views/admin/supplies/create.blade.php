@@ -22,29 +22,36 @@
                     @enderror
                 </div>
 
+                <input type="hidden" name="jenis_barang" value="2">
+
+
                 <div class="mb-4">
                     <label for="nama_barang" class="form-label">Nama Barang</label>
-                    <input type="text" name="nama_barang" class="form-control" required>
+                    <input type="text" name="nama_barang" class="form-control text-capitalize" required>
                     @error('nama_barang')
                         <div class="text-danger">{{ $message }}</div>
                     @enderror
                 </div>
 
                 <div class="mb-4">
-                    <label for="haraga_barang" class="form-label">Harga Barang</label>
-                    <input type="email" name="haraga_barang" class="form-control" required>
-                    @error('haraga_barang')
+                    <label for="harga_barang" class="form-label">Harga Barang</label>
+                    <input type="text" name="harga_barang" id="harga" class="form-control" required>
+                    @error('harga_barang')
                         <div class="text-danger">{{ $message }}</div>
                     @enderror
                 </div>
 
-                <div class="mb-4">
+                {{-- <div class="mb-4">
                     <label for="jenis_barang" class="form-label">Jenis Barang</label>
-                    <select name="jenis_barang" class="form-control" required>
-                        <option value="1">User</option>
-                        <option value="2">Admin</option>
-                    </select>
+                    <input type="text" name="jenis_barang" class="form-control" required>
                     @error('jenis_barang')
+                        <div class="text-danger">{{ $message }}</div>
+                    @enderror
+                </div> --}}
+                <div class="mb-4">
+                    <label for="stok" class="form-label">Jumlah</label>
+                    <input type="text" name="stok" class="form-control">
+                    @error('stok')
                         <div class="text-danger">{{ $message }}</div>
                     @enderror
                 </div>

@@ -40,8 +40,9 @@
                 <div class="mb-4">
                     <label for="role" class="form-label">Role</label>
                     <select name="role" class="form-control" required>
-                        <option value="user">User</option>
-                        <option value="admin">Admin</option>
+                        <option value="user">Staff</option>
+                        <option value="manager">Manager</option>
+                        {{-- <option value="admin">Admin</option> --}}
                     </select>
                     @error('role')
                         <div class="text-danger">{{ $message }}</div>

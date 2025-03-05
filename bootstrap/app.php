@@ -21,6 +21,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'password.change' => CheckPasswordChange::class,
             'redirect.authenticated' => RedirectIfAuthenticated::class,
         ]);
+        $middleware->web(append: [
+            \RealRashid\SweetAlert\ToSweetAlert::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

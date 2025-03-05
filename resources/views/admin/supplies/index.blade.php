@@ -1,12 +1,12 @@
 @extends('layouts.main')
 
-@section('title', 'Users Management')
+@section('title', 'Data Stok Barang')
 
 @section('content')
 
     <div class="max-h-200 overflow-y-auto border shadow-lg rounded-lg">
         <div class="m-3">
-            <a class="btn btn-primary" href="{{ route('stationeries.create') }}">Tambah Data Barang</a>
+            <a class="btn btn-primary" href="{{ route('stationeries.create', ['type' => '2']) }}">Tambah Data Barang</a>
         </div>
         <div class="table-responsive">
             <table class="table table-striped">
@@ -18,8 +18,9 @@
                         <th class="py-3 px-4 text-left">Harga Barang</th>
                         <th class="py-3 px-4 text-left">Satuan</th>
                         <th class="py-3 px-4 text-left">Masuk</th>
-                        <th class="py-3 px-4 text-center">Keluar</th>
-                        <th class="py-3 px-4 text-center">Stok</th>
+                        <th class="py-3 px-4">Keluar</th>
+                        <th class="py-3 px-4">Stok</th>
+                        <th class="py-3 px-4 text-center">Action</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-300">
@@ -28,15 +29,16 @@
                             <td class="py-3 px-4">{{ $loop->iteration }}</td>
                             <td class="py-3 px-4">{{ $item->kode_barang }}</td>
                             <td class="py-3 px-4">{{ $item->nama_barang }}</td>
-                            <td class="py-3 px-4">{{ $item->harga_barang }}</td>
+                            <td class="py-3 px-4">{{ $item->formatted_harga }}</td>
                             <td class="py-3 px-4">{{ $item->satuan }}</td>
                             <td class="py-3 px-4">{{ $item->masuk }}</td>
                             <td class="py-3 px-4">{{ $item->keluar }}</td>
                             <td class="py-3 px-4">{{ $item->stok }}</td>
                             <td class="py-3 px-4 text-center">
-                                <a href="{{ route('users-management.edit', $item->id) }}"
+                                <a href="{{ route('stationeries.edit', $item->id) }}"
                                     class="btn btn-outline-primary btn-sm mr-2"><i class="bi bi-pencil"></i></i></a>
-                                <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Hapus</button>
+                                <a href="{{ route('stationeries.destroy', $item->id) }}" class="btn btn-outline-danger btn-sm"
+                                    data-confirm-delete="true"><i class="bi bi-trash"></i></a>
                             </td>
                         </tr>
                     @endforeach
