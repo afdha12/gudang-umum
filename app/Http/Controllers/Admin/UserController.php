@@ -18,7 +18,7 @@ class UserController extends Controller
         $text = "Are you sure you want to delete?";
         confirmDelete($title, $text);
         
-        $data = User::paginate(20);
+        $data = User::paginate(10);
         return view('admin.users.index', compact('data'));
     }
 

@@ -13,26 +13,58 @@
 
     @if (Session::has('alert.delete') || Session::has('alert.config'))
         <script>
-            document.addEventListener('click', function(event) {
+            document.addEventListener('click', function (event) {
                 // Check if the clicked element or its parent has the attribute
                 var target = event.target;
-                var confirmDeleteElement = target.closest('[data-confirm-delete]');
 
+                // Handle Confirm Delete
+                var confirmDeleteElement = target.closest('[data-confirm-delete]');
                 if (confirmDeleteElement) {
                     event.preventDefault();
-                    Swal.fire({!! Session::pull('alert.delete') !!}).then(function(result) {
+                    Swal.fire({
+                        title: "Hapus Data!",
+                        text: "Apakah Anda Yakin Ingin Menghapusnya?",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#d33",
+                        cancelButtonColor: "#3085d6",
+                        confirmButtonText: "Ya, Hapus!"
+                    }).then((result) => {
                         if (result.isConfirmed) {
                             var form = document.createElement('form');
                             form.action = confirmDeleteElement.href;
                             form.method = 'POST';
-                            form.innerHTML = `
-                            @csrf
-                            @method('DELETE')
-                        `;
+                            form.innerHTML = `@csrf @method('DELETE')`;
                             document.body.appendChild(form);
                             form.submit();
                         }
                     });
+                    return;
+                }
+
+                // Handle Confirm Approval (Setujui)
+                var confirmApproveElement = target.closest('[data-confirm-approve]');
+                if (confirmApproveElement) {
+                    event.preventDefault();
+                    Swal.fire({
+                        title: "Setujui Permintaan?",
+                        text: "Apakah Anda yakin ingin menyetujui permintaan ini? Stok akan dikurangi!",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#3085d6",
+                        cancelButtonColor: "#d33",
+                        confirmButtonText: "Ya, Setujui!"
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            var form = document.createElement('form');
+                            form.action = confirmApproveElement.href;
+                            form.method = 'POST';
+                            form.innerHTML = `@csrf @method('PUT')`;
+                            document.body.appendChild(form);
+                            form.submit();
+                        }
+                    });
+                    return;
                 }
             });
 

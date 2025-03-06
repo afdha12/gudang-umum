@@ -18,7 +18,7 @@ class ItemDemandController extends Controller
         $title = 'Hapus Data!';
         $text = "Apakah Anda Yakin Ingin Menghapusnya?";
 
-        // $data = ItemDemand::paginate(20);
+        // $data = ItemDemand::paginate(10);
         $data = ItemDemand::with('user')
             ->select(
                 'user_id',
@@ -27,7 +27,7 @@ class ItemDemandController extends Controller
                 DB::raw('MAX(dos) as last_pengajuan')
             )
             ->groupBy('user_id')
-            ->paginate(20);
+            ->paginate(10);
 
         return view('admin.demand.index', compact('data'));
     }
@@ -56,7 +56,7 @@ class ItemDemandController extends Controller
         $userDemands = ItemDemand::with('user')
             ->where('user_id', $user_id)
             // ->where('manager_approval', 1)
-            ->paginate(20);
+            ->paginate(10);
 
         return view('admin.demand.detail', compact('userDemands'));
     }

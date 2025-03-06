@@ -19,7 +19,7 @@ class ItemDemandController extends Controller
         $text = "Are you sure you want to delete?";
         confirmDelete($title, $text);
 
-        $data = ItemDemand::where('user_id', Auth::id())->paginate(20);
+        $data = ItemDemand::where('user_id', Auth::id())->paginate(10);
         return view('user.demand.index', compact('data'));
     }
 

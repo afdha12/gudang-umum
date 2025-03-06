@@ -43,7 +43,6 @@
 </head>
 
 <body>
-    @include('sweetalert::alert')
     <div class="sidebar sidebar-dark sidebar-fixed border-end" id="sidebar">
         @include('layouts.nav.sidebar')
         {{-- @if (Auth::user() && Auth::user()->password_changed)
@@ -85,6 +84,8 @@
     <script src="{{ asset('modules/coreui/chartjs/dist/js/coreui-chartjs.js') }}"></script>
     <script src="{{ asset('modules/coreui/utils/dist/umd/index.js') }}"></script>
     <script src="{{ asset('js/main.js') }}"></script>
+    {{-- Sweetalert --}}
+    @include('sweetalert::alert')
 </body>
 
 </html>

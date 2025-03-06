@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Manager;
 
 use App\Models\ItemDemand;
+use App\Models\Stationery;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
@@ -17,7 +18,7 @@ class ItemDemandController extends Controller
         $title = 'Hapus Data!';
         $text = "Apakah Anda Yakin Ingin Menghapusnya?";
 
-        // $data = ItemDemand::paginate(20);
+        // $data = ItemDemand::paginate(10);
         $data = ItemDemand::with('user')
             ->select(
                 'user_id',
@@ -26,7 +27,7 @@ class ItemDemandController extends Controller
                 DB::raw('MAX(dos) as last_pengajuan')
             )
             ->groupBy('user_id')
-            ->paginate(20);
+            ->paginate(10);
 
         return view('manager.demand.index', compact('data'));
     }
@@ -55,7 +56,7 @@ class ItemDemandController extends Controller
         $userDemands = ItemDemand::with('user')
             ->where('user_id', $user_id)
             // ->where('manager_approval', 1)
-            ->paginate(20);
+            ->paginate(10);
 
         return view('manager.demand.detail', compact('userDemands'));
     }
@@ -71,9 +72,16 @@ class ItemDemandController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, ItemDemand $itemDemand)
+    public function update($id)
     {
-        //
+
+        $pengajuan = ItemDemand::findOrFail($id);
+        if ($pengajuan->manager_approval == 0) { // Hanya jika belum disetujui
+
+            $pengajuan->manager_approval = 1;
+            $pengajuan->save();
+            return redirect()->back()->with('success', 'Pengajuan telah disetujui.');
+        }
     }
 
     /**

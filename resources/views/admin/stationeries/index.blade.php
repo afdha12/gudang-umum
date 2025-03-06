@@ -37,7 +37,7 @@
                             <td class="py-3 px-4 text-center">
                                 <a href="{{ route('stationeries.edit', ['stationery' => $item->id, 'type' => $type]) }}"
                                     class="btn btn-outline-primary btn-sm mr-2"><i class="bi bi-pencil"></i></i></a>
-                                <a href="{{ route('stationeries.destroy', $item->id) }}" class="btn btn-outline-danger btn-sm"
+                                <a href="{{ route('stationeries.destroy', ['stationery' => $item->id, 'type' => $type]) }}" class="btn btn-outline-danger btn-sm"
                                     data-confirm-delete="true"><i class="bi bi-trash"></i></a>
                             </td>
                         </tr>

@@ -17,17 +17,17 @@ class StationeryController extends Controller
         $text = "Are you sure you want to delete?";
         confirmDelete($title, $text);
 
-        // $data = Stationery::paginate(20);
+        // $data = Stationery::paginate(10);
         // return view('admin.stationery.index', compact('data'));
         // Ambil query parameter 'type' dari URL
         $type = $request->query('type', 'alat-tulis'); // Default ke 'alat-tulis'
 
         // Ambil data yang sesuai (bisa disesuaikan dengan tipe yang dimaksud)
         if ($type === '1') {
-            $data = Stationery::where('jenis_barang', '1')->paginate(20);
+            $data = Stationery::where('jenis_barang', '1')->paginate(10);
             return view('admin.stationeries.index', compact('data', 'type'));
         } elseif ($type === '2') {
-            $data = Stationery::where('jenis_barang', '2')->paginate(20);
+            $data = Stationery::where('jenis_barang', '2')->paginate(10);
             return view('admin.supplies.index', compact('data', 'type'));
         }
 

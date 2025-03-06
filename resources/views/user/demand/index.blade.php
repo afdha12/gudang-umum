@@ -28,9 +28,9 @@
                         <tr>
                             <td class="py-3 px-4">{{ $loop->iteration }}</td>
                             <td class="py-3 px-4">{{ date('d M Y', strtotime($item->dos)) }}</td>
-                            <td class="py-3 px-4">{{ $item->stationery['kode_barang'] }}</td>
-                            <td class="py-3 px-4 text-capitalize">{{ $item->stationery['nama_barang'] }}</td>
-                            <td class="py-3 px-4 text-uppercase">{{ $item->stationery['satuan'] }}</td>
+                            <td class="py-3 px-4">{{ $item->stationery['kode_barang'] ?? 'Barang tidak ditemukan' }}</td>
+                            <td class="py-3 px-4 text-capitalize">{{ $item->stationery['nama_barang'] ?? 'Barang tidak ditemukan' }}</td>
+                            <td class="py-3 px-4 text-uppercase">{{ $item->stationery['satuan'] ?? 'Barang tidak ditemukan' }}</td>
                             <td class="py-3 px-4">{{ $item->amount }}</td>
                             <td class="py-3 px-4">
                                 @if ($item->status == 0)
