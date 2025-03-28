@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\User;
+use App\Models\Division;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
@@ -17,7 +18,7 @@ class UserController extends Controller
         $title = 'Delete User!';
         $text = "Are you sure you want to delete?";
         confirmDelete($title, $text);
-        
+
         $data = User::paginate(10);
         return view('admin.users.index', compact('data'));
     }
@@ -27,7 +28,8 @@ class UserController extends Controller
      */
     public function create()
     {
-        return view('admin.users.create');
+        $divisions = Division::all();
+        return view('admin.users.create', compact('divisions'));
     }
 
     /**
@@ -40,7 +42,7 @@ class UserController extends Controller
             'username' => 'required|string|max:255|unique:users,username',
             'email' => 'required|string|email|max:255',
             'role' => 'required|in:admin,user,manager',
-            'division' => 'nullable|string|max:255',
+            'division_id' => 'nullable|string|max:255',
         ]);
 
         // Tetapkan password default
@@ -65,7 +67,9 @@ class UserController extends Controller
     public function edit(string $id)
     {
         $data = User::find($id);
-        return view('admin.users.edit', compact('data'));
+        $divisions = Division::all();
+        $roles = ['admin', 'user', 'manager'];
+        return view('admin.users.edit', compact('data', 'divisions', 'roles'));
     }
 
     /**
@@ -77,25 +81,23 @@ class UserController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'username' => 'required|string|max:255|unique:users,username,' . $id, // Pastikan username unik dengan pengecualian ID saat ini
-            'password' => 'nullable|string|min:6|confirmed',
+            'username' => 'required|string|max:255|unique:users,username,' . $id,
             'email' => 'required|string|email|max:255',
-            'role' => 'required|in:admin,user',
-            'division' => 'nullable|string|max:255',
+            'role' => 'required|in:admin,user,manager',
+            'division_id' => 'required|integer',
         ]);
 
-        // Hanya update password jika diisi oleh user
-        if ($request->filled('password')) {
-            $validated['password'] = Hash::make($request->password);
-        } else {
-            unset($validated['password']); // Hapus password dari array agar tidak di-set ke NULL
+        // Cek apakah reset password dicentang
+        if ($request->has('reset_password')) {
+            $validated['password'] = Hash::make('Hermina32');
+            $validated['password_changed'] = false; // Menandai bahwa password belum diganti oleh user
         }
 
         $data->update($validated);
 
         return redirect()->route('users-management.index')->with('success', 'User berhasil diperbarui.');
-
     }
+
 
     /**
      * Remove the specified resource from storage.

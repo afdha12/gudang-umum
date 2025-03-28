@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class FirstLoginController extends Controller
 {
@@ -46,28 +47,44 @@ class FirstLoginController extends Controller
      */
     public function edit(string $id)
     {
-        $data = User::find($id);
+        // Cek apakah user yang login hanya bisa mengubah passwordnya sendiri
+        if (Auth::id() != $id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $data = User::findOrFail($id);
         return view('first-login', compact('data'));
     }
+
 
     /**
      * Update the specified resource in storage.
      */
+
     public function update(Request $request, string $id)
     {
+        if (Auth::id() != $id) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $request->validate([
             'password' => 'required|string|min:6|confirmed',
+            'signature' => 'nullable|image|mimes:jpeg,png,jpg|max:1024',
         ]);
 
-        $user = User::findOrFail($id); // Ambil user berdasarkan ID
+        $user = Auth::user();
 
-        // Menggunakan metode update langsung pada model User
-        $user->update([
-            'password' => Hash::make($request->password),
-            'password_changed' => true, // Menandai bahwa password telah diganti
-        ]);
+        // Simpan tanda tangan dengan Spatie
+        if ($request->hasFile('signature')) {
+            $user->clearMediaCollection('signature'); // Hapus tanda tangan lama
+            $user->addMedia($request->file('signature'))->toMediaCollection('signature'); // Simpan yang baru
+        }
 
-        // Logout user setelah password diubah
+        // Update password
+        $user->password = Hash::make($request->password);
+        $user->password_changed = true;
+        $user->save();
+
         Auth::logout();
 
         return redirect()->route('login')->with('success', 'Password berhasil diubah, silakan login kembali.');

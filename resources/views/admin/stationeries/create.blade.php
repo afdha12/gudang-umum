@@ -50,7 +50,7 @@
                 </div> --}}
                 <div class="mb-4">
                     <label for="stok" class="form-label">Jumlah</label>
-                    <input type="text" name="stok" value="{{ old('stok') }}" class="form-control">
+                    <input type="number" name="stok" value="{{ old('stok') }}" class="form-control">
                     @error('stok')
                         <div class="text-danger">{{ $message }}</div>
                     @enderror

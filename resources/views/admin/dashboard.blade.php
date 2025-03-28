@@ -4,6 +4,89 @@
 
 @section('content')
 
-<h4>Ini adalah halaman ADMIN</h4>
+    <div class="container">
+        <div class="row">
+            <!-- Ringkasan Stok -->
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <h5>Total Stok</h5>
+                        <h3>{{ $totalStok }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-danger text-white">
+                    <div class="card-body">
+                        <h5>Stok Hampir Habis</h5>
+                        <h3>{{ $barangHampirHabis }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <h5>Barang Masuk Hari Ini</h5>
+                        <h3>{{ $barangMasuk }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <h5>Barang Keluar Hari Ini</h5>
+                        <h3>{{ $barangKeluar }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
 
+        <!-- Status Pengajuan Barang -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">Status Pengajuan Barang</div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="pengajuanChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Log Aktivitas -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">Log Aktivitas Terbaru</div>
+                    <div class="card-body">
+                        <ul class="list-group">
+                            @foreach ($logAktivitas as $log)
+                                <li class="list-group-item">{{ $log->message }} ({{ $log->created_at->diffForHumans() }})
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        var ctx = document.getElementById('pengajuanChart').getContext('2d');
+        var pengajuanChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Menunggu', 'Disetujui'],
+                datasets: [{
+                    data: [{{ $pengajuanBelumDisetujui }}, {{ $pengajuanDisetujui }}],
+                    backgroundColor: ['yellow', 'green']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false, // Pastikan chart menyesuaikan ukuran container
+            }
+        });
+    </script>
 @endsection

@@ -16,9 +16,10 @@ return new class extends Migration
             $table->string('name');
             $table->string('username')->nullable();
             $table->string('email')->unique();
-            $table->string('division')->nullable();
+            $table->string('division_id')->nullable();
             $table->string('role')->default('user');
             $table->string('password');
+            $table->string('signature')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->timestamp('password_changed_at')->nullable();
             $table->boolean('password_changed')->default(false);

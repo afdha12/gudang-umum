@@ -40,10 +40,12 @@
                                 @endif
                             <td class="py-3 px-4">
                                 @if (!$item->manager_approval)
-                                    <form action="{{ route('item_demands.update', $item->id) }}" method="POST">
+                                    <form action="{{ route('item_demands.update', $item->id) }}" method="POST"
+                                        class="approve-form d-inline">
                                         @csrf
                                         @method('PUT')
-                                        <button type="submit" class="btn btn-outline-primary btn-sm">Setujui</button>
+                                        <button type="button" class="btn btn-outline-primary btn-sm approve-btn"><i
+                                                class="bi bi-check-lg"></i>Setujui</button>
                                     </form>
                                 @else
                                     <button class="btn btn-secondary btn-sm" disabled>Sudah Disetujui</button>
@@ -91,21 +93,22 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            document.querySelectorAll(".approve-form").forEach(form => {
-                form.addEventListener("submit", function(event) {
-                    event.preventDefault(); // Hentikan submit default
+            document.querySelectorAll('.approve-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    let form = this.closest('form'); // Ambil form terdekat
 
                     Swal.fire({
-                        title: "Apakah Anda yakin?",
-                        text: "Setelah disetujui, stok akan berkurang!",
-                        icon: "warning",
+                        title: 'Apakah Anda yakin?',
+                        text: "Setujui Permintaan Barang ini?",
+                        icon: 'warning',
                         showCancelButton: true,
-                        confirmButtonColor: "#3085d6",
-                        cancelButtonColor: "#d33",
-                        confirmButtonText: "Ya, setujui!"
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Ya, Setujui!',
+                        cancelButtonText: 'Batal'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            form.submit(); // Lanjutkan submit jika dikonfirmasi
+                            form.submit(); // Submit form jika dikonfirmasi
                         }
                     });
                 });

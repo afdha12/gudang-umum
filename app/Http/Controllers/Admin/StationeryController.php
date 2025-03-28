@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Stationery;
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\BarangHistory;
+use App\Http\Controllers\Controller;
 
 class StationeryController extends Controller
 {
@@ -17,22 +18,33 @@ class StationeryController extends Controller
         $text = "Are you sure you want to delete?";
         confirmDelete($title, $text);
 
-        // $data = Stationery::paginate(10);
-        // return view('admin.stationery.index', compact('data'));
-        // Ambil query parameter 'type' dari URL
-        $type = $request->query('type', 'alat-tulis'); // Default ke 'alat-tulis'
+        $type = $request->query('type', '1'); // Default ke '1' (alat tulis)
+        $query = $request->query('q'); // Ambil parameter pencarian
 
-        // Ambil data yang sesuai (bisa disesuaikan dengan tipe yang dimaksud)
+        // Query dasar berdasarkan jenis barang
+        $queryBuilder = Stationery::where('jenis_barang', $type);
+
+        // Jika ada pencarian, filter berdasarkan nama atau kode barang
+        if ($query) {
+            $queryBuilder->where(function ($q) use ($query) {
+                $q->where('nama_barang', 'like', "%{$query}%")
+                    ->orWhere('kode_barang', 'like', "%{$query}%");
+            });
+        }
+
+        // Ambil data dengan pagination
+        $data = $queryBuilder->paginate(10);
+
+        // Tentukan view yang sesuai berdasarkan jenis barang
         if ($type === '1') {
-            $data = Stationery::where('jenis_barang', '1')->paginate(10);
             return view('admin.stationeries.index', compact('data', 'type'));
         } elseif ($type === '2') {
-            $data = Stationery::where('jenis_barang', '2')->paginate(10);
             return view('admin.supplies.index', compact('data', 'type'));
         }
 
-        abort(404); // Jika tidak sesuai, tampilkan error 404
+        abort(404); // Jika jenis barang tidak valid, tampilkan error 404
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -68,27 +80,39 @@ class StationeryController extends Controller
             'nama_barang' => 'required|string|max:255',
             'harga_barang' => 'required|string|max:255',
             'jenis_barang' => 'required|string|max:255',
-            'stok' => 'required|string|max:255',
+            'stok' => 'required|integer',
             'satuan' => 'required|string|max:255',
-            // 'masuk' => 'required|integer',
-            // 'keluar' => 'required|integer',
-            // 'stok' => 'required|integer',
         ]);
 
         $validated['harga_barang'] = preg_replace('/\D/', '', $request->harga_barang);
-        Stationery::create($validated);
 
-        // return redirect()->route('stationeries.index')->with('success', 'Stationery berhasil ditambahkan.');
+        // Simpan data barang ke tabel stationery
+        $stationery = Stationery::create($validated);
+
+        // Simpan ke history barang masuk
+        BarangHistory::create([
+            'stationery_id' => $stationery->id,
+            'jenis' => 'masuk', // Barang masuk
+            'jumlah' => $request->stok,
+            'tanggal' => now(), // Ambil tanggal sekarang
+        ]);
+
         return redirect()->route('stationeries.index', ['type' => $request->jenis_barang])
-            ->with('success', 'Data berhasil ditambahkan!');
+            ->with('success', 'Data berhasil ditambahkan dan history tercatat!');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Stationery $stationery)
+    public function show($stationery_id)
     {
         // return view('admin.stationery.show', compact('stationery'));
+        $detailedItem = BarangHistory::with('stationery')
+            ->where('stationery_id', $stationery_id)
+            ->orderByDesc('created_at')
+            ->paginate(10);
+
+        return view('admin.stationeries.history', compact('detailedItem'));
     }
 
     /**
@@ -126,6 +150,15 @@ class StationeryController extends Controller
 
         // Simpan perubahan
         $stationery->update($validated);
+
+        // Simpan ke history
+        BarangHistory::create([
+            'stationery_id' => $stationery->id,
+            'jenis' => 'masuk',
+            'jumlah' => $request->tambah,
+            'tanggal' => now(),
+        ]);
+
 
         // Tentukan tipe berdasarkan jenis_barang (1 = stationeries, 2 = supplies)
         $type = $stationery->jenis_barang;

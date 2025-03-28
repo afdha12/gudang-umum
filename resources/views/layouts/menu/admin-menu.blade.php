@@ -32,7 +32,7 @@
     </ul>
 </li>
 
-<li class="nav-group {{ request()->is('admin/demand*') ? 'show' : '' }}">
+<li class="nav-group {{ request()->is('admin/demand*', 'admin/list_demands*') ? 'show' : '' }}">
     <a class="nav-link nav-group-toggle" href="#">
         <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
             class="bi bi-journal-check" viewBox="0 0 16 16">
@@ -53,7 +53,8 @@
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="base/cards.html">
+            <a class="nav-link {{ request()->is('admin/list_demands*') ? 'active' : '' }}"
+                href="{{ route('list_demands.index') }}">
                 <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Data Barang Keluar
             </a>
         </li>

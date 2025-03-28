@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Models\ItemDemand;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 
 class StockController extends Controller
 {
@@ -12,7 +13,9 @@ class StockController extends Controller
      */
     public function index()
     {
-        //
+        $demands = ItemDemand::where('status', '1')->orderByDesc('dos')->paginate(10);
+
+        return view('admin.demand.all_demands', compact('demands'));
     }
 
     /**

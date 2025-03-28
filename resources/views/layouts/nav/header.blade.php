@@ -8,7 +8,7 @@
             </svg>
         </button>
         <div class="header-nav d-none d-lg-flex me-auto">
-            @yield('title','RS HERMINA LAMPUNG')
+            @yield('title', 'RS HERMINA LAMPUNG')
         </div>
         <ul class="header-nav">
             <li class="nav-item dropdown">
@@ -51,8 +51,15 @@
             </li>
             <li class="nav-item dropdown"><a class="nav-link py-0 pe-0" data-coreui-toggle="dropdown" href="#"
                     role="button" aria-haspopup="true" aria-expanded="false">
-                    <div class="avatar avatar-md"><img class="avatar-img" src="{{ asset('assets/img/avatars/8.jpg') }}"
-                            alt="user@email.com"></div>
+                    <div class="avatar avatar-md">
+                        {{-- <img class="avatar-img" src="{{ asset('assets/img/avatars/8.jpg') }}" alt="user@email.com"> --}}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                            class="bi bi-person-circle" viewBox="0 0 16 16">
+                            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
+                            <path fill-rule="evenodd"
+                                d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1" />
+                        </svg>
+                    </div>
                 </a>
                 <div class="dropdown-menu dropdown-menu-end pt-0">
                     <div class="dropdown-header bg-body-tertiary text-body-secondary fw-semibold rounded-top mb-2">

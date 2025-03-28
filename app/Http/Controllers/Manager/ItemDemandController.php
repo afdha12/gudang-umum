@@ -15,11 +15,12 @@ class ItemDemandController extends Controller
      */
     public function index()
     {
-        $title = 'Hapus Data!';
-        $text = "Apakah Anda Yakin Ingin Menghapusnya?";
+        $user = auth()->user(); // Mendapatkan user yang sedang login
 
-        // $data = ItemDemand::paginate(10);
         $data = ItemDemand::with('user')
+            ->whereHas('user', function ($query) use ($user) {
+                $query->where('division_id', $user->division_id);
+            })
             ->select(
                 'user_id',
                 DB::raw('COUNT(*) as total_pengajuan'),

@@ -42,9 +42,14 @@
                             <td class="py-3 px-4">
                                 @if (!$item->status)
                                     @if ($item->manager_approval == 1)
-                                        <a href="{{ route('demand.update', $item->id) }}"
-                                            class="btn btn-outline-primary btn-sm" data-confirm-delete="true"><i
-                                                class="bi bi-check-lg"></i> Setujui</a>
+                                        <form action="{{ route('demand.update', $item->id) }}" method="POST"
+                                            class="approve-form d-inline">
+                                            @csrf
+                                            @method('PUT')
+                                            <button type="button" class="btn btn-outline-primary btn-sm approve-btn">
+                                                <i class="bi bi-check-lg"></i> Setujui
+                                            </button>
+                                        </form>
                                     @else
                                         <button class="btn btn-danger btn-sm" disabled>Menunggu Approval</button>
                                     @endif
@@ -61,5 +66,30 @@
 
         </div>
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            document.querySelectorAll('.approve-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    let form = this.closest('form'); // Ambil form terdekat
+
+                    Swal.fire({
+                        title: 'Apakah Anda yakin?',
+                        text: "Setelah disetujui, stok akan dikurangi dan tidak bisa dibatalkan!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Ya, Setujui!',
+                        cancelButtonText: 'Batal'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit(); // Submit form jika dikonfirmasi
+                        }
+                    });
+                });
+            });
+        });
+    </script>
 
 @endsection

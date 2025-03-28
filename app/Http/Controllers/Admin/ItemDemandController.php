@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Models\ItemDemand;
 use App\Models\Stationery;
 use Illuminate\Http\Request;
+use App\Models\BarangHistory;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 
@@ -91,6 +92,14 @@ class ItemDemandController extends Controller
                 $stationery->keluar += $pengajuan->amount;
                 $stationery->save();
 
+                // Simpan ke history
+                BarangHistory::create([
+                    'stationery_id' => $stationery->id,
+                    'jenis' => 'keluar',
+                    'jumlah' => $pengajuan->amount,
+                    'tanggal' => now(),
+                ]);
+                
                 // Update status pengajuan
                 $pengajuan->status = 1;
                 $pengajuan->save();

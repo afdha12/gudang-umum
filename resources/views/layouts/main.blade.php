@@ -5,12 +5,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
     <title>@yield('title')</title>
     <link rel="icon" type="image/x-icon" href="{{ asset('assets/favicon/favicon-96x96.png') }}">
 
     <script src="{{ asset('js/app.js') }}"></script>
 
-
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     {{-- Bootstrap Icon --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
@@ -21,6 +24,7 @@
     <link rel="stylesheet" href="{{ asset('css/vendors/simplebar.css') }}">
     <!-- Main styles for this application-->
     <link href="{{ asset('css/style.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     <!-- We use those styles to show code examples, you should remove them in your application.-->
     <!-- <link href="css/examples.css" rel="stylesheet"> -->
     <script src="{{ asset('js/config.js') }}"></script>
@@ -65,6 +69,29 @@
             <div class="ms-auto">Powered by&nbsp;<a href="#">CoreUI UI Components</a></div>
         </footer>
     </div>
+
+    <!-- Cek apakah ada pesan sukses dari session -->
+    @if (session('success'))
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: '{{ session('success') }}',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        </script>
+    @endif
+
+    @if (session('error'))
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: '{{ session('error') }}'
+            });
+        </script>
+    @endif
 
     <!-- CoreUI and necessary plugins-->
     <script src="{{ asset('modules/coreui/coreui/dist/js/coreui.bundle.min.js') }}"></script>
