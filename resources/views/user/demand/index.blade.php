@@ -42,12 +42,12 @@
                                 @endif
                             </td>
                             <td class="py-3 px-4 text-center">
-                                <a href="{{ route('item-demand.edit', $item->id) }}"
+                                {{-- <a href="{{ route('item-demand.edit', $item->id) }}"
                                     class="btn btn-outline-primary btn-sm mr-2"><i class="bi bi-pencil"></i></a>
                                 <a href="{{ route('item-demand.show', $item->id) }}"
-                                    class="btn btn-outline-success btn-sm mr-2"><i class="bi bi-printer"></i></a>
-                                {{-- <a href="{{ route('item-demand.destroy', $item->id) }}" class="btn btn-outline-danger btn-sm"
-                                    data-confirm-delete="true"><i class="bi bi-trash"></i></a> --}}
+                                    class="btn btn-outline-success btn-sm mr-2"><i class="bi bi-printer"></i></a> --}}
+                                <a href="{{ route('item-demand.destroy', $item->id) }}" class="btn btn-outline-danger btn-sm"
+                                    data-confirm-delete="true"><i class="bi bi-trash"></i></a>
                             </td>
                         </tr>
                     @endforeach

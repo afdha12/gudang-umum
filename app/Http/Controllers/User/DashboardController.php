@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\User;
 
-use App\Http\Controllers\Controller;
+use App\Models\ItemDemand;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
@@ -12,7 +14,17 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        return view('user.dashboard');
+        // return view('user.dashboard');
+
+        $userId = Auth::id();
+        $total = ItemDemand::where('user_id', $userId)->count();
+        $menunggu = ItemDemand::where('user_id', $userId)->where('status', 0)->count();
+        $disetujui = ItemDemand::where('user_id', $userId)->where('status', 1)->count();
+        $latest = ItemDemand::where('user_id', $userId)->latest()->take(5)->get();
+
+        return view('user.dashboard', compact('total', 'menunggu', 'disetujui', 'latest'));
+
+
     }
 
     /**

@@ -5,7 +5,7 @@
 @section('content')
 
     <div class="container">
-        <div class="row">
+        {{-- <div class="row">
             <!-- Ringkasan Stok -->
             <div class="col-md-3">
                 <div class="card bg-primary text-white">
@@ -39,7 +39,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
 
         <!-- Status Pengajuan Barang -->
         <div class="row mt-4">
@@ -53,7 +53,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Log Aktivitas -->
             <div class="col-md-6">
                 <div class="card">
@@ -73,19 +73,16 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        var ctx = document.getElementById('pengajuanChart').getContext('2d');
-        var pengajuanChart = new Chart(ctx, {
-            type: 'pie',
+        const ctx = document.getElementById('pengajuanChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
             data: {
-                labels: ['Menunggu', 'Disetujui'],
+                labels: ['Disetujui', 'Belum Disetujui'],
                 datasets: [{
-                    data: [{{ $pengajuanBelumDisetujui }}, {{ $pengajuanDisetujui }}],
-                    backgroundColor: ['yellow', 'green']
+                    label: 'Status Pengajuan',
+                    data: [{{ $pengajuanDisetujui }}, {{ $pengajuanBelumDisetujui }}],
+                    backgroundColor: ['#28a745', '#dc3545']
                 }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false, // Pastikan chart menyesuaikan ukuran container
             }
         });
     </script>

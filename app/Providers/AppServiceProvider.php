@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Spatie\Browsershot\Browsershot;
 use App\View\Composers\UserComposer;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
@@ -30,5 +31,9 @@ class AppServiceProvider extends ServiceProvider
         View::composer('*', function ($view) {
             $view->with('currentUser', Auth::user());
         });
+
+        if (env('PUPPETEER_EXECUTABLE_PATH')) {
+            putenv('PUPPETEER_EXECUTABLE_PATH=' . env('PUPPETEER_EXECUTABLE_PATH'));
+        }
     }
 }
