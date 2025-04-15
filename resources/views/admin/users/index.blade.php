@@ -28,7 +28,7 @@
                             <td class="py-3 px-4">{{ $item->name }}</td>
                             <td class="py-3 px-4">{{ $item->username }}</td>
                             <td class="py-3 px-4">{{ $item->email }}</td>
-                            <td class="py-3 px-4">{{ $item->division->division_name ?? '' }}</td>
+                            <td class="py-3 px-4 text-capitalize">{{ $item->division->division_name ?? '' }}</td>
                             <td class="py-3 px-4">{{ $item->role }}</td>
                             <td class="py-3 px-4 text-center">
                                 <a href="{{ route('users-management.edit', $item->id) }}"
