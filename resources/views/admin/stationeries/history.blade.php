@@ -1,13 +1,13 @@
 @extends('layouts.main')
 
-@section('title', 'Riwayat Stok Barang')
+@section('title', 'History Keluar Masuk Barang')
 
 @section('content')
 
     <div class="max-h-200 overflow-y-auto border shadow-lg rounded-lg">
         <div class="d-flex m-3">
-            <div>
-                <a class="btn btn-primary" href="{{ route('stationeries.create', ['type' => '1']) }}">Tambah Data Barang</a>
+            <div class="text-lg text-capitalize font-bold text-gray-700">
+                Riwayat {{ $detailedItem->first()->stationery->nama_barang }}
             </div>
         </div>
         <div class="table-responsive">

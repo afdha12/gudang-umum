@@ -22,16 +22,24 @@ class DashboardController extends Controller
         $pengajuanDisetujui = ItemDemand::where('status', 1)->count();
         $pengajuanBelumDisetujui = ItemDemand::where('status', 0)->count();
 
-        // Log Aktivitas Terbaru
-        $logAktivitas = BarangHistory::orderBy('created_at', 'desc')->take(10)->get();
+        // Ambil 10 aktivitas terbaru dari tabel history
+        $logAktivitas = BarangHistory::with('stationery') // jika ada relasi barang
+            ->latest()
+            ->take(10)
+            ->get()
+            ->map(function ($item) {
+                $namaBarang = ucwords(strtolower($item->stationery->nama_barang ?? 'Barang ID : ' . $item->stationery_id));
+                $satuan = $item->stationery->satuan ?? 'unit';
+                $aksi = $item->jenis === 'masuk' ? 'Barang masuk' : 'Barang keluar';
+                return (object) [
+                    'message' => "$aksi: $item->jumlah $satuan $namaBarang",
+                    'created_at' => $item->created_at
+                ];
+            });
 
         return view('admin.dashboard', compact(
-            'totalStok', 
-            'barangHampirHabis', 
-            'barangMasuk', 
-            'barangKeluar', 
-            'pengajuanDisetujui', 
-            'pengajuanBelumDisetujui', 
+            'pengajuanDisetujui',
+            'pengajuanBelumDisetujui',
             'logAktivitas'
         ));
     }

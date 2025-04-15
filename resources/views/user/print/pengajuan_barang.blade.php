@@ -29,6 +29,7 @@
         .signature {
             width: 150px;
             height: auto;
+            /* max-height: 120px; */
         }
 
         .hr {
@@ -76,7 +77,7 @@
                         <tr>
                             <td>{{ $index + 1 }}</td>
                             <td>{{ date('d M Y', strtotime($item->dos)) }}</td>
-                            <td class="text-capitalize">{{ $item->stationery->nama_barang }}</td>
+                            <td class="text-uppercase">{{ $item->stationery->nama_barang }}</td>
                             <td>{{ $item->amount }}</td>
                         </tr>
                     @endforeach
@@ -94,12 +95,16 @@
         <div class="row text-center mt-5">
             <div class="col-6">
                 <p class="text-capitalize mb-2">Manager {{ $item->user->division->division_name }}</p>
-                <img src="{{ $manager->getFirstMediaUrl('signature') }}" alt="Tanda Tangan Manager" class="signature">
+                <div class="d-flex justify-content-center align-items-center" style="height: 120px;">
+                    <img src="{{ $manager->getFirstMediaUrl('signature') }}" alt="Tanda Tangan Manager" class="signature align-items-center">
+                </div>
                 <p class="text-capitalize"><strong>{{ $manager->name }}</strong></p>
             </div>
             <div class="col-6">
                 <p class="mb-2">Admin Gudang</p>
-                <img src="{{ $admin->getFirstMediaUrl('signature') }}" alt="Tanda Tangan Admin" class="signature">
+                <div class="d-flex justify-content-center align-items-center" style="height: 120px;">
+                    <img src="{{ $admin->getFirstMediaUrl('signature') }}" alt="Tanda Tangan Admin" class="signature align-items-center">
+                </div>
                 <p class="text-capitalize"><strong>{{ $admin->name }}</strong></p>
             </div>
         </div>

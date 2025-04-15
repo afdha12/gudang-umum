@@ -5,8 +5,13 @@
 @section('content')
 
     <div class="max-h-200 overflow-y-auto border shadow-lg rounded-lg">
-        <div class="m-3">
-            <a class="btn btn-primary" href="{{ route('stationeries.create', ['type' => '2']) }}">Tambah Data Barang</a>
+        <div class="d-flex m-3">
+            <div>
+                <a class="btn btn-primary" href="{{ route('stationeries.create', ['type' => '2']) }}">Tambah Data Barang</a>
+            </div>
+            <div class="ms-auto">
+                <input type="text" class="form-control ml-3" placeholder="Cari barang..." id="search">
+            </div>
         </div>
         <div class="table-responsive">
             <table class="table table-striped">
@@ -35,10 +40,15 @@
                             <td class="py-3 px-4">{{ $item->keluar }}</td>
                             <td class="py-3 px-4">{{ $item->stok }}</td>
                             <td class="py-3 px-4 text-center">
-                                <a href="{{ route('stationeries.edit', $item->id) }}"
-                                    class="btn btn-outline-primary btn-sm mr-2"><i class="bi bi-pencil"></i></i></a>
-                                <a href="{{ route('stationeries.destroy', $item->id) }}" class="btn btn-outline-danger btn-sm"
-                                    data-confirm-delete="true"><i class="bi bi-trash"></i></a>
+                                <a href="{{ route('stationeries.edit', ['stationery' => $item->id, 'type' => $type]) }}"
+                                    class="btn btn-outline-primary btn-sm mr-2"><i class="bi bi-pencil"></i></a>
+                                {{-- <a href="{{ route('stationeries.edit', $item->id) }}"
+                                    class="btn btn-outline-primary btn-sm mr-2"><i class="bi bi-pencil"></i></i></a> --}}
+                                <a href="{{ route('stationeries.show', ['stationery' => $item->id, 'type' => $type]) }}"
+                                    class="btn btn-outline-info btn-sm mr-2"><i class="bi bi-list-task"></i></a>
+                                <a href="{{ route('stationeries.destroy', $item->id) }}"
+                                    class="btn btn-outline-danger btn-sm" data-confirm-delete="true"><i
+                                        class="bi bi-trash"></i></a>
                             </td>
                         </tr>
                     @endforeach

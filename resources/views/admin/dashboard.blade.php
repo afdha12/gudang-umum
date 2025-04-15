@@ -60,10 +60,13 @@
                     <div class="card-header">Log Aktivitas Terbaru</div>
                     <div class="card-body">
                         <ul class="list-group">
-                            @foreach ($logAktivitas as $log)
+                            @forelse($logAktivitas as $log)
                                 <li class="list-group-item">{{ $log->message }} ({{ $log->created_at->diffForHumans() }})
                                 </li>
-                            @endforeach
+
+                            @empty
+                                <li>Belum ada aktivitas.</li>
+                            @endforelse
                         </ul>
                     </div>
                 </div>

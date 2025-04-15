@@ -72,17 +72,48 @@ class ItemDemandController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(ItemDemand $itemDemand)
+    public function edit(string $id)
     {
-        //
+        $data = ItemDemand::with('stationery')->findOrFail($id);
+
+        // Optional: pastikan hanya user yang berhak bisa edit
+        if ((int) $data->user_id !== (int) Auth::id()) {
+            abort(403);
+        }
+        if ($data->manager_approval == 1) {
+            return redirect()->back()->with('error', 'Permintaan yang disetujui Manager tidak bisa diedit.');
+        }
+
+        return view('user.demand.edit', compact('data'));
+
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, ItemDemand $itemDemand)
+    public function update(Request $request, $id)
     {
-        //
+        $request->validate([
+            'jenis_barang' => 'required|in:1,2',
+            'stationery_id' => 'required|exists:stationeries,id',
+            'amount' => 'required|integer|min:1',
+        ]);
+
+        $itemDemand = ItemDemand::findOrFail($id);
+        $stationery = Stationery::findOrFail($request->stationery_id);
+
+        if ($request->amount > $stationery->stok) {
+            return redirect()->back()->with('error', 'Jumlah melebihi stok yang tersedia!');
+        }
+
+        $itemDemand->update([
+            'user_id' => auth()->id(), // Bisa juga tetap pakai $request->user_id jika ingin fleksibel
+            'stationery_id' => $request->stationery_id,
+            'amount' => $request->amount,
+            'dos' => $request->dos,
+        ]);
+
+        return redirect()->route('item-demand.index')->with('success', 'Pengajuan berhasil diperbarui!');
     }
 
     /**
@@ -90,6 +121,9 @@ class ItemDemandController extends Controller
      */
     public function destroy(ItemDemand $itemDemand)
     {
+        if ($itemDemand->manager_approval == 1) {
+            return redirect()->back()->with('error', 'Permintaan yang sudah disetujui tidak bisa dihapus.');
+        }
         $itemDemand->delete();
 
         return redirect()->route('item-demand.index')->with('success', 'Data Permintaan Berhasil Dihapus.');

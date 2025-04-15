@@ -17,14 +17,26 @@ class DashboardController extends Controller
         // return view('user.dashboard');
 
         $userId = Auth::id();
-        $total = ItemDemand::where('user_id', $userId)->count();
         $menunggu = ItemDemand::where('user_id', $userId)->where('status', 0)->count();
         $disetujui = ItemDemand::where('user_id', $userId)->where('status', 1)->count();
-        $latest = ItemDemand::where('user_id', $userId)->latest()->take(5)->get();
 
-        return view('user.dashboard', compact('total', 'menunggu', 'disetujui', 'latest'));
+        $aktivitas = ItemDemand::with('stationery')
+        ->where('user_id', $userId)
+        ->latest('created_at')
+        ->take(5) // ambil 5 aktivitas terakhir (bisa disesuaikan)
+        ->get()
+        ->map(function ($item) {
+            return [
+                'nama_barang' => ucwords(strtolower($item->stationery->nama_barang)),
+                'jumlah' => $item->amount,
+                'satuan' => $item->stationery->satuan,
+                'waktu' => $item->created_at->diffForHumans(), // contoh: "30 menit yang lalu"
+                'status' => $item->status,
+                'disetujui' => $item->manager_approval,
+            ];
+        });
 
-
+        return view('user.dashboard', compact( 'menunggu', 'disetujui', 'aktivitas'));
     }
 
     /**

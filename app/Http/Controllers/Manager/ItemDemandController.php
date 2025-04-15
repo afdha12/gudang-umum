@@ -24,7 +24,7 @@ class ItemDemandController extends Controller
             ->select(
                 'user_id',
                 DB::raw('COUNT(*) as total_pengajuan'),
-                DB::raw('SUM(CASE WHEN status = 0 THEN 1 ELSE 0 END) as item_status'),
+                DB::raw('SUM(CASE WHEN manager_approval = 0 THEN 1 ELSE 0 END) as item_status'),
                 DB::raw('MAX(dos) as last_pengajuan')
             )
             ->groupBy('user_id')
