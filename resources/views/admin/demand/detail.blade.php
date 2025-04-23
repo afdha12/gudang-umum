@@ -13,6 +13,7 @@
                         <th class="py-3 px-4 text-left">Tanggal Permintaan</th>
                         <th class="py-3 px-4 text-left">Nama Barang</th>
                         <th class="py-3 px-4 text-left">Jumlah</th>
+                        <th class="py-3 px-4 text-left">Catatan</th>
                         <th class="py-3 px-4 text-left">Persetujuan Manager</th>
                         {{-- <th class="py-3 px-4 text-left">Status</th> --}}
                         <th class="py-3 px-4 text-left">Action</th>
@@ -25,6 +26,7 @@
                             <td class="py-3 px-4">{{ date('d M Y', strtotime($item->dos)) }}</td>
                             <td class="text-capitalize py-3 px-4">{{ $item->stationery->nama_barang ?? 'Barang tidak ditemukan' }}</td>
                             <td class="py-3 px-4">{{ $item->amount }}</td>
+                            <td class="py-3 px-4">{{ $item->notes }}</td>
                             <td class="py-3 px-4">
                                 @if ($item->manager_approval)
                                     <span class="badge bg-success">Approved</span>
