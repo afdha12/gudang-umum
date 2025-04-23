@@ -1,37 +1,30 @@
 <?php
 
-namespace App\Http\Controllers\Manager;
+namespace App\Http\Controllers\Coo;
 
 use App\Models\ItemDemand;
-use App\Models\Stationery;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
 
-class ItemDemandController extends Controller
+class PengajuanBarangController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $user = auth()->user(); // Mendapatkan user yang sedang login
-
         $data = ItemDemand::with('user')
-            ->whereHas('user', function ($query) use ($user) {
-                $query->where('division_id', $user->division_id);
-            })
             ->select(
                 'user_id',
                 DB::raw('COUNT(*) as total_pengajuan'),
-                DB::raw('SUM(CASE WHEN manager_approval = 0 THEN 1 ELSE 0 END) as item_status'),
+                DB::raw('SUM(CASE WHEN coo_approval = 0 THEN 1 ELSE 0 END) as item_status'),
                 DB::raw('MAX(dos) as last_pengajuan')
             )
             ->groupBy('user_id')
             ->paginate(10);
 
-        return view('manager.demand.index', compact('data'));
+        return view('coo.demands.index', compact('data'));
     }
 
     /**
@@ -57,10 +50,10 @@ class ItemDemandController extends Controller
     {
         $userDemands = ItemDemand::with('user')
             ->where('user_id', $user_id)
-            // ->where('manager_approval', 1)
+            ->where('manager_approval', 1)
             ->paginate(10);
 
-        return view('manager.demand.detail', compact('userDemands'));
+        return view('coo.demands.detail', compact('userDemands'));
     }
 
     /**
@@ -69,13 +62,13 @@ class ItemDemandController extends Controller
     public function edit(string $id)
     {
         $data = ItemDemand::with('stationery')->findOrFail($id);
-        $manager = Auth::user(); // user yang sedang login, diasumsikan role-nya 'manager'
+        // $manager = Auth::user(); // user yang sedang login, diasumsikan role-nya 'manager'
 
         // Optional: pastikan hanya user yang berhak bisa edit
-        if ((int) $data->user->division_id !== (int) $manager->division_id) {
-            abort(403);
-        }
-        if ($data->manager_approval == 1) {
+        // if ((int) $data->user->division_id !== (int) $manager->division_id) {
+        //     abort(403);
+        // }
+        if ($data->coo_approval == 1) {
             return redirect()->back()->with('error', 'Permintaan yang disetujui Manager tidak bisa diedit.');
         }
 
@@ -85,44 +78,40 @@ class ItemDemandController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, string $id)
     {
-        $itemDemand = ItemDemand::with('stationery')->findOrFail($id);
+        $itemDemand = ItemDemand::findOrFail($id);
 
-        // Validasi jumlah permintaan
         $request->validate([
-            'amount' => 'required|integer|min:1',
-            'notes' => 'nullable|string'
+            'notes' => 'nullable|string',
         ]);
 
-        // Update jumlah permintaan
-        $itemDemand->amount = $request->amount;
-
-        // Tambahkan catatan
+        // Tambahkan catatan dengan label 'coo'
         $newNote = trim($request->notes);
         if ($newNote) {
-            $formattedNote = "manager: {$newNote}";
+            $formattedNote = "wadirum: {$newNote}";
             $itemDemand->notes = $itemDemand->notes
                 ? $itemDemand->notes . "\n" . $formattedNote
                 : $formattedNote;
         }
 
-        // Jika tombol yang diklik adalah Setujui
+        // Proses persetujuan atau penolakan
         if ($request->action === 'approve') {
-            $itemDemand->manager_approval = 1; // contoh status approved by manager
+            $itemDemand->coo_approval = 1; // contoh status approved by COO
+        } elseif ($request->action === 'reject') {
+            $itemDemand->rejection = 1; // contoh status ditolak oleh COO
         }
 
         $itemDemand->save();
 
-        return redirect()->route('item_demands.index')
-            ->with('success', 'Permintaan berhasil diperbarui oleh Manager.');
+        return redirect()->route('user_demands.index')
+            ->with('success', 'Permintaan berhasil diproses oleh COO.');
     }
-
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(ItemDemand $itemDemand)
+    public function destroy(string $id)
     {
         //
     }

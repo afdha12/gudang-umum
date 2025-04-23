@@ -108,6 +108,15 @@
                 <p class="text-capitalize"><strong>{{ $admin->name }}</strong></p>
             </div>
         </div>
+        <div class="row text-center mt-5">
+            <div class="col-6">
+                <p class="text-capitalize mb-2">Manager {{ $item->user->division->division_name }}</p>
+                <div class="d-flex justify-content-center align-items-center" style="height: 120px;">
+                    <img src="{{ $manager->getFirstMediaUrl('signature') }}" alt="Tanda Tangan Manager" class="signature align-items-center">
+                </div>
+                <p class="text-capitalize"><strong>{{ $manager->name }}</strong></p>
+            </div>
+        </div>
     </div>
 </body>
 

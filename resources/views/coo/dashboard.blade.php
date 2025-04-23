@@ -1,12 +1,12 @@
 @extends('layouts.main')
 
-@section('title', 'Manager Page')
+@section('title', 'COO Page')
 
 @section('content')
 
     <!-- Status Pengajuan Barang -->
     <div class="row mt-4">
-        <div class="col-md-5">
+        <div class="col-md-6">
             <div class="card">
                 <div class="card-header">Status Pengajuan Barang</div>
                 <div class="card-body">
@@ -18,7 +18,7 @@
         </div>
 
         <!-- Log Aktivitas -->
-        <div class="col-md">
+        <div class="col-md-6">
             <div class="card">
                 <div class="card-header">Log Aktivitas Terbaru</div>
                 <div class="card-body">

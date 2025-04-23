@@ -29,6 +29,8 @@
                 @include('layouts.menu.manager-menu')
             @elseif ($role === 'user')
                 @include('layouts.menu.user-menu')
+            @elseif ($role === 'coo')
+                @include('layouts.menu.coo-menu')
             @endif
         @endif
     @endif

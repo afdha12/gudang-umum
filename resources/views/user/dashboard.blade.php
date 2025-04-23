@@ -6,7 +6,7 @@
 
     <!-- Status Pengajuan Barang -->
     <div class="row mt-4">
-        <div class="col-md-6">
+        <div class="col-md-5">
             <div class="card">
                 <div class="card-header">Status Pengajuan Barang</div>
                 <div class="card-body">
@@ -18,7 +18,7 @@
         </div>
 
         <!-- Log Aktivitas -->
-        <div class="col-md-6">
+        <div class="col-md">
             <div class="card">
                 <div class="card-header">Log Aktivitas Terbaru</div>
                 <div class="card-body">
@@ -26,7 +26,7 @@
                         @forelse($aktivitas as $log)
                             <li class="list-group-item">
                                 Mengajukan <strong>{{ $log['nama_barang'] }}</strong>
-                                sebanyak <strong>{{ $log['jumlah'].' '. $log['satuan'] }}</strong>,
+                                sebanyak <strong>{{ $log['jumlah'] . ' ' . $log['satuan'] }}</strong>,
                                 {{ $log['waktu'] }}
                                 - Status:
                                 {{ $log['disetujui'] ? 'Disetujui' : 'Menunggu persetujuan' }}
@@ -54,7 +54,6 @@
                 </div>
             </div>
         </div>
-    </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

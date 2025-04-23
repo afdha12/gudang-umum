@@ -21,6 +21,7 @@ class ItemDemandController extends Controller
 
         // $data = ItemDemand::paginate(10);
         $data = ItemDemand::with('user')
+        ->where('coo_approval', 1)
             ->select(
                 'user_id',
                 DB::raw('COUNT(*) as total_pengajuan'),
@@ -56,7 +57,7 @@ class ItemDemandController extends Controller
     {
         $userDemands = ItemDemand::with('user')
             ->where('user_id', $user_id)
-            // ->where('manager_approval', 1)
+            ->where('coo_approval', 1)
             ->paginate(10);
 
         return view('admin.demand.detail', compact('userDemands'));
@@ -78,7 +79,7 @@ class ItemDemandController extends Controller
         $pengajuan = ItemDemand::findOrFail($id);
 
         // Cek apakah sudah mendapat persetujuan dari manager
-        if ($pengajuan->manager_approval == 0) {
+        if ($pengajuan->coo_approval == 0) {
             return redirect()->back()->with('error', 'Pengajuan belum disetujui oleh manager.');
         }
 

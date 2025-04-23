@@ -20,5 +20,13 @@ class UserSeeders extends Seeder
             'role'=>'admin',
             'password'=>bcrypt('Hermina32'),
         ]);
+
+        User::insert([
+            'name'=>'Arief Sukmawan',
+            'username'=>'arief',
+            'email'=>'arief@gmail.com',
+            'role'=>'coo',
+            'password'=>bcrypt('Hermina32'),
+        ]);
     }
 }

@@ -19,8 +19,8 @@ class DashboardController extends Controller
         $barangKeluar = BarangHistory::where('jenis', 'keluar')->sum('jumlah');
 
         // Grafik Status Pengajuan Barang
-        $pengajuanDisetujui = ItemDemand::where('status', 1)->count();
-        $pengajuanBelumDisetujui = ItemDemand::where('status', 0)->count();
+        $pengajuanDisetujui = ItemDemand::where('coo_approval',1)->where('status', 1)->count();
+        $pengajuanBelumDisetujui = ItemDemand::where('coo_approval',1)->where('status', 0)->count();
 
         // Ambil 10 aktivitas terbaru dari tabel history
         $logAktivitas = BarangHistory::with('stationery') // jika ada relasi barang

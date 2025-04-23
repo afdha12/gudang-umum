@@ -18,6 +18,7 @@
                         <th class="py-3 px-4 text-left">Nama Barang</th>
                         <th class="py-3 px-4 text-left">Satuan</th>
                         <th class="py-3 px-4 text-left">Jumlah</th>
+                        <th class="py-3 px-4 text-left">Catatan</th>
                         <th class="py-3 px-4">Status</th>
                         {{-- <th class="py-3 px-4">Stok</th> --}}
                         <th class="py-3 px-4 text-center">Action</th>
@@ -34,6 +35,7 @@
                             <td class="py-3 px-4 text-uppercase">
                                 {{ $item->stationery['satuan'] ?? 'Barang tidak ditemukan' }}</td>
                             <td class="py-3 px-4">{{ $item->amount }}</td>
+                            <td class="py-3 px-4">{{ $item->notes }}</td>
                             <td class="py-3 px-4">
                                 @if ($item->status == 0)
                                     <span class="badge bg-warning">Belum Disetujui</span>

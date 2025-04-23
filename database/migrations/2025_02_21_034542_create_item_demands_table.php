@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -17,7 +16,10 @@ return new class extends Migration
             $table->string('stationery_id');
             $table->string('amount');
             $table->date('dos');
+            $table->text('notes')->nullable();
+            $table->boolean('manager_reject')->default(false);
             $table->boolean('manager_approval')->default(0);
+            $table->boolean('coo_approval')->default(0);
             $table->boolean('status')->default(0);
             // $table->string('satuan')->nullable();
             // $table->integer('masuk')->nullable();

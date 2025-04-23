@@ -14,7 +14,7 @@
                         <th class="py-3 px-4 text-left">Nama Barang</th>
                         <th class="py-3 px-4 text-left">Jumlah</th>
                         <th class="py-3 px-4 text-left">Persetujuan Manager</th>
-                        {{-- <th class="py-3 px-4 text-left">Status</th> --}}
+                        <th class="py-3 px-4 text-left">Status</th>
                         <th class="py-3 px-4 text-left">Action</th>
                     </tr>
                 </thead>
@@ -23,36 +23,34 @@
                         <tr>
                             <td class="py-3 px-4">{{ $loop->iteration }}</td>
                             <td class="py-3 px-4">{{ date('d M Y', strtotime($item->dos)) }}</td>
-                            <td class="text-capitalize py-3 px-4">{{ $item->stationery->nama_barang ?? 'Barang tidak ditemukan' }}</td>
+                            <td class="py-3 px-4">{{ $item->stationery->nama_barang ?? 'Barang tidak ditemukan' }}</td>
                             <td class="py-3 px-4">{{ $item->amount }}</td>
                             <td class="py-3 px-4">
-                                @if ($item->manager_approval)
-                                    <span class="badge bg-success">Approved</span>
+                                @if ($item->coo_approval)
+                                    <span class="badge bg-success">Disetujui</span>
                                 @else
-                                    <span class="badge bg-warning">Waiting</span>
+                                    <span class="badge bg-warning">Menunggu</span>
                                 @endif
                             </td>
-                            {{-- <td class="py-3 px-4">
+                            <td class="py-3 px-4">
                                 @if ($item->status == 0)
                                     <span class="badge bg-warning">Belum Disetujui</span>
                                 @else
-                                    <span class="badge bg-success">Approved</span>
+                                    <span class="badge bg-success">Disetujui</span>
                                 @endif
-                            </td> --}}
                             <td class="py-3 px-4">
-                                @if (!$item->status)
-                                    @if ($item->manager_approval == 1)
-                                        <form action="{{ route('demand.update', $item->id) }}" method="POST"
-                                            class="approve-form d-inline">
-                                            @csrf
-                                            @method('PUT')
-                                            <button type="button" class="btn btn-outline-primary btn-sm approve-btn">
-                                                <i class="bi bi-check-lg"></i> Setujui
-                                            </button>
-                                        </form>
-                                    @else
-                                        <button class="btn btn-danger btn-sm" disabled>Menunggu Approval</button>
-                                    @endif
+                                <a href="{{ route('user_demands.edit', ['user_demand' => $item->id, 'user_id' => $item->user_id]) }}"
+                                    class="btn btn-outline-primary btn-sm mr-2">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                @if (!$item->coo_approval)
+                                    <form action="{{ route('user_demands.update', $item->id) }}" method="POST"
+                                        class="approve-form d-inline">
+                                        @csrf
+                                        @method('PUT')
+                                        <button type="button" class="btn btn-outline-primary btn-sm approve-btn"><i
+                                                class="bi bi-check-lg"></i>Setujui</button>
+                                    </form>
                                 @else
                                     <button class="btn btn-secondary btn-sm" disabled>Sudah Disetujui</button>
                                 @endif
@@ -67,6 +65,36 @@
         </div>
     </div>
 
+    @if (session('error'))
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: '{{ session('error') }}'
+            });
+        </script>
+    @endif
+
+    @if (session('success'))
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: '{{ session('success') }}'
+            });
+        </script>
+    @endif
+
+    @if (session('warning'))
+        <script>
+            Swal.fire({
+                icon: 'warning',
+                title: 'Perhatian!',
+                text: '{{ session('warning') }}'
+            });
+        </script>
+    @endif
+
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             document.querySelectorAll('.approve-btn').forEach(button => {
@@ -75,7 +103,7 @@
 
                     Swal.fire({
                         title: 'Apakah Anda yakin?',
-                        text: "Setelah disetujui, stok akan dikurangi dan tidak bisa dibatalkan!",
+                        text: "Setujui Permintaan Barang ini?",
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#3085d6',

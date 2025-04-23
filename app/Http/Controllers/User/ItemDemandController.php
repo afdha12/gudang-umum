@@ -84,7 +84,7 @@ class ItemDemandController extends Controller
             return redirect()->back()->with('error', 'Permintaan yang disetujui Manager tidak bisa diedit.');
         }
 
-        return view('user.demand.edit', compact('data'));
+        return view('manager.demand.edit', compact('data'));
 
     }
 
@@ -110,7 +110,7 @@ class ItemDemandController extends Controller
             'user_id' => auth()->id(), // Bisa juga tetap pakai $request->user_id jika ingin fleksibel
             'stationery_id' => $request->stationery_id,
             'amount' => $request->amount,
-            'dos' => $request->dos,
+            // 'dos' => $request->dos,
         ]);
 
         return redirect()->route('item-demand.index')->with('success', 'Pengajuan berhasil diperbarui!');
