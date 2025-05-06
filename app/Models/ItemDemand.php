@@ -26,4 +26,32 @@ class ItemDemand extends Model
     {
         return $this->belongsTo(Stationery::class, 'stationery_id');
     }
+
+    public function getTotalHargaFormattedAttribute()
+    {
+        $harga = $this->stationery ? $this->stationery->harga_barang : 0;
+        $total = $harga * $this->amount;
+
+        return 'Rp ' . number_format($total, 0, ',', '.');
+    }
+
+    // App\Models\ItemDemand.php
+
+    public function getProgressPersetujuanAttribute()
+    {
+        if ($this->manager_approval === 0) {
+            return 'Menunggu persetujuan Manager';
+        }
+
+        if ($this->coo_approval === 0) {
+            return 'Menunggu persetujuan Wadirum';
+        }
+
+        if ($this->status === 0) {
+            return 'Menunggu persetujuan Gudang';
+        }
+
+        return 'Disetujui semua pihak';
+    }
+
 }

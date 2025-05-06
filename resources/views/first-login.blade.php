@@ -30,18 +30,18 @@
                 @enderror
             </div>
 
-            @if (auth()->user()->role === 'manager' || auth()->user()->role === 'admin')
-                <div class="mb-4">
+            <div class="mb-4">
+                @if (auth()->user()->role !== 'user')
                     <label for="signature" class="form-label">Upload Tanda Tangan (PNG)</label>
                     {{-- <input type="file" name="signature" class="form-control" accept="image/png"> --}}
                     <img class="img-preview img-fluid mb-3 col-sm-5">
                     <input class="form-control" type="file" accept="image/png" id="signature" name="signature"
                         onchange="previewImage()">
-                    @error('signature')
-                        <div class="text-danger">{{ $message }}</div>
-                    @enderror
-                </div>
-            @endif
+                @endif
+                @error('signature')
+                    <div class="text-danger">{{ $message }}</div>
+                @enderror
+            </div>
 
             <button type="submit" class="btn btn-primary">Simpan</button>
         </form>

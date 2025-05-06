@@ -83,8 +83,8 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users,username,' . $id,
             'email' => 'required|string|email|max:255',
-            'role' => 'required|in:admin,user,manager',
-            'division_id' => 'required|integer',
+            'role' => 'nullable|in:admin,user,manager,coo',
+            'division_id' => 'nullable|integer',
         ]);
 
         // Cek apakah reset password dicentang

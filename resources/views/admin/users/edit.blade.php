@@ -37,7 +37,7 @@
                     <div class="mb-4">
                         <label for="division" class="form-label">Divisi</label>
                         <div class="input-group">
-                            <select name="division_id" id="division_id" class="form-control text-uppercase" required>
+                            <select name="division_id" id="division_id" class="form-control text-uppercase">
                                 <option value="">-- Pilih Divisi --</option>
                                 @foreach ($divisions as $division)
                                     <option value="{{ $division->id }}" @if ($division->id == $data->division_id) selected @endif>
@@ -58,11 +58,11 @@
                 <div class="col-5">
                     <div class="mb-4">
                         <label for="role" class="form-label">Role</label>
-                        <select name="role" id="role" class="form-control text-uppercase" required>
+                        <select name="role" id="role" class="form-control text-uppercase">
                             {{-- <option value="">-- Pilih Divisi --</option> --}}
                             @foreach ($roles as $role)
-                                <option value="{{ $role }}" @if ($role == $data->role) selected @endif>
-                                    {{ $role }}</option>
+                                <option value="{{ $role ?? 'coo' }}" @if ($role == $data->role) selected @endif>
+                                    {{ $role ?? 'Belum dipilih' }}</option>
                             @endforeach
                         </select>
                         {{-- <input type="text" class="form-control" id="role" name="role"

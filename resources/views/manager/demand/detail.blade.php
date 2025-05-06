@@ -14,8 +14,8 @@
                         <th class="py-3 px-4 text-left">Nama Barang</th>
                         <th class="py-3 px-4 text-left">Jumlah</th>
                         <th class="py-3 px-4 text-left">Catatan</th>
-                        {{-- <th class="py-3 px-4 text-left">Persetujuan Manager</th>
-                        <th class="py-3 px-4 text-left">Status</th> --}}
+                        {{-- <th class="py-3 px-4 text-left">Persetujuan Manager</th> --}}
+                        <th class="py-3 px-4 text-left">Status</th>
                         <th class="py-3 px-4 text-left">Action</th>
                     </tr>
                 </thead>
@@ -26,20 +26,14 @@
                             <td class="py-3 px-4">{{ date('d M Y', strtotime($item->dos)) }}</td>
                             <td class="text-capitalize py-3 px-4">{{ $item->stationery->nama_barang ?? 'Barang tidak ditemukan' }}</td>
                             <td class="py-3 px-4">{{ $item->amount }}</td>
-                            <td class="py-3 px-4">{{ $item->notes }}</td>
-                            {{-- <td class="py-3 px-4">
+                            <td class="py-3 px-4" style="white-space: pre-line;">{{ $item->notes }}</td>
+                            <td class="py-3 px-4">
                                 @if ($item->manager_approval)
                                     <span class="badge bg-success">Disetujui</span>
                                 @else
                                     <span class="badge bg-warning">Menunggu</span>
                                 @endif
                             </td>
-                            <td class="py-3 px-4">
-                                @if ($item->status == 0)
-                                    <span class="badge bg-warning">Belum Disetujui</span>
-                                @else
-                                    <span class="badge bg-success">Disetujui</span>
-                                @endif --}}
                             <td class="py-3 px-4">
                                 <a href="{{ route('item_demands.edit', ['item_demand' => $item->id, 'user_id' => $item->user_id]) }}"
                                     class="btn btn-outline-primary btn-sm mr-2"><i class="bi bi-pencil"></i></a>

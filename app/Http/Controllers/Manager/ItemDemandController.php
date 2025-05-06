@@ -114,7 +114,7 @@ class ItemDemandController extends Controller
 
         $itemDemand->save();
 
-        return redirect()->route('item_demands.index')
+        return redirect()->route('item_demands.show', $itemDemand->user_id)
             ->with('success', 'Permintaan berhasil diperbarui oleh Manager.');
     }
 

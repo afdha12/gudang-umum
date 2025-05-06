@@ -68,6 +68,8 @@
                     <tr>
                         <th>No</th>
                         <th>Tanggal Pengajuan</th>
+                        <th>Nama Pengaju</th>
+                        <th>Unit/Divisi</th>
                         <th>Nama Barang</th>
                         <th>Jumlah</th>
                     </tr>
@@ -77,14 +79,16 @@
                         <tr>
                             <td>{{ $index + 1 }}</td>
                             <td>{{ date('d M Y', strtotime($item->dos)) }}</td>
+                            <td class="text-capitalize p-3">{{ $item->user->name }}</td>
+                            <td class="text-uppercase p-3">{{ $item->user->division->division_name }}</td>
                             <td class="text-uppercase">{{ $item->stationery->nama_barang }}</td>
                             <td>{{ $item->amount }}</td>
                         </tr>
                     @endforeach
                     <!-- Baris total -->
                     <tr>
-                        <td colspan="2"></td>
-                        <td><strong>Total</strong></td>
+                        {{-- <td colspan="5"></td> --}}
+                        <td colspan="5"><strong>Total</strong></td>
                         <td><strong>{{ $totalJumlah }}</strong></td>
                     </tr>
                 </tbody>
@@ -108,13 +112,13 @@
                 <p class="text-capitalize"><strong>{{ $admin->name }}</strong></p>
             </div>
         </div>
-        <div class="row text-center mt-5">
+        <div class="row d-flex justify-content-center text-center mt-5">
             <div class="col-6">
-                <p class="text-capitalize mb-2">Manager {{ $item->user->division->division_name }}</p>
+                <p class="text-capitalize mb-2">Wadir</p>
                 <div class="d-flex justify-content-center align-items-center" style="height: 120px;">
-                    <img src="{{ $manager->getFirstMediaUrl('signature') }}" alt="Tanda Tangan Manager" class="signature align-items-center">
+                    <img src="{{ $coo->getFirstMediaUrl('signature') }}" alt="Tanda Tangan Manager" class="signature align-items-center">
                 </div>
-                <p class="text-capitalize"><strong>{{ $manager->name }}</strong></p>
+                <p class="text-capitalize"><strong>{{ $coo->name }}</strong></p>
             </div>
         </div>
     </div>

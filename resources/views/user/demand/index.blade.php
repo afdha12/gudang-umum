@@ -35,14 +35,8 @@
                             <td class="py-3 px-4 text-uppercase">
                                 {{ $item->stationery['satuan'] ?? 'Barang tidak ditemukan' }}</td>
                             <td class="py-3 px-4">{{ $item->amount }}</td>
-                            <td class="py-3 px-4">{{ $item->notes }}</td>
-                            <td class="py-3 px-4">
-                                @if ($item->status == 0)
-                                    <span class="badge bg-warning">Belum Disetujui</span>
-                                @else
-                                    <span class="badge bg-success">Disetujui</span>
-                                @endif
-                            </td>
+                            <td class="py-3 px-4" style="white-space: pre-line;">{{ $item->notes ?? 'Belum ada catatan' }}</td>
+                            <td class="py-3 px-4">{{ $item->progress_persetujuan }}</td>
                             <td class="py-3 px-4 text-center">
                                 @if ($item->manager_approval == 0)
                                     <a href="{{ route('item-demand.edit', $item->id) }}"

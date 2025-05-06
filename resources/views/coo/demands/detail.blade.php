@@ -12,8 +12,9 @@
                         <th class="py-3 px-4 text-left">No</th>
                         <th class="py-3 px-4 text-left">Tanggal Permintaan</th>
                         <th class="py-3 px-4 text-left">Nama Barang</th>
+                        <th class="py-3 px-4 text-left">Harga Barang</th>
                         <th class="py-3 px-4 text-left">Jumlah</th>
-                        <th class="py-3 px-4 text-left">Persetujuan Manager</th>
+                        <th class="py-3 px-4 text-left">Subtotal</th>
                         <th class="py-3 px-4 text-left">Status</th>
                         <th class="py-3 px-4 text-left">Action</th>
                     </tr>
@@ -23,27 +24,31 @@
                         <tr>
                             <td class="py-3 px-4">{{ $loop->iteration }}</td>
                             <td class="py-3 px-4">{{ date('d M Y', strtotime($item->dos)) }}</td>
-                            <td class="py-3 px-4">{{ $item->stationery->nama_barang ?? 'Barang tidak ditemukan' }}</td>
+                            <td class="py-3 px-4 text-capitalize">{{ $item->stationery->nama_barang ?? 'Barang tidak ditemukan' }}</td>
+                            <td class="py-3 px-4">{{ $item->stationery->formatted_harga ?? 'Barang tidak ditemukan' }}</td>
                             <td class="py-3 px-4">{{ $item->amount }}</td>
+                            <td class="py-3 px-4">{{ $item->total_harga_formatted }}</td>
                             <td class="py-3 px-4">
                                 @if ($item->coo_approval)
-                                    <span class="badge bg-success">Disetujui</span>
+                                    <span class="badge bg-success">Approved</span>
                                 @else
-                                    <span class="badge bg-warning">Menunggu</span>
+                                    <span class="badge bg-warning">Pending</span>
                                 @endif
                             </td>
                             <td class="py-3 px-4">
-                                @if ($item->status == 0)
-                                    <span class="badge bg-warning">Belum Disetujui</span>
+                                @if ($item->coo_approval == 0)
+                                    <a href="{{ route('user_demands.edit', ['user_demand' => $item->id, 'user_id' => $item->user_id]) }}"
+                                        class="btn btn-outline-primary btn-sm mr-2">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
                                 @else
-                                    <span class="badge bg-success">Disetujui</span>
+                                    <span class="text-muted">Terkunci</span>
                                 @endif
-                            <td class="py-3 px-4">
-                                <a href="{{ route('user_demands.edit', ['user_demand' => $item->id, 'user_id' => $item->user_id]) }}"
+                                {{-- <a href="{{ route('user_demands.edit', ['user_demand' => $item->id, 'user_id' => $item->user_id]) }}"
                                     class="btn btn-outline-primary btn-sm mr-2">
                                     <i class="bi bi-pencil"></i>
-                                </a>
-                                @if (!$item->coo_approval)
+                                </a> --}}
+                                {{-- @if (!$item->coo_approval)
                                     <form action="{{ route('user_demands.update', $item->id) }}" method="POST"
                                         class="approve-form d-inline">
                                         @csrf
@@ -53,7 +58,7 @@
                                     </form>
                                 @else
                                     <button class="btn btn-secondary btn-sm" disabled>Sudah Disetujui</button>
-                                @endif
+                                @endif --}}
                             </td>
                         </tr>
                     @endforeach

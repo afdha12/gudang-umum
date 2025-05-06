@@ -21,7 +21,7 @@ class ItemDemandController extends Controller
 
         // $data = ItemDemand::paginate(10);
         $data = ItemDemand::with('user')
-        ->where('coo_approval', 1)
+            ->where('coo_approval', 1)
             ->select(
                 'user_id',
                 DB::raw('COUNT(*) as total_pengajuan'),
@@ -66,17 +66,38 @@ class ItemDemandController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(ItemDemand $itemDemand)
+    public function edit(string $id)
     {
-        //
+        $data = ItemDemand::with('stationery')->findOrFail($id);
+        // $manager = Auth::user(); // user yang sedang login, diasumsikan role-nya 'manager'
+
+        // Optional: pastikan hanya user yang berhak bisa edit
+        // if ((int) $data->user->division_id !== (int) $manager->division_id) {
+        //     abort(403);
+        // }
+        if ($data->status == 1) {
+            return redirect()->back()->with('error', 'Permintaan yang sudah disetujui tidak bisa diedit.');
+        }
+
+        return view('manager.demand.edit', compact('data'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update($id)
+    public function update(Request $request, $id)
     {
-        $pengajuan = ItemDemand::findOrFail($id);
+        // $pengajuan = ItemDemand::findOrFail($id);
+        $pengajuan = ItemDemand::with('stationery')->findOrFail($id);
+
+        // Validasi jumlah permintaan
+        $request->validate([
+            'amount' => 'required|integer|min:1',
+            'notes' => 'nullable|string'
+        ]);
+
+        // Update jumlah permintaan
+        $pengajuan->amount = $request->amount;
 
         // Cek apakah sudah mendapat persetujuan dari manager
         if ($pengajuan->coo_approval == 0) {
@@ -100,12 +121,27 @@ class ItemDemandController extends Controller
                     'jumlah' => $pengajuan->amount,
                     'tanggal' => now(),
                 ]);
-                
+
+                // Tambahkan catatan
+                $newNote = trim($request->notes);
+                if ($newNote) {
+                    $formattedNote = "gudang: {$newNote}";
+                    $pengajuan->notes = $pengajuan->notes
+                        ? $pengajuan->notes . "\n" . $formattedNote
+                        : $formattedNote;
+                }
+
+                // Jika tombol yang diklik adalah Setujui
+                if ($request->action === 'approve') {
+                    $pengajuan->status = 1; // contoh status approved by manager
+                }
+
                 // Update status pengajuan
                 $pengajuan->status = 1;
                 $pengajuan->save();
 
-                return redirect()->back()->with('success', 'Pengajuan disetujui dan stok telah dikurangi.');
+                return redirect()->route('demand.show', $pengajuan->user_id)
+                    ->with('success', 'Permintaan berhasil diperbarui oleh Manager.');
             } else {
                 return redirect()->back()->with('error', 'Stok tidak mencukupi.');
             }

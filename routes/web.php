@@ -11,7 +11,7 @@ use App\Http\Controllers\ItemDemandController;
 use App\Http\Controllers\Admin\StockController;
 use App\Http\Controllers\Admin\DivisionController;
 use App\Http\Controllers\Admin\StationeryController;
-use App\Http\Controllers\User\PrintDemandController;
+use App\Http\Controllers\Admin\PrintDemandController;
 use App\Http\Controllers\Manager\DashboardController;
 use App\Http\Controllers\Coo\PengajuanBarangController;
 use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
@@ -44,7 +44,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/get-stationery', [ApiController::class, 'getStationeryByJenis'])->name('getStationeryByJenis');
         // Route::resource('data-pengajuan', PengajuanBarangController::class);
         Route::resource('item-demand', UserItemDemandController::class);
-        Route::resource('print', PrintDemandController::class);
     });
 
     // Route untuk Manager
@@ -70,7 +69,8 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('users-management', UserController::class);
         Route::resource('stationeries', StationeryController::class);
         Route::resource('demand', AdminItemDemandController::class);
-        Route::resource('list_demands', StockController::class);
+        // Route::resource('list_demands', StockController::class);
+        Route::resource('list_demands', PrintDemandController::class);
         Route::resource('divisions', DivisionController::class);
     });
 });

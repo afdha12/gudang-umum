@@ -15,6 +15,7 @@ class PengajuanBarangController extends Controller
     public function index()
     {
         $data = ItemDemand::with('user')
+            ->where('manager_approval', 1) // Hanya menampilkan permintaan yang belum disetujui oleh COO
             ->select(
                 'user_id',
                 DB::raw('COUNT(*) as total_pengajuan'),
@@ -83,8 +84,12 @@ class PengajuanBarangController extends Controller
         $itemDemand = ItemDemand::findOrFail($id);
 
         $request->validate([
+            'amount' => 'required|integer|min:1',
             'notes' => 'nullable|string',
         ]);
+
+        // Update jumlah permintaan
+        $itemDemand->amount = $request->amount;
 
         // Tambahkan catatan dengan label 'coo'
         $newNote = trim($request->notes);
@@ -104,7 +109,7 @@ class PengajuanBarangController extends Controller
 
         $itemDemand->save();
 
-        return redirect()->route('user_demands.index')
+        return redirect()->route('user_demands.show', $itemDemand->user_id)
             ->with('success', 'Permintaan berhasil diproses oleh COO.');
     }
 

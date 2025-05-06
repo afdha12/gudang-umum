@@ -41,6 +41,7 @@
                     <label for="role" class="form-label">Role</label>
                     <select name="role" class="form-control" required>
                         <option value="user">Staff</option>
+                        <option value="coo">COO</option>
                         <option value="manager">Manager</option>
                         {{-- <option value="admin">Admin</option> --}}
                     </select>
@@ -105,7 +106,7 @@
                 <div class="modal-body">
                     <form id="addDivisionForm">
                         @csrf
-                        <input type="text" id="newDivisionName" name="division_name" class="form-control"
+                        <input type="text" id="newDivisionName" name="division_name" class="form-control text-uppercase"
                             placeholder="Nama Divisi" required>
                     </form>
                 </div>

@@ -64,19 +64,23 @@
                     {{-- Jumlah --}}
                     <div class="mb-3">
                         <label class="form-label">Jumlah Permintaan</label>
-                        @if ($editableByUser || auth()->user()->role === 'manager')
+                        {{-- @if ($editableByUser || auth()->user()->role === 'manager')
                             <input type="number" name="amount" id="jumlah" class="form-control"
                                 value="{{ $data->amount }}">
                         @else
                             <input type="text" class="form-control" value="{{ $data->amount }}" disabled>
-                        @endif
+                        @endif --}}
+                        <input type="number" name="amount" id="jumlah" class="form-control"
+                            value="{{ $data->amount }}">
                     </div>
 
                     {{-- Tambah Catatan --}}
-                    <div class="mb-3">
-                        <label for="notes" class="form-label">Tambah Catatan</label>
-                        <textarea name="notes" class="form-control" rows="3" placeholder="Tuliskan catatan tambahan..."></textarea>
-                    </div>
+                    @if (!$isUser)
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Tambah Catatan</label>
+                            <textarea name="notes" class="form-control" rows="3" placeholder="Tuliskan catatan tambahan..."></textarea>
+                        </div>
+                    @endif
 
                     {{-- Riwayat Catatan --}}
                     @if ($data->notes)
@@ -94,12 +98,6 @@
                             <button name="action" value="approve" class="btn btn-success">
                                 <i class="bi bi-check-circle"></i> Setujui
                             </button>
-
-                            @if (auth()->user()->role !== 'manager')
-                                <button name="action" value="reject" class="btn btn-danger">
-                                    <i class="bi bi-x-circle"></i> Tolak
-                                </button>
-                            @endif
                         @else
                             @if ($editableByUser)
                                 <button type="submit" class="btn btn-primary">
@@ -110,7 +108,15 @@
                             @endif
                         @endif
 
-                        <a href="{{ route($rolePrefix . '.show', $data->id) }}" class="btn btn-secondary">Kembali</a>
+                        @if (auth()->user()->role === 'user')
+                            <a href="{{ route($rolePrefix . '.index') }}" class="btn btn-secondary">Kembali</a>
+                        @else
+                            <a href="{{ route($rolePrefix . '.show', $data->user_id) }}"
+                                class="btn btn-secondary">Kembali</a>
+                        @endif
+
+
+                        {{-- <a href="{{ route($rolePrefix . '.show', $data->id) }}" class="btn btn-secondary">Kembali</a> --}}
                     </div>
                 </form>
             </div>
