@@ -61,8 +61,8 @@
                         <select name="role" id="role" class="form-control text-uppercase">
                             {{-- <option value="">-- Pilih Divisi --</option> --}}
                             @foreach ($roles as $role)
-                                <option value="{{ $role ?? 'coo' }}" @if ($role == $data->role) selected @endif>
-                                    {{ $role ?? 'Belum dipilih' }}</option>
+                                <option value="{{ $role }}" @if ($role == $data->role) selected @endif>
+                                    {{ $role }}</option>
                             @endforeach
                         </select>
                         {{-- <input type="text" class="form-control" id="role" name="role"
