@@ -6,12 +6,10 @@ WORKDIR /app
 # Install PHP extensions
 RUN apt update && apt install -y \
     zip libzip-dev libjpeg-dev libpng-dev libfreetype6-dev \
-    libonig-dev libxml2-dev unzip git curl && \
+    libonig-dev libxml2-dev unzip git curl gnupg ca-certificates \
+    chromium chromium-driver nodejs npm && \
     docker-php-ext-install pdo pdo_mysql mbstring zip exif bcmath gd && \
-    docker-php-ext-enable zip exif \
-    curl gnupg ca-certificates unzip git \
-    chromium chromium-driver \
-    nodejs npm
+    docker-php-ext-enable zip exif 
 
 # Copy source code
 COPY . /app
