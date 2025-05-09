@@ -57,7 +57,7 @@
                             </td>
                             <td class="p-3">{{ $index + 1 }}</td>
                             <td class="text-capitalize p-3">{{ $item->user->name }}</td>
-                            <td class="text-capitalize p-3">{{ $item->stationery->nama_barang }}</td>
+                            <td class="text-capitalize p-3">{{ $item->stationery->nama_barang ?? 'Barang tidak ditemukan' }}</td>
                             <td class="text-uppercase p-3">{{ $item->user->division->division_name }}</td>
                             <td class="p-3">{{ $item->amount }}</td>
                             <td class="p-3">{{ date('d M Y', strtotime($item->dos)) }}</td>
