@@ -140,34 +140,38 @@ class StationeryController extends Controller
             'satuan' => 'required|string|max:255',
             'stok' => 'required|integer',
             'masuk' => 'nullable|integer',
+            'tambah' => 'nullable|integer', // pastikan ini divalidasi juga
         ]);
 
-        // Format harga_barang agar hanya angka (menghapus karakter non-digit)
+        // Format harga_barang agar hanya angka
         $validated['harga_barang'] = preg_replace('/\D/', '', $request->harga_barang);
 
-        // Update stok dan jumlah masuk berdasarkan input tambah
-        $validated['stok'] = $stationery->stok + $request->tambah;
-        $validated['masuk'] = $stationery->masuk + $request->tambah;
+        if ($request->filled('tambah') && $request->tambah > 0) {
+            // Jika menambah stok
+            $validated['stok'] = $stationery->stok + $request->tambah;
+            $validated['masuk'] = $stationery->masuk + $request->tambah;
 
-        // Simpan perubahan
+            // Simpan ke history
+            BarangHistory::create([
+                'stationery_id' => $stationery->id,
+                'jenis' => 'masuk',
+                'jumlah' => $request->tambah,
+                'tanggal' => now(),
+            ]);
+        } else {
+            // Tidak menambah stok, pakai stok lama
+            $validated['stok'] = $stationery->stok;
+            $validated['masuk'] = $stationery->masuk;
+        }
+
         $stationery->update($validated);
 
-        // Simpan ke history
-        BarangHistory::create([
-            'stationery_id' => $stationery->id,
-            'jenis' => 'masuk',
-            'jumlah' => $request->tambah,
-            'tanggal' => now(),
-        ]);
-
-
-        // Tentukan tipe berdasarkan jenis_barang (1 = stationeries, 2 = supplies)
         $type = $stationery->jenis_barang;
 
-        // Redirect ke halaman index sesuai jenis barang
         return redirect()->route('stationeries.index', ['type' => $type])
             ->with('success', 'Stationery berhasil diperbarui.');
     }
+
 
     /**
      * Remove the specified resource from storage.
