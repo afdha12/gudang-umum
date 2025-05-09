@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('divisions', function (Blueprint $table) {
             $table->id();
             $table->string('division_name');
+            $table->boolean('managed_by_coo')->default(false);
             $table->timestamps();
         });
     }

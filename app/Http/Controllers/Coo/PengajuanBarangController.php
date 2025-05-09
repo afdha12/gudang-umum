@@ -15,7 +15,15 @@ class PengajuanBarangController extends Controller
     public function index()
     {
         $data = ItemDemand::with('user')
-            ->where('manager_approval', 1) // Hanya menampilkan permintaan yang belum disetujui oleh COO
+            ->where(function ($query) {
+                $query->where('manager_approval', 1)
+                    ->orWhere(function ($q) {
+                        $q->where('manager_approval', 0)
+                            ->whereHas('user.division', function ($d) {
+                                $d->where('managed_by_coo', true);
+                            });
+                    });
+            })
             ->select(
                 'user_id',
                 DB::raw('COUNT(*) as total_pengajuan'),
@@ -27,6 +35,7 @@ class PengajuanBarangController extends Controller
 
         return view('coo.demands.index', compact('data'));
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -51,7 +60,15 @@ class PengajuanBarangController extends Controller
     {
         $userDemands = ItemDemand::with('user')
             ->where('user_id', $user_id)
-            ->where('manager_approval', 1)
+            ->where(function ($query) {
+                $query->where('manager_approval', 1)
+                    ->orWhere(function ($q) {
+                        $q->where('manager_approval', 0)
+                            ->whereHas('user.division', function ($d) {
+                                $d->where('managed_by_coo', true);
+                            });
+                    });
+            })
             ->paginate(10);
 
         return view('coo.demands.detail', compact('userDemands'));
@@ -103,8 +120,6 @@ class PengajuanBarangController extends Controller
         // Proses persetujuan atau penolakan
         if ($request->action === 'approve') {
             $itemDemand->coo_approval = 1; // contoh status approved by COO
-        } elseif ($request->action === 'reject') {
-            $itemDemand->rejection = 1; // contoh status ditolak oleh COO
         }
 
         $itemDemand->save();

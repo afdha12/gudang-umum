@@ -7,7 +7,13 @@
     <div class="max-h-200 overflow-y-auto border shadow-lg rounded-lg">
         <div class="m-3">
             <a class="btn btn-primary" href="{{ route('users-management.create', ['type' => 'supplies']) }}">Tambah User</a>
+            <a class="btn btn-secondary" href="#" data-bs-toggle="modal" data-bs-target="#selectDivisionsModal">Pengaturan Unit</a>
         </div>
+
+        <div>
+            @include('partials.division-manager')
+        </div>
+
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead class="bg-gray-200 sticky top-0">

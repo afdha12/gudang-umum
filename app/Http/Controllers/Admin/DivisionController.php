@@ -63,9 +63,17 @@ class DivisionController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Division $division)
+    public function update(Request $request)
     {
-        //
+        $selectedIds = $request->input('coo_divisions', []);
+
+        // Reset semua divisi
+        Division::query()->update(['managed_by_coo' => false]);
+
+        // Tandai yang dipilih
+        Division::whereIn('id', $selectedIds)->update(['managed_by_coo' => true]);
+
+        return redirect()->back()->with('success', 'Divisi yang dikelola COO berhasil diperbarui.');
     }
 
     /**

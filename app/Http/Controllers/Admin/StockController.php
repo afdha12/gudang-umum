@@ -13,9 +13,9 @@ class StockController extends Controller
      */
     public function index()
     {
-        $approvedItems = ItemDemand::where('status', '1')->orderByDesc('dos')->paginate(10);
+        // $approvedItems = ItemDemand::where('status', '1')->orderByDesc('dos')->paginate(10);
 
-        return view('admin.demand.all_demands', compact('approvedItems'));
+        // return view('admin.demand.all_demands', compact('approvedItems'));
     }
 
     /**

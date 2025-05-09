@@ -15,8 +15,24 @@
                 </form>
                 {{-- <a href="{{ route('print.create') }}" class="btn btn-primary">cek</a> --}}
             </div>
-            <div class="ms-auto">
-                <input type="text" class="form-control ml-3" placeholder="Cari barang..." id="search">
+            <div class="row ms-auto">
+                <div class="col">
+                    <form action="{{ route('list_demands.index') }}" method="GET" id="filter-form">
+                        <select name="division_id" class="form-select"
+                            onchange="document.getElementById('filter-form').submit();">
+                            <option value="">-- Semua Divisi --</option>
+                            @foreach ($divisions as $division)
+                                <option value="{{ $division->id }}"
+                                    {{ request('division_id') == $division->id ? 'selected' : '' }}>
+                                    {{ $division->division_name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </form>
+                </div>
+                <div class="col">
+                    <input type="text" class="form-control ml-3" placeholder="Cari barang..." id="search">
+                </div>
             </div>
         </div>
 

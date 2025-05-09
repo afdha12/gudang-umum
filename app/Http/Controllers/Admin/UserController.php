@@ -20,7 +20,8 @@ class UserController extends Controller
         confirmDelete($title, $text);
 
         $data = User::paginate(10);
-        return view('admin.users.index', compact('data'));
+        $divisions = Division::all();
+        return view('admin.users.index', compact('data', 'divisions'));
     }
 
     /**

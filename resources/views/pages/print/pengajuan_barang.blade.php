@@ -79,8 +79,8 @@
                         <tr>
                             <td>{{ $index + 1 }}</td>
                             <td>{{ date('d M Y', strtotime($item->dos)) }}</td>
-                            <td class="text-capitalize p-3">{{ $item->user->name }}</td>
-                            <td class="text-uppercase p-3">{{ $item->user->division->division_name }}</td>
+                            <td class="text-capitalize">{{ $item->user->name }}</td>
+                            <td class="text-uppercase">{{ $item->user->division->division_name }}</td>
                             <td class="text-uppercase">{{ $item->stationery->nama_barang }}</td>
                             <td>{{ $item->amount }}</td>
                         </tr>

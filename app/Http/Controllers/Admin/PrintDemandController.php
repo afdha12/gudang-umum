@@ -3,26 +3,36 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\User;
+use App\Models\Division;
 use App\Models\ItemDemand;
 use Illuminate\Http\Request;
-use Spatie\LaravelPdf\Facades\Pdf as Pdf;
-use Barryvdh\DomPDF\Facade\Pdf as Dompdf;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf as Dompdf;
+use Spatie\LaravelPdf\Facades\Pdf as Pdf;
 
 class PrintDemandController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         // Ambil hanya data yang sudah disetujui
         // $approvedItems = ItemDemand::where('status', '1')->paginate(10);
         // return view('pages.print.index', compact('approvedItems'));
-        $approvedItems = ItemDemand::where('status', '1')->orderByDesc('dos')->paginate(10);
+        $divisions = Division::all();
+        // $approvedItems = ItemDemand::where('status', '1')->orderByDesc('dos')->paginate(10);
+        $approvedItems = ItemDemand::with(['user.division', 'stationery'])
+            ->where('status', 1)
+            ->when($request->division_id, function ($query) use ($request) {
+                $query->whereHas('user', function ($q) use ($request) {
+                    $q->where('division_id', $request->division_id);
+                });
+            })
+            ->paginate(10);
 
-        return view('pages.print.index', compact('approvedItems'));
+        return view('pages.print.index', compact('approvedItems', 'divisions'));
     }
 
     /**
@@ -59,7 +69,7 @@ class PrintDemandController extends Controller
 
         $division = optional($approvedData->first())->user->division_id;
         $manager = User::where('role', 'manager')->where('division_id', $division)->first();
-        $coo = User::where('role', 'coo')->first();    
+        $coo = User::where('role', 'coo')->first();
         $admin = User::where('role', 'admin')->first();
 
         // Gunakan Spatie untuk generate PDF
