@@ -58,9 +58,10 @@
                 <div class="col-5">
                     <div class="mb-4">
                         <label for="role" class="form-label">Role</label>
-                        <select name="role" id="role" class="form-control text-uppercase">
+                        <select name="role" id="role" class="form-control">
                             {{-- <option value="">-- Pilih Divisi --</option> --}}
                             <option value="admin" {{ $data->role == 'admin' ? 'selected' : '' }}>Admin</option>
+                            <option value="manager" {{ $data->role == 'manager' ? 'selected' : '' }}>Manager</option>
                             <option value="user" {{ $data->role == 'user' ? 'selected' : '' }}>User</option>
                             <option value="coo" {{ $data->role == 'coo' ? 'selected' : '' }}>Wadirum</option>
                             {{-- @foreach ($roles as $role)
