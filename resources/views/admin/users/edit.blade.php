@@ -60,10 +60,13 @@
                         <label for="role" class="form-label">Role</label>
                         <select name="role" id="role" class="form-control text-uppercase">
                             {{-- <option value="">-- Pilih Divisi --</option> --}}
-                            @foreach ($roles as $role)
+                            <option value="admin" {{ $data->role == 'admin' ? 'selected' : '' }}>Admin</option>
+                            <option value="user" {{ $data->role == 'user' ? 'selected' : '' }}>User</option>
+                            <option value="coo" {{ $data->role == 'coo' ? 'selected' : '' }}>Wadirum</option>
+                            {{-- @foreach ($roles as $role)
                                 <option value="{{ $role }}" @if ($role == $data->role) selected @endif>
                                     {{ $role }}</option>
-                            @endforeach
+                            @endforeach --}}
                         </select>
                         {{-- <input type="text" class="form-control" id="role" name="role"
                             value="{{ old('role', $data->role) }}"> --}}
