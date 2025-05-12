@@ -4,7 +4,7 @@
 
 @section('content')
 
-    <div class="max-h-200 overflow-y-auto border shadow-lg rounded-lg">
+    <div class="max-h-auto overflow-y-auto border shadow-lg rounded-lg">
         <div class="m-3">
             <a class="btn btn-primary" href="{{ route('users-management.create', ['type' => 'supplies']) }}">Tambah User</a>
             <a class="btn btn-secondary" href="#" data-bs-toggle="modal" data-bs-target="#selectDivisionsModal">Pengaturan Unit</a>
@@ -28,9 +28,9 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-300">
-                    @foreach ($data as $item)
+                    @foreach ($data as $key => $item)
                         <tr>
-                            <td class="py-3 px-4">{{ $loop->iteration }}</td>
+                            <td class="py-3 px-4">{{ $data->firstItem() + $key }}</td>
                             <td class="py-3 px-4">{{ $item->name }}</td>
                             <td class="py-3 px-4">{{ $item->username }}</td>
                             <td class="py-3 px-4">{{ $item->email }}</td>

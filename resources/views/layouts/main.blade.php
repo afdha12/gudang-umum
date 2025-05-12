@@ -57,8 +57,8 @@
     <div class="wrapper d-flex flex-column min-vh-100">
         @include('layouts.nav.header')
 
-        <div class="body flex-grow-1">
-            <div class="px-4">
+        <div class="body flex-grow-1 px-3">
+            <div class="mb-4">
                 @yield('content')
             </div>
         </div>
