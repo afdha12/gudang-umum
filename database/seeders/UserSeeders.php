@@ -12,21 +12,26 @@ class UserSeeders extends Seeder
      * Run the database seeds.
      */
     public function run(): void
-    {
-        User::insert([
-            'name'=>'admin',
-            'username'=>'admin',
-            'email'=>'admin@admin.com',
-            'role'=>'admin',
-            'password'=>bcrypt('Hermina32'),
-        ]);
+{
+    User::updateOrInsert(
+        ['email' => 'admin@admin.com'], // pencocokan berdasarkan email
+        [
+            'name' => 'admin',
+            'username' => 'admin',
+            'role' => 'admin',
+            'password' => bcrypt('Hermina32'),
+        ]
+    );
 
-        User::insert([
-            'name'=>'Arief Sukmawan',
-            'username'=>'arief',
-            'email'=>'arief@gmail.com',
-            'role'=>'coo',
-            'password'=>bcrypt('Hermina32'),
-        ]);
-    }
+    User::updateOrInsert(
+        ['email' => 'arief@gmail.com'], // pencocokan berdasarkan email
+        [
+            'name' => 'Arief Sukmawan',
+            'username' => 'arief',
+            'role' => 'coo',
+            'password' => bcrypt('Hermina32'),
+        ]
+    );
+}
+
 }
