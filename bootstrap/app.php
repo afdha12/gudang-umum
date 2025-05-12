@@ -17,9 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'role' => RoleMiddleware::class,
-            'redirect.notfound' => RedirectIfNotFound::class,
+            // 'redirect.notfound' => RedirectIfNotFound::class,
             'password.change' => CheckPasswordChange::class,
-            'redirect.authenticated' => RedirectIfAuthenticated::class,
+            // 'redirect.authenticated' => RedirectIfAuthenticated::class,
         ]);
         $middleware->web(append: [
             \RealRashid\SweetAlert\ToSweetAlert::class,

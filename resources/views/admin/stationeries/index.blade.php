@@ -29,9 +29,9 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-300">
-                    @foreach ($data as $item)
+                    @foreach ($data as $key => $item)
                         <tr>
-                            <td class="py-3 px-4">{{ $loop->iteration }}</td>
+                            <td class="py-3 px-4">{{ $data->firstItem() + $key }}</td>
                             <td class="py-3 px-4">{{ $item->kode_barang }}</td>
                             <td class="py-3 px-4">{{ $item->nama_barang }}</td>
                             <td class="py-3 px-4">{{ $item->formatted_harga }}</td>
