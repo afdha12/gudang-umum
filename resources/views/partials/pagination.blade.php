@@ -66,7 +66,7 @@
                         1
                     </a>
                     @if ($start > 2)
-                    <span
+                        <span
                             class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-gray-300 ring-inset hover:bg-gray-50">
                             ...
                         </span>
@@ -91,7 +91,7 @@
                 {{-- Halaman terakhir jika di luar jangkauan --}}
                 @if ($end < $lastPage)
                     @if ($end < $lastPage - 1)
-                    <span
+                        <span
                             class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-gray-300 ring-inset hover:bg-gray-50">
                             ...
                         </span>

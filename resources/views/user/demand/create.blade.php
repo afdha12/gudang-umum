@@ -23,8 +23,8 @@
                     <label for="jenis_barang" class="form-label">Jenis Barang</label>
                     <select id="jenis_barang" name="jenis_barang" class="form-control">
                         <option value="">Pilih Jenis Barang</option>
-                        <option value="1">Alat Tulis</option>
-                        <option value="2">Perlengkapan Lainnya</option>
+                        <option value="1">Alat Tulis & Perlengkapan</option>
+                        {{-- <option value="2">Perlengkapan Lainnya</option> --}}
                     </select>
                     @error('jenis_barang')
                         <div class="text-danger">{{ $message }}</div>
