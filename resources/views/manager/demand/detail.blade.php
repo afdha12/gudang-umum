@@ -13,6 +13,7 @@
                         <th class="py-3 px-4 text-left">Tanggal Permintaan</th>
                         <th class="py-3 px-4 text-left">Nama Barang</th>
                         <th class="py-3 px-4 text-left">Jumlah</th>
+                        <th class="py-3 px-4 text-left">Subtotal</th>
                         <th class="py-3 px-4 text-left">Catatan</th>
                         {{-- <th class="py-3 px-4 text-left">Persetujuan Manager</th> --}}
                         <th class="py-3 px-4 text-left">Status</th>
@@ -26,6 +27,7 @@
                             <td class="py-3 px-4">{{ date('d M Y', strtotime($item->dos)) }}</td>
                             <td class="text-capitalize py-3 px-4">{{ $item->stationery->nama_barang ?? 'Barang tidak ditemukan' }}</td>
                             <td class="py-3 px-4">{{ $item->amount }}</td>
+                            <td class="py-3 px-4">{{ $item->total_harga_formatted }}</td>
                             <td class="py-3 px-4" style="white-space: pre-line;">{{ $item->notes }}</td>
                             <td class="py-3 px-4">
                                 @if ($item->manager_approval)
@@ -37,7 +39,7 @@
                             <td class="py-3 px-4">
                                 <a href="{{ route('item_demands.edit', ['item_demand' => $item->id, 'user_id' => $item->user_id]) }}"
                                     class="btn btn-outline-primary btn-sm mr-2"><i class="bi bi-pencil"></i></a>
-                                @if (!$item->manager_approval)
+                                {{-- @if (!$item->manager_approval)
                                     <form action="{{ route('item_demands.update', $item->id) }}" method="POST"
                                         class="approve-form d-inline">
                                         @csrf
@@ -47,7 +49,7 @@
                                     </form>
                                 @else
                                     <button class="btn btn-secondary btn-sm" disabled>Sudah Disetujui</button>
-                                @endif
+                                @endif --}}
                             </td>
                         </tr>
                     @endforeach
