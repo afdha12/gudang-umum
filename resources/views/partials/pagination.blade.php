@@ -39,7 +39,7 @@
                 @endif
 
                 {{-- Nomor Halaman --}}
-                @foreach ($data->links()->elements[0] as $page => $url)
+                {{-- @foreach ($data->links()->elements[0] as $page => $url)
                     @if ($page == $data->currentPage())
                         <span
                             class="relative z-10 inline-flex items-center bg-indigo-600 px-4 py-2 text-sm font-semibold text-white">
@@ -51,7 +51,51 @@
                             {{ $page }}
                         </a>
                     @endif
-                @endforeach
+                @endforeach --}}
+                @php
+                    $currentPage = $data->currentPage();
+                    $lastPage = $data->lastPage();
+                    $start = max($currentPage - 2, 1);
+                    $end = min($currentPage + 2, $lastPage);
+                @endphp
+
+                {{-- Halaman 1 jika di luar jangkauan --}}
+                @if ($start > 1)
+                    <a href="{{ $data->url(1) }}"
+                        class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-gray-300 ring-inset hover:bg-gray-50">
+                        1
+                    </a>
+                    @if ($start > 2)
+                        <span class="px-2">...</span>
+                    @endif
+                @endif
+
+                {{-- Halaman yang sedang ditampilkan --}}
+                @for ($i = $start; $i <= $end; $i++)
+                    @if ($i == $currentPage)
+                        <span
+                            class="relative z-10 inline-flex items-center bg-indigo-600 px-4 py-2 text-sm font-semibold text-white">
+                            {{ $i }}
+                        </span>
+                    @else
+                        <a href="{{ $data->url($i) }}"
+                            class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-gray-300 ring-inset hover:bg-gray-50">
+                            {{ $i }}
+                        </a>
+                    @endif
+                @endfor
+
+                {{-- Halaman terakhir jika di luar jangkauan --}}
+                @if ($end < $lastPage)
+                    @if ($end < $lastPage - 1)
+                        <span class="px-2">...</span>
+                    @endif
+                    <a href="{{ $data->url($lastPage) }}"
+                        class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-gray-300 ring-inset hover:bg-gray-50">
+                        {{ $lastPage }}
+                    </a>
+                @endif
+
 
                 {{-- Tombol Next --}}
                 @if ($data->hasMorePages())
