@@ -4,7 +4,7 @@
 
 @section('content')
 
-    <div class="max-h-200 overflow-y-auto border shadow-lg rounded-lg">
+    <div class="max-h-auto overflow-y-auto border shadow-lg rounded-lg">
         <div class="d-flex m-3">
             <div>
                 <a class="btn btn-primary" href="{{ route('stationeries.create', ['type' => '1']) }}">Tambah Data Barang</a>
@@ -33,7 +33,7 @@
                         <tr>
                             <td class="py-3 px-4">{{ $data->firstItem() + $key }}</td>
                             <td class="py-3 px-4">{{ $item->kode_barang }}</td>
-                            <td class="py-3 px-4">{{ $item->nama_barang }}</td>
+                            <td class="text-capitalize py-3 px-4">{{ $item->nama_barang }}</td>
                             <td class="py-3 px-4">{{ $item->formatted_harga }}</td>
                             <td class="py-3 px-4">{{ $item->satuan }}</td>
                             <td class="py-3 px-4">{{ $item->masuk }}</td>

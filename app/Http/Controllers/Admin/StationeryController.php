@@ -86,6 +86,7 @@ class StationeryController extends Controller
 
         $validated['harga_barang'] = preg_replace('/\D/', '', $request->harga_barang);
         $validated['masuk'] = $validated['stok'];
+        $validated['nama_barang'] = strtolower($validated['nama_barang']);
 
         // Simpan data barang ke tabel stationery
         $stationery = Stationery::create($validated);

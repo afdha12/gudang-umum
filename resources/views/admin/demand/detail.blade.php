@@ -4,7 +4,7 @@
 
 @section('content')
 
-    <div class="max-h-200 overflow-y-auto border shadow-lg rounded-lg">
+    <div class="max-h-auto overflow-y-auto border shadow-lg rounded-lg">
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead class="bg-gray-200 sticky top-0">

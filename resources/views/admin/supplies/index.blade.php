@@ -4,7 +4,7 @@
 
 @section('content')
 
-    <div class="max-h-200 overflow-y-auto border shadow-lg rounded-lg">
+    <div class="max-h-auto overflow-y-auto border shadow-lg rounded-lg">
         <div class="d-flex m-3">
             <div>
                 <a class="btn btn-primary" href="{{ route('stationeries.create', ['type' => '2']) }}">Tambah Data Barang</a>
