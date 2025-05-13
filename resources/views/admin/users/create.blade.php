@@ -41,7 +41,7 @@
                     <label for="role" class="form-label">Role</label>
                     <select name="role" class="form-control" required>
                         <option value="user">Staff</option>
-                        <option value="coo">COO</option>
+                        <option value="coo">Wadirum</option>
                         <option value="manager">Manager</option>
                         {{-- <option value="admin">Admin</option> --}}
                     </select>
