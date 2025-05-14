@@ -14,6 +14,7 @@
         onclick="coreui.Sidebar.getInstance(document.querySelector(&quot;#sidebar&quot;)).toggle()"></button>
 </div>
 
+
 <ul class="sidebar-nav" data-coreui="navigation" data-simplebar>
     @if (Auth::check())
         @if (!Auth::user()->password_changed)
