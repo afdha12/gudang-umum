@@ -29,6 +29,7 @@ class ItemDemandController extends Controller
                 DB::raw('MAX(dos) as last_pengajuan')
             )
             ->groupBy('user_id')
+            ->orderBy('last_pengajuan', 'desc')->orderBy('status')
             ->paginate(10);
 
         return view('admin.demand.index', compact('data'));
