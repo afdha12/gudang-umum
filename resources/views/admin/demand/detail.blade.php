@@ -44,7 +44,7 @@
                             <td class="py-3 px-4">
                                 <a href="{{ route('demand.edit', ['demand' => $item->id, 'user_id' => $item->user_id]) }}"
                                     class="btn btn-outline-primary btn-sm mr-2"><i class="bi bi-pencil"></i></a>
-                                @if (!$item->status)
+                                {{-- @if (!$item->status)
                                     @if ($item->manager_approval == 1)
                                         <form action="{{ route('demand.update', $item->id) }}" method="POST"
                                             class="approve-form d-inline">
@@ -59,7 +59,7 @@
                                     @endif
                                 @else
                                     <button class="btn btn-secondary btn-sm" disabled>Sudah Disetujui</button>
-                                @endif
+                                @endif --}}
                             </td>
                         </tr>
                     @endforeach
