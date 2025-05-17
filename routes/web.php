@@ -32,38 +32,70 @@ use App\Http\Controllers\Manager\ItemDemandController as ManagerItemDemandContro
 //     Route::get('/change-password', [FirstLoginController::class, 'show'])->name('password.change');
 //     Route::put('/change-password', [FirstLoginController::class, 'update'])->name('password.update');
 // });
+// Route::get('/', function () {
+//     if (auth()->check()) {
+//         return redirect()->route(auth()->user()->role . '.dashboard');
+//     }
 
-Route::middleware(['auth'])->group(function () {
+//     return redirect()->route('login');
+// });
+Route::get('/', function () {
+    if (!Auth::check()) {
+        return redirect()->route('login'); // arahkan ke halaman login
+    }
+
+    // Cek role dan arahkan ke dashboard sesuai role
+    $role = Auth::user()->role;
+
+    switch ($role) {
+        case 'admin':
+            return redirect()->route('admin.dashboard');
+        case 'manager':
+            return redirect()->route('manager.dashboard');
+        case 'user':
+        default:
+            return redirect()->route('user.dashboard');
+    }
+});
+
+Route::middleware(['auth', 'verified'])->group(function () {
     // Route::get('/change-password', [FirstLoginController::class, 'show'])->name('password.change');
     // Route::post('/change-password', [FirstLoginController::class, 'update'])->name('password.update');
     Route::resource('change-password', FirstLoginController::class);
     // Route untuk User
-    Route::prefix('user')->middleware('role:user')->group(function () {
+    Route::prefix('user')->middleware(['role:user', 'password.change'])->group(function () {
+        Route::get('/get-stationery', [ApiController::class, 'getStationeries'])->name('getStationeries');
         // Route::resource('item-demands', ItemDemandController::class);
         Route::get('/dashboard', [UserDashboardController::class, 'index'])->name('user.dashboard');
-        Route::get('/get-stationery', [ApiController::class, 'getStationeryByJenis'])->name('getStationeryByJenis');
         // Route::resource('data-pengajuan', PengajuanBarangController::class);
         Route::resource('item-demand', UserItemDemandController::class);
     });
 
     // Route untuk Manager
-    Route::prefix('manager')->middleware('role:manager')->group(function () {
+    Route::prefix('manager')->middleware(['role:manager', 'password.change'])->group(function () {
         // Route::resource('item-demands', ItemDemandController::class);
         Route::get('/dashboard', [ManagerDashboardController::class, 'index'])->name('manager.dashboard');
-        Route::get('/get-stationery', [ApiController::class, 'getStationeryByJenis'])->name('getStationeryByJenis');
+        // Route::get('/get-stationery', [ApiController::class, 'getStationeryByJenis'])->name('getStationeryByJenis');
         Route::resource('item_demands', ManagerItemDemandController::class);
+        Route::get('/item_demands/{user}/date/{date}', [ManagerItemDemandController::class, 'showByUserAndDate'])
+            ->name('item_demands.show_by_user_and_date');
+        // Route untuk edit semua item berdasarkan user dan tanggal permintaan
+        Route::get('/item_demands/{user}/date/{date}/edit', [ManagerItemDemandController::class, 'editByDate'])
+            ->name('item_demands.edit_by_date');
+        Route::put('/item_demands/{user}/date/{date}', [ManagerItemDemandController::class, 'updateByDate'])
+            ->name('item_demands.update_by_date');
     });
 
     // Route untuk COO
-    Route::prefix('coo')->middleware('role:coo')->group(function () {
+    Route::prefix('coo')->middleware(['role:coo', 'password.change'])->group(function () {
         // Route::resource('item-demands', ItemDemandController::class);
         Route::get('/dashboard', [CooDashboardController::class, 'index'])->name('coo.dashboard');
-        Route::get('/get-stationery', [ApiController::class, 'getStationeryByJenis'])->name('getStationeryByJenis');
+        // Route::get('/get-stationery', [ApiController::class, 'getStationeryByJenis'])->name('getStationeryByJenis');
         Route::resource('user_demands', PengajuanBarangController::class);
     });
 
     // Route untuk Admin
-    Route::prefix('admin')->middleware('role:admin')->group(function () {
+    Route::prefix('admin')->middleware(['role:admin', 'password.change'])->group(function () {
         // Route::resource('item-demands', ItemDemandController::class);
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
         Route::resource('users-management', UserController::class);
@@ -75,39 +107,5 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
-// Route::middleware(['guest', 'redirect.authenticated'])->group(function () {
-//     Route::get('login', [AuthenticatedSessionController::class, 'create'])->name('login');
-//     Route::post('login', [AuthenticatedSessionController::class, 'store']);
-//     // ...rute lain yang hanya bisa diakses oleh guest...
-// });
-
-// Admin Route
-// Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
-
-//     // Route::get('/admin/users', [AdminUserController::class, 'index'])->name('admin.users');
-//     // Route::get('/admin/reports', [AdminReportController::class, 'index'])->name('admin.reports');
-// });
-
-// // User Route
-// Route::middleware(['auth', 'role:user'])->prefix('user')->group(function () {
-
-//     // Route::get('/user/profile', [UserProfileController::class, 'index'])->name('user.profile');
-//     // Route::get('/user/activities', [UserActivityController::class, 'index'])->name('user.activities');
-// });
-// // Vice Director Route
-// Route::middleware(['auth', 'role:coo'])->prefix('coo')->group(function () {
-
-// });
-
-// Route::middleware(['auth', 'role:manager'])->prefix('manager')->group(function () {
-
-// });
-
-
-// Route::middleware('auth')->group(function () {
-//     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-//     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-//     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-// });
 
 require __DIR__ . '/auth.php';
