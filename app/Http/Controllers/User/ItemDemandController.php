@@ -28,8 +28,8 @@ class ItemDemandController extends Controller
      */
     public function create()
     {
-        return view('user.demand.create');
-
+        $stationeries = Stationery::all(); // Atau sesuai jenis_barang jika ingin filter
+        return view('user.demand.create', compact('stationeries'));
     }
 
     /**
@@ -37,28 +37,45 @@ class ItemDemandController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'user_id' => 'required|string|max:255',
-            'stationery_id' => 'required|string|max:255',
-            'amount' => 'required|integer|max:255',
-            'dos' => 'required|date|max:255',
-            'manager_approval' => 'nullable|integer|max:255',
-            'status' => 'nullable|integer|max:255',
-            // 'satuan' => 'required|string|max:255',
-            // 'masuk' => 'required|integer',
-            // 'keluar' => 'required|integer',
-            // 'stok' => 'required|integer',
+        // $validated = $request->validate([
+        //     'user_id' => 'required|string|max:255',
+        //     'stationery_id' => 'required|string|max:255',
+        //     'amount' => 'required|integer|max:255',
+        //     'dos' => 'required|date|max:255',
+        //     'manager_approval' => 'nullable|integer|max:255',
+        //     'status' => 'nullable|integer|max:255',
+        //     // 'satuan' => 'required|string|max:255',
+        //     // 'masuk' => 'required|integer',
+        //     // 'keluar' => 'required|integer',
+        //     // 'stok' => 'required|integer',
+        // ]);
+
+        // // Ambil stok dari database berdasarkan stationery_id
+        // $stationery = Stationery::find($request->stationery_id);
+
+        // if ($request->amount > $stationery->stok) {
+        //     return back()->with('error', 'Jumlah barang yang diminta melebihi stok yang ada.');
+        // } else {
+        //     ItemDemand::create($validated);
+        //     return redirect()->route('item-demand.index')->with('success', 'Permintaan barang berhasil ditambahkan.');
+        // }
+
+        $request->validate([
+            'items' => 'required|array',
+            'items.*.stationery_id' => 'required|exists:stationeries,id',
+            'items.*.amount' => 'required|integer|min:1',
         ]);
 
-        // Ambil stok dari database berdasarkan stationery_id
-        $stationery = Stationery::find($request->stationery_id);
-
-        if ($request->amount > $stationery->stok) {
-            return back()->with('error', 'Jumlah barang yang diminta melebihi stok yang ada.');
-        } else {
-            ItemDemand::create($validated);
-            return redirect()->route('item-demand.index')->with('success', 'Permintaan barang berhasil ditambahkan.');
+        foreach ($request->items as $item) {
+            ItemDemand::create([
+                'user_id' => auth()->id(),
+                'stationery_id' => $item['stationery_id'],
+                'amount' => $item['amount'],
+                'dos' => now()->toDateString(), // atau bisa dikirim dari form juga
+            ]);
         }
+
+        return redirect()->route('item-demand.index')->with('success', 'Pengajuan berhasil disimpan!');
     }
 
     /**

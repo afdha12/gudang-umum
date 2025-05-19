@@ -25,4 +25,10 @@ class ApiController extends Controller
         return response()->json($stationery);
         // dd($request->jenis);
     }
+
+    public function getStationeries()
+    {
+        return response()->json(Stationery::all(['id', 'nama_barang', 'stok']));
+    }
+
 }
