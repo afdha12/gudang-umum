@@ -15,8 +15,12 @@ class AuthenticatedSessionController extends Controller
     /**
      * Display the login view.
      */
-    public function create(): View
+    public function create(): View|RedirectResponse
     {
+        if (Auth::check()) {
+            return redirect()->route(Auth::user()->role . '.dashboard');
+        }
+        
         return view('auth.login');
     }
 
@@ -44,7 +48,8 @@ class AuthenticatedSessionController extends Controller
         }
 
         // Redirect ke halaman yang sesuai berdasarkan peran
-        return redirect()->intended($this->redirectTo($user));
+        return redirect()->intended(route($user->role . '.dashboard'))
+            ->with('success', 'Selamat datang, ' . $user->name . '!');
     }
 
 
@@ -62,14 +67,14 @@ class AuthenticatedSessionController extends Controller
         return redirect('/');
     }
 
-    protected function redirectTo($user)
-    {
-        return match ($user->role) {
-            'admin' => route('admin.dashboard'),
-            'user' => route('user.dashboard'),
-            'manager' => route('manager.dashboard'),
-            'coo' => route('coo.dashboard'),
-            default => '/',
-        };
-    }
+    // protected function redirectTo($user)
+    // {
+    //     return match ($user->role) {
+    //         'admin' => route('admin.dashboard'),
+    //         'user' => route('user.dashboard'),
+    //         'manager' => route('manager.dashboard'),
+    //         'coo' => route('coo.dashboard'),
+    //         default => '/',
+    //     };
+    // }
 }
