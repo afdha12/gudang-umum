@@ -76,7 +76,7 @@ class ItemDemandController extends Controller
             ->orderBy('dos', 'desc')
             ->paginate(10);
 
-        return view('manager.demand.pertanggal', compact('user', 'data'));
+        return view('show.show_by_date', compact('user', 'data'));
     }
 
     /**
@@ -199,7 +199,7 @@ class ItemDemandController extends Controller
 
         $user = User::findOrFail($userId);
 
-        return view('manager.demand.bulk_edit', compact('items', 'user', 'date'));
+        return view('edit.demands', compact('items', 'user', 'date'));
     }
 
     public function updateByDate(Request $request, $userId, $date)

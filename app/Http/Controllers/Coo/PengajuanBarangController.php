@@ -170,26 +170,31 @@ class PengajuanBarangController extends Controller
                 ->whereDate('created_at', $date)
                 ->first();
 
-            if ($item) {
-                // Update jumlah
+            if (!$item)
+                continue;
+
+            // ✅ Lindungi agar jumlah tidak bisa diubah setelah disetujui
+            if ($item->status == 0) {
                 $item->amount = $value;
-
-                // Tambahkan catatan jika ada
-                $newNote = trim($notes[$id] ?? '');
-                if ($newNote) {
-                    $formattedNote = auth()->user()->role . ': ' . $newNote;
-                    $item->notes = $item->notes
-                        ? $item->notes . "\n" . $formattedNote
-                        : $formattedNote;
-                }
-
-                // Jika disetujui oleh manager
-                if ($action === 'approve' && auth()->user()->role === 'coo') {
-                    $item->coo_approval = 1;
-                }
-
-                $item->save();
+            } elseif ($item->amount != $value) {
+                return redirect()->back()->with('error', 'Jumlah tidak dapat diubah karena permintaan sudah disetujui.');
             }
+
+            // ✅ Lindungi catatan jika perlu
+            $newNote = trim($notes[$id] ?? '');
+            if ($item->coo_approval == 0 && $newNote) {
+                $formattedNote = auth()->user()->role . ': ' . $newNote;
+                $item->notes = $item->notes
+                    ? $item->notes . "\n" . $formattedNote
+                    : $formattedNote;
+            }
+
+            // Jika disetujui oleh manager
+            if ($action === 'approve' && auth()->user()->role === 'coo') {
+                $item->coo_approval = 1;
+            }
+
+            $item->save();
         }
 
         return redirect()->route('user_demands.show', $userId)

@@ -7,8 +7,10 @@
         'manager' => 'item_demands',
         'coo' => 'user_demands',
         'admin' => 'demand',
-        default => 'item-demand', // user biasa
+        default => 'item-demand',
     };
+
+    $adaBelumDisetujui = $items->contains(fn($item) => $item->status == 0);
 @endphp
 
 @section('content')
@@ -29,7 +31,12 @@
                             <div class="row mb-2">
                                 <div class="col-md-3">
                                     <div>
-                                        <h6 class="text-uppercase">{{ $item->stationery->nama_barang }}</h6>
+                                        <h6 class="text-uppercase">
+                                            {{ $item->stationery->nama_barang }}
+                                            @if ($item->status == 1)
+                                                <span class="badge bg-success ms-1">Disetujui Gudang</span>
+                                            @endif
+                                        </h6>
                                         <p class="my-2">Stok: <strong>{{ $item->stationery->stok }}</strong>
                                             {{ $item->stationery->satuan }}</p>
                                         <p class="mb-2">Harga/item:
@@ -47,7 +54,8 @@
                                     <label class="form-label">Jumlah Permintaan</label>
                                     <input type="number" name="amount[{{ $item->id }}]" value="{{ $item->amount }}"
                                         class="form-control form-control-sm jumlah-permintaan" min="1"
-                                        data-id="{{ $item->id }}" data-harga="{{ $item->stationery->harga_barang }}">
+                                        data-id="{{ $item->id }}" data-harga="{{ $item->stationery->harga_barang }}"
+                                        @if ($item->status == 1) disabled @endif>
 
                                     <label class="form-label mt-2">Catatan Tambahan</label>
                                     <textarea name="notes[{{ $item->id }}]" class="form-control" rows="1">{{ old("notes.$item->id") }}</textarea>
@@ -65,17 +73,19 @@
                         </div>
                     @endforeach
 
-                    {{-- Total Harga Keseluruhan --}}
                     <div class="mb-3">
                         <h5>Total Semua: <span id="grand-total">
                                 Rp{{ number_format($items->sum(fn($item) => $item->amount * $item->stationery->harga_barang), 0, ',', '.') }}
-                            </span></h5>
+                            </span>
+                        </h5>
                     </div>
 
                     <div class="d-flex justify-content-between">
-                        <button type="submit" name="action" value="approve" class="btn btn-success">
-                            <i class="bi bi-check-circle"></i> Setujui Semua
-                        </button>
+                        @if ($adaBelumDisetujui)
+                            <button type="submit" name="action" value="approve" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Setujui Semua
+                            </button>
+                        @endif
                         <a href="{{ route($rolePrefix . '.index') }}" class="btn btn-secondary">Kembali</a>
                     </div>
                 </form>
@@ -93,12 +103,12 @@
                     style: 'currency',
                     currency: 'IDR',
                     minimumFractionDigits: 0
-                }).format.(angka);
+                }).format(angka);
             }
 
             function updateGrandTotal() {
                 let grandTotal = 0;
-                document.querySelectorAll('.jumlah-permintaan').forEach(input => {
+                inputs.forEach(input => {
                     const jumlah = parseInt(input.value) || 0;
                     const harga = parseInt(input.dataset.harga) || 0;
                     grandTotal += jumlah * harga;
@@ -111,20 +121,15 @@
                     const jumlah = parseInt(this.value) || 0;
                     const harga = parseInt(this.dataset.harga) || 0;
                     const id = this.dataset.id;
-                    const totalElement = document.querySelector('.total-harga[data-id="' + id +
-                        '"]');
-
+                    const totalElement = document.querySelector(`.total-harga[data-id="${id}"]`);
                     if (totalElement) {
-                        const total = jumlah * harga;
-                        totalElement.textContent = formatRupiah(total);
+                        totalElement.textContent = formatRupiah(jumlah * harga);
                     }
-
                     updateGrandTotal();
                 });
             });
 
-            // Hitung grand total saat awal halaman dimuat
-            updateGrandTotal();
+            updateGrandTotal(); // initial load
         });
     </script>
 @endsection
