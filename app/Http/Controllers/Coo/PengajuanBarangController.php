@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Coo;
 
+use App\Models\User;
 use App\Models\ItemDemand;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -58,7 +59,9 @@ class PengajuanBarangController extends Controller
      */
     public function show($user_id)
     {
-        $userDemands = ItemDemand::with('user')
+        $user = User::findOrFail($user_id);
+
+        $data = ItemDemand::with('user')
             ->where('user_id', $user_id)
             ->where(function ($query) {
                 $query->where('manager_approval', 1)
@@ -69,9 +72,16 @@ class PengajuanBarangController extends Controller
                             });
                     });
             })
+            ->select(
+                'dos',
+                DB::raw('COUNT(*) as total_pengajuan'),
+                DB::raw('SUM(CASE WHEN coo_approval = 0 THEN 1 ELSE 0 END) as item_status')
+            )
+            ->groupBy('dos')
+            ->orderBy('dos', 'desc')
             ->paginate(10);
 
-        return view('coo.demands.detail', compact('userDemands'));
+        return view('show.show_by_date', compact('data', 'user'));
     }
 
     /**
@@ -134,5 +144,55 @@ class PengajuanBarangController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function editByDate($userId, $date)
+    {
+        $items = ItemDemand::with('stationery')
+            ->where('user_id', $userId)
+            ->whereDate('created_at', $date)
+            ->get();
+
+        $user = User::findOrFail($userId);
+
+        return view('edit.demands', compact('items', 'user', 'date'));
+    }
+
+    public function updateByDate(Request $request, $userId, $date)
+    {
+        $amounts = $request->input('amount', []);
+        $notes = $request->input('notes', []);
+        $action = $request->input('action'); // menangkap 'approve' jika diklik
+
+        foreach ($amounts as $id => $value) {
+            $item = ItemDemand::where('id', $id)
+                ->where('user_id', $userId)
+                ->whereDate('created_at', $date)
+                ->first();
+
+            if ($item) {
+                // Update jumlah
+                $item->amount = $value;
+
+                // Tambahkan catatan jika ada
+                $newNote = trim($notes[$id] ?? '');
+                if ($newNote) {
+                    $formattedNote = auth()->user()->role . ': ' . $newNote;
+                    $item->notes = $item->notes
+                        ? $item->notes . "\n" . $formattedNote
+                        : $formattedNote;
+                }
+
+                // Jika disetujui oleh manager
+                if ($action === 'approve' && auth()->user()->role === 'coo') {
+                    $item->coo_approval = 1;
+                }
+
+                $item->save();
+            }
+        }
+
+        return redirect()->route('user_demands.show', $userId)
+            ->with('success', 'Permintaan berhasil diperbarui' . ($action === 'approve' ? ' dan disetujui.' : '.'));
     }
 }

@@ -113,6 +113,7 @@
     <script src="{{ asset('js/main.js') }}"></script>
     {{-- Sweetalert --}}
     @include('sweetalert::alert')
+    @stack('scripts')
 </body>
 
 </html>

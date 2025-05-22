@@ -17,12 +17,15 @@ class CheckPasswordChange
      */
     public function handle(Request $request, Closure $next)
     {
-        // Ambil pengguna yang sedang login
         $user = Auth::user();
 
-        // Jika user belum mengganti password, arahkan ke halaman ganti password
-        if ($user && !$user->password_changed && !$request->is('change-password')) {
-            return redirect()->route('change-password.edit', $user->id)->with('warning', 'Silakan ganti password terlebih dahulu.');
+        // Cek jika user belum ganti password
+        if ($user && !$user->password_changed) {
+            // Abaikan jika user sedang akses/change password atau logout
+            if (!$request->is('change-password*') && !$request->is('logout')) {
+                return redirect()->route('change-password.edit', $user->id)
+                    ->with('warning', 'Silakan ganti password terlebih dahulu.');
+            }
         }
 
         return $next($request);

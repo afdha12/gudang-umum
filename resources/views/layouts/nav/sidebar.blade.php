@@ -10,7 +10,7 @@
                 $nameParts = explode(' ', Auth::user()->name);
                 $firstTwo = implode(' ', array_slice($nameParts, 0, 2));
             @endphp
-            <span class="ms-3 fw-semibold text-white text-capitalize">
+            <span class="sidebar-brand-full fw-semibold text-white text-capitalize ms-3">
                 Hi, {{ $firstTwo }}
             </span>
         @endif

@@ -2,15 +2,6 @@
 
 @section('title', 'Edit Permintaan Barang')
 
-@php
-    $rolePrefix = match (auth()->user()->role) {
-        'manager' => 'item_demands',
-        'coo' => 'user_demands',
-        'admin' => 'demand',
-        default => 'item-demand', // user biasa
-    };
-@endphp
-
 @section('content')
     <div class="container mt-4">
         <div class="card shadow-lg">
@@ -19,7 +10,7 @@
                 <small>{{ $user->name }} - {{ \Carbon\Carbon::parse($date)->format('d-m-Y') }}</small>
             </div>
             <div class="card-body">
-                <form action="{{ route($rolePrefix . '.update_by_date', ['user' => $user->id, 'date' => $date]) }}"
+                <form action="{{ route('item_demands.update_by_date', ['user' => $user->id, 'date' => $date]) }}"
                     method="POST">
                     @csrf
                     @method('PUT')
@@ -76,7 +67,7 @@
                         <button type="submit" name="action" value="approve" class="btn btn-success">
                             <i class="bi bi-check-circle"></i> Setujui Semua
                         </button>
-                        <a href="{{ route($rolePrefix . '.index') }}" class="btn btn-secondary">Kembali</a>
+                        <a href="{{ route('item_demands.index') }}" class="btn btn-secondary">Kembali</a>
                     </div>
                 </form>
             </div>

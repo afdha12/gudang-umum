@@ -92,6 +92,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/dashboard', [CooDashboardController::class, 'index'])->name('coo.dashboard');
         // Route::get('/get-stationery', [ApiController::class, 'getStationeryByJenis'])->name('getStationeryByJenis');
         Route::resource('user_demands', PengajuanBarangController::class);
+        // Route untuk edit semua item berdasarkan user dan tanggal permintaan
+        Route::get('/user_demands/{user}/date/{date}/edit', [PengajuanBarangController::class, 'editByDate'])
+            ->name('user_demands.edit_by_date');
+        Route::put('/user_demands/{user}/date/{date}', [PengajuanBarangController::class, 'updateByDate'])
+            ->name('user_demands.update_by_date');
     });
 
     // Route untuk Admin
@@ -104,6 +109,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Route::resource('list_demands', StockController::class);
         Route::resource('list_demands', PrintDemandController::class);
         Route::resource('divisions', DivisionController::class);
+        // Route untuk edit semua item berdasarkan user dan tanggal permintaan
+        Route::get('/demand/{user}/date/{date}/edit', [AdminItemDemandController::class, 'editByDate'])
+            ->name('demand.edit_by_date');
+        Route::put('/demand/{user}/date/{date}', [AdminItemDemandController::class, 'updateByDate'])
+            ->name('demand.update_by_date');
     });
 });
 

@@ -3,18 +3,17 @@
 @section('title', 'Cetak Data Permintaan Barang')
 
 @section('content')
+
     <div class="max-h-auto overflow-y-auto border shadow-lg rounded-lg">
         <div class="d-flex m-3">
             <div>
                 <form id="print-form" action="{{ route('list_demands.store') }}" method="POST" target="_blank">
                     @csrf
                     <input type="hidden" name="selected" id="selected-items">
-                    <input type="hidden" name="select_all" id="select-all-state" value="0">
-                    <input type="hidden" name="division_id" value="{{ request('division_id') }}">
-                    <button type="submit" id="print-selected" class="btn btn-success">
-                        <i class="bi bi-file-earmark-pdf"></i> Cetak yang Dipilih
-                    </button>
+                    <button type="submit" id="print-selected" class="btn btn-success"><i class="bi bi-file-earmark-pdf"></i>
+                        Cetak yang Dipilih</button>
                 </form>
+                {{-- <a href="{{ route('print.create') }}" class="btn btn-primary">cek</a> --}}
             </div>
             <div class="row ms-auto">
                 <div class="col">
@@ -58,10 +57,8 @@
                             </td>
                             <td class="p-3">{{ $index + 1 }}</td>
                             <td class="text-capitalize p-3">{{ $item->user->name ?? 'User tidak ditemukan' }}</td>
-                            <td class="text-capitalize p-3">{{ $item->stationery->nama_barang ?? 'Barang tidak ditemukan' }}
-                            </td>
-                            <td class="text-uppercase p-3">
-                                {{ $item->user->division->division_name ?? 'Divisi tidak ditemukan' }}</td>
+                            <td class="text-capitalize p-3">{{ $item->stationery->nama_barang ?? 'Barang tidak ditemukan' }}</td>
+                            <td class="text-uppercase p-3">{{ $item->user->division->division_name ?? 'Divisi tidak ditemukan' }}</td>
                             <td class="p-3">{{ $item->amount }}</td>
                             <td class="p-3">{{ date('d M Y', strtotime($item->dos)) }}</td>
                         </tr>
@@ -72,76 +69,34 @@
         </div>
     </div>
 
-    {{-- Script --}}
     <script>
-        let selectedIds = JSON.parse(localStorage.getItem('selectedIds')) || [];
-        let selectAllActive = false;
-
         $(document).ready(function() {
-            const checkboxes = $('.item-checkbox');
-
-            // Restore checked state
-            checkboxes.each(function() {
-                if (selectedIds.includes(this.value)) {
-                    this.checked = true;
-                }
-            });
-
-            // Individual checkbox
-            checkboxes.change(function() {
-                const val = this.value;
-                if (this.checked) {
-                    if (!selectedIds.includes(val)) selectedIds.push(val);
-                } else {
-                    selectedIds = selectedIds.filter(id => id !== val);
-                    selectAllActive = false;
-                    $('#select-all-state').val("0");
-                }
-                localStorage.setItem('selectedIds', JSON.stringify(selectedIds));
-            });
-
-            // Select All checkbox
+            // Select All Checkbox
             $('#select-all').change(function() {
-                const isChecked = this.checked;
-                checkboxes.prop('checked', isChecked);
-
-                if (isChecked) {
-                    selectAllActive = true;
-                    $('#select-all-state').val("1");
-                    checkboxes.each(function() {
-                        const val = this.value;
-                        if (!selectedIds.includes(val)) selectedIds.push(val);
-                    });
-                } else {
-                    selectAllActive = false;
-                    $('#select-all-state').val("0");
-                    checkboxes.each(function() {
-                        selectedIds = selectedIds.filter(id => id !== this.value);
-                    });
-                }
-
-                localStorage.setItem('selectedIds', JSON.stringify(selectedIds));
+                $('.item-checkbox').prop('checked', this.checked);
             });
 
-            // Submit
-            $('#print-form').submit(function(e) {
-                if (!selectAllActive && selectedIds.length === 0) {
-                    e.preventDefault();
+            // Kirim data checkbox yang dipilih ke form cetak
+            $('#print-form').submit(function(event) {
+                let selectedItems = $('.item-checkbox:checked').map(function() {
+                    return this.value;
+                }).get();
+
+                if (selectedItems.length === 0) {
+                    event.preventDefault(); // Batalkan submit jika tidak ada yang dipilih
                     Swal.fire({
                         icon: 'error',
                         title: 'Oops!',
-                        text: 'Silakan pilih setidaknya satu item!',
+                        text: 'Silakan pilih setidaknya satu item untuk dicetak!',
+                        confirmButtonColor: '#d33',
                     });
-                    return;
+                } else {
+                    // Jika ada yang dipilih, masukkan nilai checkbox ke input hidden
+                    $('#selected-items').val(selectedItems.join(','));
                 }
 
-                $('#selected-items').val(selectedIds.join(','));
-            });
-
-            // Clear localStorage saat reload
-            window.addEventListener('unload', function() {
-                localStorage.removeItem('selectedIds');
             });
         });
     </script>
+
 @endsection

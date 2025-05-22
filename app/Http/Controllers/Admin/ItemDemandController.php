@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\User;
 use App\Models\ItemDemand;
 use App\Models\Stationery;
 use Illuminate\Http\Request;
@@ -56,12 +57,27 @@ class ItemDemandController extends Controller
      */
     public function show($user_id)
     {
-        $userDemands = ItemDemand::with('user')
+        // $userDemands = ItemDemand::with('user')
+        //     ->where('user_id', $user_id)
+        //     ->where('coo_approval', 1)
+        //     ->paginate(10);
+
+        // return view('admin.demand.detail', compact('userDemands'));
+        $user = User::findOrFail($user_id);
+
+        $data = ItemDemand::with('user')
             ->where('user_id', $user_id)
             ->where('coo_approval', 1)
+            ->select(
+                'dos',
+                DB::raw('COUNT(*) as total_pengajuan'),
+                DB::raw('SUM(CASE WHEN status = 0 THEN 1 ELSE 0 END) as item_status')
+            )
+            ->groupBy('dos')
+            ->orderBy('dos', 'desc')
             ->paginate(10);
 
-        return view('admin.demand.detail', compact('userDemands'));
+        return view('show.show_by_date', compact('user', 'data'));
     }
 
     /**
@@ -159,4 +175,78 @@ class ItemDemandController extends Controller
     {
         //
     }
+
+    public function editByDate($userId, $date)
+    {
+        $items = ItemDemand::with('stationery')
+            ->where('user_id', $userId)
+            ->whereDate('created_at', $date)
+            ->get();
+
+        $user = User::findOrFail($userId);
+
+        return view('edit.demands', compact('items', 'user', 'date'));
+    }
+
+    public function updateByDate(Request $request, $userId, $date)
+    {
+        $amounts = $request->input('amount', []);
+        $notes = $request->input('notes', []);
+        $action = $request->input('action'); // 'approve' jika tombol disetujui ditekan
+
+        foreach ($amounts as $id => $value) {
+            $item = ItemDemand::with('stationery')
+                ->where('id', $id)
+                ->where('user_id', $userId)
+                ->whereDate('created_at', $date)
+                ->first();
+
+            if (!$item)
+                continue;
+
+            // ✅ Lindungi agar jumlah tidak bisa diubah setelah disetujui
+            if ($item->status == 0) {
+                $item->amount = $value;
+            } elseif ($item->amount != $value) {
+                return redirect()->back()->with('error', 'Jumlah tidak dapat diubah karena permintaan sudah disetujui.');
+            }
+
+            // ✅ Lindungi catatan jika perlu
+            $newNote = trim($notes[$id] ?? '');
+            if ($item->status == 0 && $newNote) {
+                $formattedNote = auth()->user()->role . ': ' . $newNote;
+                $item->notes = $item->notes
+                    ? $item->notes . "\n" . $formattedNote
+                    : $formattedNote;
+            }
+
+            // ✅ Persetujuan admin dan pengurangan stok hanya jika belum disetujui
+            if ($action === 'approve' && auth()->user()->role === 'admin' && $item->status == 0) {
+                $stationery = $item->stationery;
+
+                if ($stationery->stok >= $item->amount) {
+                    $stationery->stok -= $item->amount;
+                    $stationery->keluar += $item->amount;
+                    $stationery->save();
+
+                    BarangHistory::create([
+                        'stationery_id' => $stationery->id,
+                        'jenis' => 'keluar',
+                        'jumlah' => $item->amount,
+                        'tanggal' => now(),
+                    ]);
+
+                    $item->status = 1;
+                } else {
+                    return redirect()->back()->with('error', 'Stok tidak mencukupi untuk barang: ' . $stationery->nama_barang);
+                }
+            }
+
+            $item->save();
+        }
+
+        return redirect()->route('demand.show', $userId)
+            ->with('success', 'Permintaan berhasil diperbarui' . ($action === 'approve' ? ' dan disetujui.' : '.'));
+    }
+
 }

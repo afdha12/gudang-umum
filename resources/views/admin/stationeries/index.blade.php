@@ -9,6 +9,9 @@
             <div>
                 <a class="btn btn-primary" href="{{ route('stationeries.create', ['type' => '1']) }}">Tambah Data Barang</a>
             </div>
+            <div class="mx-2">
+                <a class="btn btn-primary" href="{{ route('stationeries.create', ['type' => '1']) }}">Tambah Data Barang</a>
+            </div>
             <div class="ms-auto">
                 <input type="text" class="form-control ml-3" placeholder="Cari barang..." id="search">
             </div>
