@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\StationeryExport;
 use App\Models\Stationery;
 use Illuminate\Http\Request;
 use App\Models\BarangHistory;
 use App\Http\Controllers\Controller;
+use Maatwebsite\Excel\Facades\Excel;
 
 class StationeryController extends Controller
 {
@@ -187,5 +189,10 @@ class StationeryController extends Controller
         return redirect()->route('stationeries.index', ['type' => $type])
             ->with('success', 'Data berhasil dihapus!');
         // return redirect()->route('stationeries.index')->with('success', 'Stationery berhasil dihapus.');
+    }
+
+    public function export()
+    {
+        return Excel::download(new StationeryExport, 'Data Barang GU.xlsx');
     }
 }

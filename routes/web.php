@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ActionButtonController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ApiController;
 use Illuminate\Database\Capsule\Manager;
@@ -62,6 +63,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Route::get('/change-password', [FirstLoginController::class, 'show'])->name('password.change');
     // Route::post('/change-password', [FirstLoginController::class, 'update'])->name('password.update');
     Route::resource('change-password', FirstLoginController::class);
+    Route::resource('act-btn', ActionButtonController::class);
     // Route untuk User
     Route::prefix('user')->middleware(['role:user', 'password.change'])->group(function () {
         Route::get('/get-stationery', [ApiController::class, 'getStationeries'])->name('getStationeries');
@@ -77,6 +79,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/dashboard', [ManagerDashboardController::class, 'index'])->name('manager.dashboard');
         // Route::get('/get-stationery', [ApiController::class, 'getStationeryByJenis'])->name('getStationeryByJenis');
         Route::resource('item_demands', ManagerItemDemandController::class);
+        Route::put('item_demands/{item}/reject', [ManagerItemDemandController::class, 'reject'])->name('item_demands.reject');
         Route::get('/item_demands/{user}/date/{date}', [ManagerItemDemandController::class, 'showByUserAndDate'])
             ->name('item_demands.show_by_user_and_date');
         // Route untuk edit semua item berdasarkan user dan tanggal permintaan
@@ -92,6 +95,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/dashboard', [CooDashboardController::class, 'index'])->name('coo.dashboard');
         // Route::get('/get-stationery', [ApiController::class, 'getStationeryByJenis'])->name('getStationeryByJenis');
         Route::resource('user_demands', PengajuanBarangController::class);
+        Route::put('user_demands/{item}/reject', [PengajuanBarangController::class, 'reject'])->name('user_demands.reject');
         // Route untuk edit semua item berdasarkan user dan tanggal permintaan
         Route::get('/user_demands/{user}/date/{date}/edit', [PengajuanBarangController::class, 'editByDate'])
             ->name('user_demands.edit_by_date');
@@ -105,7 +109,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
         Route::resource('users-management', UserController::class);
         Route::resource('stationeries', StationeryController::class);
+        Route::get('/stationeries-export', [StationeryController::class, 'export'])->name('stationeries.export');
         Route::resource('demand', AdminItemDemandController::class);
+        Route::put('demand/{item}/reject', [AdminItemDemandController::class, 'reject'])->name('demand.reject');
         // Route::resource('list_demands', StockController::class);
         Route::resource('list_demands', PrintDemandController::class);
         Route::resource('divisions', DivisionController::class);
