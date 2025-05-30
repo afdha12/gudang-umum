@@ -79,7 +79,7 @@
                         <tr>
                             <td>{{ $index + 1 }}</td>
                             <td>{{ date('d M Y', strtotime($item->dos)) }}</td>
-                            <td class="text-capitalize">{{ $item->user->name }}</td>
+                            <td class="text-capitalize">{{ strtolower($item->user->name) }}</td>
                             <td class="text-uppercase">{{ $item->user->division->division_name }}</td>
                             <td class="text-uppercase">{{ $item->stationery->nama_barang }}</td>
                             <td>{{ $item->amount }}</td>
@@ -102,7 +102,7 @@
                 <div class="d-flex justify-content-center align-items-center" style="height: 120px;">
                     <img src="{{ $manager->getFirstMediaUrl('signature') }}" alt="Tanda Tangan Manager" class="signature align-items-center">
                 </div>
-                <p class="text-capitalize"><strong>{{ $manager->name }}</strong></p>
+                <p class="text-capitalize"><strong>{{ strtolower($manager->name) }}</strong></p>
             </div>
             <div class="col-6">
                 <p class="mb-2">Admin Gudang</p>

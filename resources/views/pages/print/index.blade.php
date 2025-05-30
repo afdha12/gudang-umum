@@ -5,20 +5,19 @@
 @section('content')
     <div class="max-h-auto overflow-y-auto border shadow-lg rounded-lg">
         <div class="d-flex m-3">
-            <div>
+            <div class="me-auto">
                 <form id="print-form" action="{{ route('list_demands.store') }}" method="POST" target="_blank">
                     @csrf
-                    <input type="hidden" name="selected" id="selected-items">
-                    <input type="hidden" name="select_all" id="select-all-state" value="0">
-                    <input type="hidden" name="division_id" value="{{ request('division_id') }}">
+                    <input type="hidden" name="user_id" value="{{ request('user_id') }}">
+                    <input type="hidden" name="from" value="{{ request('from') }}">
+                    <input type="hidden" name="to" value="{{ request('to') }}">
                     <button type="submit" id="print-selected" class="btn btn-success">
-                        <i class="bi bi-file-earmark-pdf"></i> Cetak yang Dipilih
+                        <i class="bi bi-file-earmark-pdf"></i> Cetak Data
                     </button>
                 </form>
             </div>
-            <div class="row ms-auto">
-                <div class="col">
-                    <form action="{{ route('list_demands.index') }}" method="GET" id="filter-form">
+            {{-- <form action="{{ route('list_demands.index') }}" method="GET" id="filter-form">
+                    <div class="col">
                         <select name="division_id" class="form-select"
                             onchange="document.getElementById('filter-form').submit();">
                             <option value="">-- Semua Divisi --</option>
@@ -29,19 +28,40 @@
                                 </option>
                             @endforeach
                         </select>
-                    </form>
+                    </div>
+                </form> --}}
+            <form action="{{ route('list_demands.index') }}" method="GET" id="filter-form" class="d-flex gap-2">
+                <div>
+                    <select name="user_id" class="form-select" onchange="this.form.submit();">
+                        <option value="">-- Semua Pengaju --</option>
+                        @foreach ($users as $user)
+                            <option value="{{ $user->id }}" {{ request('user_id') == $user->id ? 'selected' : '' }}>
+                                {{ $user->name }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
-                <div class="col">
-                    <input type="text" class="form-control ml-3" placeholder="Cari barang..." id="search">
+                <div>
+                    <input type="date" name="from" class="form-control" value="{{ request('from') }}">
                 </div>
-            </div>
+                <div>
+                    <input type="date" name="to" class="form-control" value="{{ request('to') }}">
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                </div>
+                <div>
+                    @if (request('user_id') || request('from') || request('to'))
+                        <a href="{{ route('list_demands.index') }}" class="btn btn-secondary">Hapus Filter</a>
+                    @endif
+                </div>
+            </form>
         </div>
 
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th class="p-3"><input type="checkbox" id="select-all"></th>
                         <th class="p-3">No</th>
                         <th class="p-3">Nama Pengaju</th>
                         <th class="p-3">Nama Barang</th>
@@ -53,12 +73,10 @@
                 <tbody>
                     @foreach ($approvedItems as $index => $item)
                         <tr>
-                            <td class="p-3">
-                                <input type="checkbox" class="item-checkbox" value="{{ $item->id }}">
-                            </td>
                             <td class="p-3">{{ $index + 1 }}</td>
                             <td class="text-capitalize p-3">{{ $item->user->name ?? 'User tidak ditemukan' }}</td>
-                            <td class="text-capitalize p-3">{{ $item->stationery->nama_barang ?? 'Barang tidak ditemukan' }}
+                            <td class="text-capitalize p-3">
+                                {{ $item->stationery->nama_barang ?? 'Barang tidak ditemukan' }}
                             </td>
                             <td class="text-uppercase p-3">
                                 {{ $item->user->division->division_name ?? 'Divisi tidak ditemukan' }}</td>
@@ -72,7 +90,7 @@
         </div>
     </div>
 
-    {{-- Script --}}
+    {{-- Script
     <script>
         let selectedIds = JSON.parse(localStorage.getItem('selectedIds')) || [];
         let selectAllActive = false;
@@ -143,5 +161,5 @@
                 localStorage.removeItem('selectedIds');
             });
         });
-    </script>
+    </script> --}}
 @endsection
