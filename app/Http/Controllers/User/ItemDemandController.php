@@ -67,6 +67,11 @@ class ItemDemandController extends Controller
         ]);
 
         foreach ($request->items as $item) {
+            $stationery = Stationery::find($item['stationery_id']);
+            if ($item['amount'] > $stationery->stok) {
+                return back()->with('error', 'Jumlah barang "' . $stationery->nama_barang . '" yang diminta melebihi stok yang ada.');
+            }
+            // Simpan permintaan barang
             ItemDemand::create([
                 'user_id' => auth()->id(),
                 'stationery_id' => $item['stationery_id'],
