@@ -30,7 +30,7 @@ class DashboardController extends Controller
                 // 'nama_barang' => ucwords(strtolower($item->stationery->nama_barang)),
                 'nama_barang' => $item->stationery ? ucwords(strtolower($item->stationery->nama_barang)) : 'Tidak tersedia',
                 'jumlah' => $item->amount,
-                'satuan' => $item->stationery->satuan,
+                'satuan' => $item->stationery->satuan ? ucwords(strtolower($item->stationery->nama_barang)) : 'Tidak tersedia',
                 'waktu' => $item->created_at->diffForHumans(), // contoh: "30 menit yang lalu"
                 'status' => $item->status,
                 'disetujui' => $item->manager_approval,
