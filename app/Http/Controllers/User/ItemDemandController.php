@@ -19,7 +19,9 @@ class ItemDemandController extends Controller
         $text = "Are you sure you want to delete?";
         confirmDelete($title, $text);
 
-        $data = ItemDemand::where('user_id', Auth::id())->paginate(10);
+        $data = ItemDemand::where('user_id', Auth::id())
+        ->orderBy(('dos'), 'desc')
+        ->paginate(10);
         return view('user.demand.index', compact('data'));
     }
 
@@ -28,7 +30,7 @@ class ItemDemandController extends Controller
      */
     public function create()
     {
-        $stationeries = Stationery::all(); // Atau sesuai jenis_barang jika ingin filter
+        $stationeries = Stationery::orderBy('nama_barang'); // Atau sesuai jenis_barang jika ingin filter
         return view('user.demand.create', compact('stationeries'));
     }
 

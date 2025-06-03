@@ -14,7 +14,9 @@ class ItemDemand extends Model
         'amount',
         'dos',
         'manager_approval',
+        'coo_approval',
         'status',
+        'rejected_by'
     ];
 
     public function user()
@@ -39,19 +41,40 @@ class ItemDemand extends Model
 
     public function getProgressPersetujuanAttribute()
     {
-        if ($this->manager_approval === 0) {
+        if (is_null($this->manager_approval)) {
             return 'Menunggu persetujuan Manager';
         }
-
-        if ($this->coo_approval === 0) {
-            return 'Menunggu persetujuan Wadirum';
+        if ($this->manager_approval === 0) {
+            return 'Ditolak Manager';
         }
 
-        if ($this->status === 0) {
+        if (is_null($this->coo_approval)) {
+            return 'Menunggu persetujuan Wadirum';
+        }
+        if ($this->coo_approval === 0) {
+            return 'Ditolak Wadirum';
+        }
+
+        if (is_null($this->status)) {
             return 'Menunggu persetujuan Gudang';
+        }
+        if ($this->status === 0) {
+            return 'Ditolak Gudang';
         }
 
         return 'Disetujui semua pihak';
     }
+    public function canEditAmount()
+    {
+        return is_null($this->status)
+            && is_null($this->manager_approval)
+            && is_null($this->coo_approval);
+    }
 
+    public function isRejected()
+    {
+        return $this->status === 0
+            || $this->manager_approval === 0
+            || $this->coo_approval === 0;
+    }
 }

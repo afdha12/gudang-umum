@@ -15,11 +15,13 @@
             <!-- Form Pencarian Barang -->
             <div class="bg-white shadow p-4 rounded-lg mb-6">
                 <div class="grid grid-cols-1 gap-4">
-                    <div>
-                        <label class="mb-2">Nama Barang</label>
-                        <select id="stationery_id" class="form-control">
-                            <option value="">Pilih Barang</option>
-                        </select>
+                    <div class="relative">
+                        <label for="searchBarang" class="block mb-2 font-medium text-sm text-gray-700">Nama Barang</label>
+                        <input type="text" id="searchBarang" class="form-control mb-2" placeholder="Cari nama barang..."
+                            autocomplete="off">
+                        <div id="dropdownBarang" class="bg-white border rounded shadow absolute z-10 w-full"
+                            style="display:none; max-height:200px; overflow-y:auto;"></div>
+                        <input type="hidden" id="stationery_id" name="stationery_id">
                     </div>
 
                     <div>
@@ -62,26 +64,16 @@
     <!-- Script -->
     <script>
         let daftarBarang = [];
+        let allBarang = [];
 
         $(document).ready(function() {
-            // Saat halaman dimuat, langsung ambil semua barang
+            // Ambil semua barang saat halaman dimuat
             $.ajax({
                 url: "{{ url('user/get-stationery') }}",
                 type: "GET",
                 dataType: "json",
                 success: function(response) {
-                    if (response.length > 0) {
-                        var options = '<option value="">Pilih Nama Barang</option>';
-                        $.each(response, function(index, item) {
-                            options += '<option value="' + item.id +
-                                '" data-stok="' + item.stok + '" data-nama_barang="' + item
-                                .nama_barang + '">' + item.nama_barang + '</option>';
-
-                        });
-                        $('#stationery_id').html(options);
-                    } else {
-                        $('#stationery_id').html('<option value="">Tidak ada barang tersedia</option>');
-                    }
+                    allBarang = response;
                 },
                 error: function(xhr) {
                     Swal.fire({
@@ -92,28 +84,75 @@
                 }
             });
 
-            // Saat barang dipilih, tampilkan stok
-            $('#stationery_id').change(function() {
-                var stok = $('option:selected', this).data('stok');
-                $('#stok').val(stok ? stok : '');
+            // Pencarian manual dengan dropdown custom
+            $('#searchBarang').on('input', function() {
+                const keyword = $(this).val().toLowerCase();
+                let filtered = [];
+
+                if (!keyword) {
+                    // Jika input kosong, tampilkan semua barang
+                    filtered = allBarang;
+                } else {
+                    // Jika ada keyword, filter barang
+                    filtered = allBarang.filter(item => item.nama_barang.toLowerCase().includes(keyword));
+                }
+
+                if (filtered.length === 0) {
+                    $('#dropdownBarang').hide();
+                    return;
+                }
+
+                let html = '';
+                filtered.forEach(item => {
+                    html += `<div class="px-3 py-2 hover:bg-gray-200 cursor-pointer" 
+                        data-id="${item.id}" 
+                        data-nama="${item.nama_barang.toUpperCase()}" 
+                        data-stok="${item.stok}">
+                        ${item.nama_barang.toUpperCase()}
+                    </div>`;
+                });
+                $('#dropdownBarang').html(html).show();
             });
-        });
 
+            // Pilih barang dari dropdown
+            $('#dropdownBarang').on('click', 'div', function() {
+                const id = $(this).data('id');
+                const nama = $(this).data('nama');
+                const stok = $(this).data('stok');
+                $('#searchBarang').val(nama);
+                $('#stationery_id').val(id);
+                $('#stok').val(stok);
+                $('#dropdownBarang').hide();
+            });
 
-        $('#stationery_id').change(function() {
-            const stok = $('option:selected', this).data('stok');
-            $('#stok').val(stok || '');
+            // Sembunyikan dropdown jika klik di luar
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('#searchBarang, #dropdownBarang').length) {
+                    $('#dropdownBarang').hide();
+                }
+            });
         });
 
         $('#tambahBarang').click(function() {
             const id = $('#stationery_id').val();
-            const nama = $('#stationery_id option:selected').data('nama_barang');
-            const jumlah = $('#jumlah').val();
+            const nama = $('#searchBarang').val();
+            const jumlah = parseInt($('#jumlah').val());
+            const stok = parseInt($('#stok').val());
 
             if (!id || !jumlah) {
                 Swal.fire({
                     icon: 'error',
+                    title: 'Error',
                     text: 'Barang dan jumlah harus diisi'
+                });
+                return;
+            }
+
+            if (jumlah > stok) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Jumlah yang diminta melebihi stok tersedia!'
                 });
                 return;
             }
@@ -127,6 +166,7 @@
             renderTabel();
 
             // reset form atas
+            $('#searchBarang').val('');
             $('#stationery_id').val('');
             $('#stok').val('');
             $('#jumlah').val('');
@@ -137,18 +177,18 @@
             $('#tabelBarang tbody').empty();
             daftarBarang.forEach((item, index) => {
                 html += `
-                <tr>
-                    <td>
-                        ${item.nama}
-                        <input type="hidden" name="items[${index}][stationery_id]" value="${item.id}">
-                    </td>
-                    <td>
-                        ${item.jumlah}
-                        <input type="hidden" name="items[${index}][amount]" value="${item.jumlah}">
-                    </td>
-                    <td><button type="button" onclick="hapusItem(${index})" class="btn btn-danger btn-sm">Hapus</button></td>
-                </tr>
-            `;
+        <tr>
+            <td>
+                ${item.nama}
+                <input type="hidden" name="items[${index}][stationery_id]" value="${item.id}">
+            </td>
+            <td>
+                ${item.jumlah}
+                <input type="hidden" name="items[${index}][amount]" value="${item.jumlah}">
+            </td>
+            <td><button type="button" onclick="hapusItem(${index})" class="btn btn-danger btn-sm">Hapus</button></td>
+        </tr>
+    `;
             });
             $('#tabelBarang tbody').html(html);
         }
