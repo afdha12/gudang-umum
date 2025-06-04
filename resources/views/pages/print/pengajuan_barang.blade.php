@@ -96,27 +96,30 @@
         </div>
 
         <!-- Tanda Tangan -->
-        <div class="row text-center mt-5">
+        <div class="row text-center mt-5" style="page-break-inside: avoid;">
             <div class="col-6">
                 <p class="text-capitalize mb-2">Manager {{ $item->user->division->division_name }}</p>
                 <div class="d-flex justify-content-center align-items-center" style="height: 120px;">
-                    <img src="{{ $manager->getFirstMediaUrl('signature') }}" alt="Tanda Tangan Manager" class="signature align-items-center">
+                    <img src="{{ $manager->getFirstMediaUrl('signature') }}" alt="Tanda Tangan Manager"
+                        class="signature align-items-center">
                 </div>
                 <p class="text-capitalize"><strong>{{ strtolower($manager->name) }}</strong></p>
             </div>
             <div class="col-6">
                 <p class="mb-2">Admin Gudang</p>
                 <div class="d-flex justify-content-center align-items-center" style="height: 120px;">
-                    <img src="{{ $admin->getFirstMediaUrl('signature') }}" alt="Tanda Tangan Admin" class="signature align-items-center">
+                    <img src="{{ $admin->getFirstMediaUrl('signature') }}" alt="Tanda Tangan Admin"
+                        class="signature align-items-center">
                 </div>
                 <p class="text-capitalize"><strong>{{ $admin->name }}</strong></p>
             </div>
         </div>
-        <div class="row d-flex justify-content-center text-center mt-5">
+        <div class="row d-flex justify-content-center text-center mt-5" style="page-break-inside: avoid;">
             <div class="col-6">
                 <p class="text-capitalize mb-2">Wadir</p>
                 <div class="d-flex justify-content-center align-items-center" style="height: 120px;">
-                    <img src="{{ $coo->getFirstMediaUrl('signature') }}" alt="Tanda Tangan Manager" class="signature align-items-center">
+                    <img src="{{ $coo->getFirstMediaUrl('signature') }}" alt="Tanda Tangan Manager"
+                        class="signature align-items-center">
                 </div>
                 <p class="text-capitalize"><strong>{{ $coo->name }}</strong></p>
             </div>

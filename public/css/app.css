@@ -1,0 +1,9 @@
+#dropdownBarang {
+    min-width: 100%;
+    width: 100%;
+    left: 0;
+    /* Pastikan posisinya absolute dan parentnya relative */
+}
+.relative {
+    position: relative;
+}

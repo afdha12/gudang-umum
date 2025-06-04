@@ -45,7 +45,7 @@
             </table>
 
             @include('partials.pagination', ['data' => $data])
-            
+
         </div>
     </div>
 

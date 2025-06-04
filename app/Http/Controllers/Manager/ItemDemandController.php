@@ -26,7 +26,8 @@ class ItemDemandController extends Controller
             ->select(
                 'user_id',
                 DB::raw('COUNT(*) as total_pengajuan'),
-                DB::raw('SUM(CASE WHEN manager_approval = 0 THEN 1 ELSE 0 END) as item_status'),
+                DB::raw("SUM(CASE WHEN manager_approval IS NULL THEN 1 ELSE 0 END) as item_status"),
+                // DB::raw('SUM(CASE WHEN manager_approval = 0 THEN 1 ELSE 0 END) as item_status'),
                 DB::raw('MAX(dos) as last_pengajuan')
             )
             ->groupBy('user_id')
@@ -70,7 +71,8 @@ class ItemDemandController extends Controller
             ->select(
                 'dos',
                 DB::raw('COUNT(*) as total_pengajuan'),
-                DB::raw('SUM(CASE WHEN manager_approval = 0 THEN 1 ELSE 0 END) as item_status')
+                DB::raw('SUM(CASE WHEN manager_approval = 0 THEN 1 ELSE 0 END) as item_status'),
+                DB::raw('SUM(CASE WHEN manager_approval IS NULL THEN 1 ELSE 0 END) as pending_items')
             )
             ->groupBy('dos')
             ->orderBy('dos', 'desc')
@@ -207,6 +209,8 @@ class ItemDemandController extends Controller
         $amounts = $request->input('amount', []);
         $notes = $request->input('notes', []);
         $action = $request->input('action'); // menangkap 'approve' jika diklik
+        $statuses = $request->input('status', []);
+        // $userRole = auth()->user()->role;
 
         foreach ($amounts as $id => $value) {
             $item = ItemDemand::where('id', $id)
@@ -214,26 +218,50 @@ class ItemDemandController extends Controller
                 ->whereDate('created_at', $date)
                 ->first();
 
-            if ($item) {
-                // Update jumlah
-                $item->amount = $value;
+            if (!$item)
+                continue;
 
-                // Tambahkan catatan jika ada
-                $newNote = trim($notes[$id] ?? '');
-                if ($newNote) {
-                    $formattedNote = auth()->user()->role . ': ' . $newNote;
-                    $item->notes = $item->notes
-                        ? $item->notes . "\n" . $formattedNote
-                        : $formattedNote;
-                }
+            $requestStatus = $statuses[$id] ?? null;
+            $isReject = ($requestStatus === '0');
 
-                // Jika disetujui oleh manager
-                if ($action === 'approve' && auth()->user()->role === 'manager') {
-                    $item->manager_approval = 1;
-                }
-
-                $item->save();
+            // Jika sudah di-reject sebelumnya, tidak bisa diubah lagi
+            if ($item->status === 0 || $item->manager_approval === 0 || $item->coo_approval === 0) {
+                continue;
             }
+
+            // PROSES REJECT
+            if ($isReject) {
+                $item->manager_approval = 0;
+                $item->rejected_by = 'Manager';
+                $note = trim($notes[$id] ?? '');
+                $formattedNote = "manager: Ditolak" . ($note ? " - $note" : "");
+                $item->notes = trim(($item->notes ? $item->notes . "\n" : "") . $formattedNote);
+                $item->save();
+                continue;
+            }
+
+            // PROSES EDIT JUMLAH (hanya jika belum diapprove/reject oleh COO/Admin)
+            if ($item->canEditAmountByLevel(1)) {
+                $item->amount = $value;
+            } elseif ($item->amount != $value) {
+                return redirect()->back()->with('error', 'Jumlah tidak dapat diubah karena permintaan sudah disetujui oleh COO/Admin.');
+            }
+
+            // Tambahkan catatan jika ada
+            $newNote = trim($notes[$id] ?? '');
+            if ($newNote) {
+                $formattedNote = auth()->user()->role . ': ' . $newNote;
+                $item->notes = $item->notes
+                    ? $item->notes . "\n" . $formattedNote
+                    : $formattedNote;
+            }
+
+            // Jika disetujui oleh manager
+            if ($action === 'approve' && auth()->user()->role === 'manager') {
+                $item->manager_approval = 1;
+            }
+
+            $item->save();
         }
 
         return redirect()->route('item_demands.show', $userId)

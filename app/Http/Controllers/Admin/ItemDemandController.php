@@ -26,7 +26,8 @@ class ItemDemandController extends Controller
             ->select(
                 'user_id',
                 DB::raw('COUNT(*) as total_pengajuan'),
-                DB::raw('SUM(CASE WHEN status = 0 THEN 1 ELSE 0 END) as item_status'),
+                DB::raw("SUM(CASE WHEN status IS NULL THEN 1 ELSE 0 END) as item_status"),
+                // DB::raw('SUM(CASE WHEN status = 0 THEN 1 ELSE 0 END) as item_status'),
                 DB::raw('MAX(dos) as last_pengajuan')
             )
             ->groupBy('user_id')
@@ -71,7 +72,8 @@ class ItemDemandController extends Controller
             ->select(
                 'dos',
                 DB::raw('COUNT(*) as total_pengajuan'),
-                DB::raw('SUM(CASE WHEN status = 0 THEN 1 ELSE 0 END) as item_status')
+                DB::raw('SUM(CASE WHEN status = 0 THEN 1 ELSE 0 END) as item_status'),
+                DB::raw('SUM(CASE WHEN status IS NULL THEN 1 ELSE 0 END) as pending_items')
             )
             ->groupBy('dos')
             ->orderBy('dos', 'desc')
@@ -180,6 +182,7 @@ class ItemDemandController extends Controller
     {
         $items = ItemDemand::with('stationery')
             ->where('user_id', $userId)
+            // ->where('coo_approval', 1)
             ->whereDate('created_at', $date)
             ->get();
 
@@ -192,7 +195,9 @@ class ItemDemandController extends Controller
     {
         $amounts = $request->input('amount', []);
         $notes = $request->input('notes', []);
+        $statuses = $request->input('status', []);
         $action = $request->input('action'); // 'approve' jika tombol disetujui ditekan
+        $userRole = auth()->user()->role;
 
         foreach ($amounts as $id => $value) {
             $item = ItemDemand::with('stationery')
@@ -204,41 +209,61 @@ class ItemDemandController extends Controller
             if (!$item)
                 continue;
 
-            // ✅ Lindungi agar jumlah tidak bisa diubah setelah disetujui
-            if ($item->status == 0) {
+            $requestStatus = $statuses[$id] ?? null;
+            $isReject = ($requestStatus === '0');
+
+            // Jika sudah di-reject sebelumnya, tidak bisa diubah lagi
+            if ($item->status === 0 || $item->manager_approval === 0 || $item->coo_approval === 0) {
+                continue;
+            }
+
+            // PROSES REJECT
+            if ($isReject) {
+                $item->status = 0;
+                $item->rejected_by = 'Admin';
+                $note = trim($notes[$id] ?? '');
+                $formattedNote = "admin: Ditolak" . ($note ? " - $note" : "");
+                $item->notes = trim(($item->notes ? $item->notes . "\n" : "") . $formattedNote);
+                $item->save();
+                continue;
+            }
+
+            // PROSES EDIT JUMLAH (hanya jika belum diapprove/reject oleh admin)
+            if ($item->canEditAmountByLevel(3)) {
                 $item->amount = $value;
             } elseif ($item->amount != $value) {
                 return redirect()->back()->with('error', 'Jumlah tidak dapat diubah karena permintaan sudah disetujui.');
             }
 
-            // ✅ Lindungi catatan jika perlu
+            // CATATAN TAMBAHAN
             $newNote = trim($notes[$id] ?? '');
-            if ($item->status == 0 && $newNote) {
-                $formattedNote = auth()->user()->role . ': ' . $newNote;
+            if ($newNote) {
+                $formattedNote = 'admin: ' . $newNote;
                 $item->notes = $item->notes
                     ? $item->notes . "\n" . $formattedNote
                     : $formattedNote;
             }
 
-            // ✅ Persetujuan admin dan pengurangan stok hanya jika belum disetujui
-            if ($action === 'approve' && auth()->user()->role === 'admin' && $item->status == 0) {
-                $stationery = $item->stationery;
+            // PROSES APPROVE
+            if ($action === 'approve') {
+                if ($item->status === null) {
+                    $stationery = $item->stationery;
+                    if ($stationery->stok >= $item->amount) {
+                        $stationery->stok -= $item->amount;
+                        $stationery->keluar += $item->amount;
+                        $stationery->save();
 
-                if ($stationery->stok >= $item->amount) {
-                    $stationery->stok -= $item->amount;
-                    $stationery->keluar += $item->amount;
-                    $stationery->save();
+                        BarangHistory::create([
+                            'stationery_id' => $stationery->id,
+                            'jenis' => 'keluar',
+                            'jumlah' => $item->amount,
+                            'tanggal' => now(),
+                        ]);
 
-                    BarangHistory::create([
-                        'stationery_id' => $stationery->id,
-                        'jenis' => 'keluar',
-                        'jumlah' => $item->amount,
-                        'tanggal' => now(),
-                    ]);
-
-                    $item->status = 1;
-                } else {
-                    return redirect()->back()->with('error', 'Stok tidak mencukupi untuk barang: ' . $stationery->nama_barang);
+                        $item->status = 1;
+                    } else {
+                        return redirect()->back()->with('error', 'Stok tidak mencukupi untuk barang: ' . $stationery->nama_barang);
+                    }
                 }
             }
 
@@ -249,4 +274,34 @@ class ItemDemandController extends Controller
             ->with('success', 'Permintaan berhasil diperbarui' . ($action === 'approve' ? ' dan disetujui.' : '.'));
     }
 
+    public function reject(Request $request, ItemDemand $item)
+    {
+        $userRole = auth()->user()->role;
+        $note = $request->input('note');
+
+        if ($userRole == 'admin') {
+            if ($item->coo_approval === 0) {
+                return back()->with('error', 'Tidak disetujui oleh COO.');
+            }
+            $item->status = 0;
+            $item->rejected_by = 'Admin';
+            // } elseif ($userRole == 'coo') {
+            //     if ($item->manager_approval !== 1) {
+            //         return back()->with('error', 'Belum disetujui oleh manager.');
+            //     }
+            //     $item->coo_approval = 0;
+            // } elseif ($userRole == 'admin') {
+            //     if ($item->coo_approval !== 1) {
+            //         return back()->with('error', 'Belum disetujui oleh COO.');
+            //     }
+            //     // $item->admin_approve = 0;
+            //     $item->status = 0;
+        }
+
+        // Tambahkan note
+        $item->notes = trim($item->notes . "\n" . $userRole . ": Ditolak - " . $note);
+        $item->save();
+
+        return back()->with('success', 'Permintaan ditolak.');
+    }
 }

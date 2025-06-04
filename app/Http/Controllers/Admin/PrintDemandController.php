@@ -19,7 +19,7 @@ class PrintDemandController extends Controller
     public function index(Request $request)
     {
         // Ambil user yang pernah mengajukan barang
-        $users = \App\Models\User::whereIn('id', ItemDemand::pluck('user_id')->unique())->get();
+        $users = User::whereIn('id', ItemDemand::pluck('user_id')->unique())->get();
 
         $approvedItems = ItemDemand::with(['user.division', 'stationery'])
             ->where('status', 1)

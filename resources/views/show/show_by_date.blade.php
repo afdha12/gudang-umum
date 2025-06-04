@@ -24,7 +24,7 @@
                         <th class="py-3 px-4">No</th>
                         <th class="py-3 px-4">Tanggal Permintaan</th>
                         <th class="py-3 px-4">Total Item</th>
-                        <th class="py-3 px-4">Menunggu Persetujuan</th>
+                        <th class="py-3 px-4">Status</th>
                         <th class="py-3 px-4">Detail</th>
                     </tr>
                 </thead>
@@ -35,10 +35,15 @@
                             <td class="py-3 px-4">{{ \Carbon\Carbon::parse($item->dos)->format('d-m-Y') }}</td>
                             <td class="py-3 px-4">{{ $item->total_pengajuan }}</td>
                             <td class="py-3 px-4">
-                                <span class="badge {{ $item->item_status > 0 ? 'bg-danger' : 'bg-success' }}">
-                                    {{ $item->item_status }}
-                                </span>
+                                @if ($item->item_status > 0)
+                                    <span class="badge bg-danger">Ada yang Ditolak</span>
+                                @elseif ($item->pending_items > 0)
+                                    <span class="badge bg-warning text-dark">Belum Disetujui</span>
+                                @else
+                                    <span class="badge bg-success">Semua Disetujui</span>
+                                @endif
                             </td>
+
                             <td class="py-3 px-4">
                                 <a href="{{ route($rolePrefix . '.edit_by_date', ['user' => $user->id, 'date' => $item->dos]) }}"
                                     class="btn btn-outline-primary btn-sm">Lihat detail</a>

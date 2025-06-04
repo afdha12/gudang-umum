@@ -28,7 +28,7 @@
                             <td class="text-capitalize py-3 px-4">{{ $item->user->name ?? 'User Tidak Ditemukan' }}</td>
                             <td class="py-3 px-4">{{ $item->total_pengajuan }}</td>
                             <td class="py-3 px-4">
-                                <span class="badge {{ $item->item_status > 0 ? 'bg-danger' : 'bg-success' }}">
+                                <span class="badge {{ $item->item_status > null ? 'bg-danger' : 'bg-success' }}">
                                     {{ $item->item_status }}
                                 </span>
                             </td>

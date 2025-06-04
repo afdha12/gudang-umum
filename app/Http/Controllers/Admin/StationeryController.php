@@ -24,7 +24,8 @@ class StationeryController extends Controller
         $query = $request->query('q'); // Ambil parameter pencarian
 
         // Query dasar berdasarkan jenis barang
-        $queryBuilder = Stationery::where('jenis_barang', $type);
+        $queryBuilder = Stationery::where('jenis_barang', $type)
+        ->where('status_barang', true); // Hanya ambil barang yang aktif
 
         // Jika ada pencarian, filter berdasarkan nama atau kode barang
         if ($query) {
@@ -183,11 +184,13 @@ class StationeryController extends Controller
     {
         $type = $stationery->jenis_barang; // Ambil kategori sebelum dihapus
 
-        $stationery->delete();
+        // $stationery->delete();
+        // Soft delete: ubah status_barang jadi false
+        $stationery->update(['status_barang' => false]);
 
         // Redirect ke index dengan type yang sesuai
         return redirect()->route('stationeries.index', ['type' => $type])
-            ->with('success', 'Data berhasil dihapus!');
+            ->with('success', 'Barang berhasil diarsipkan!');
         // return redirect()->route('stationeries.index')->with('success', 'Stationery berhasil dihapus.');
     }
 

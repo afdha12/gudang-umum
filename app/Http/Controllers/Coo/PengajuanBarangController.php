@@ -28,7 +28,8 @@ class PengajuanBarangController extends Controller
             ->select(
                 'user_id',
                 DB::raw('COUNT(*) as total_pengajuan'),
-                DB::raw('SUM(CASE WHEN coo_approval = 0 THEN 1 ELSE 0 END) as item_status'),
+                // DB::raw('SUM(CASE WHEN coo_approval = 0 THEN 1 ELSE 0 END) as item_status'),
+                DB::raw("SUM(CASE WHEN coo_approval IS NULL THEN 1 ELSE 0 END) as item_status"),
                 DB::raw('MAX(dos) as last_pengajuan')
             )
             ->groupBy('user_id')
@@ -75,7 +76,8 @@ class PengajuanBarangController extends Controller
             ->select(
                 'dos',
                 DB::raw('COUNT(*) as total_pengajuan'),
-                DB::raw('SUM(CASE WHEN coo_approval = 0 THEN 1 ELSE 0 END) as item_status')
+                DB::raw('SUM(CASE WHEN coo_approval = 0 THEN 1 ELSE 0 END) as item_status'),
+                DB::raw('SUM(CASE WHEN coo_approval IS NULL THEN 1 ELSE 0 END) as pending_items')
             )
             ->groupBy('dos')
             ->orderBy('dos', 'desc')
@@ -163,6 +165,8 @@ class PengajuanBarangController extends Controller
         $amounts = $request->input('amount', []);
         $notes = $request->input('notes', []);
         $action = $request->input('action'); // menangkap 'approve' jika diklik
+        $statuses = $request->input('status', []);
+        $userRole = auth()->user()->role;
 
         foreach ($amounts as $id => $value) {
             $item = ItemDemand::where('id', $id)
@@ -173,23 +177,41 @@ class PengajuanBarangController extends Controller
             if (!$item)
                 continue;
 
-            // ✅ Lindungi agar jumlah tidak bisa diubah setelah disetujui
-            if ($item->status == 0) {
+            $requestStatus = $statuses[$id] ?? null;
+            $isReject = ($requestStatus === '0');
+
+            // Jika sudah di-reject sebelumnya, tidak bisa diubah lagi
+            if ($item->status === 0 || $item->manager_approval === 0 || $item->coo_approval === 0) {
+                continue;
+            }
+
+            // PROSES REJECT
+            if ($isReject) {
+                $item->coo_approval = 0;
+                $item->rejected_by = 'Wadirum';
+                $note = trim($notes[$id] ?? '');
+                $formattedNote = "wadirum: Ditolak" . ($note ? " - $note" : "");
+                $item->notes = trim(string: ($item->notes ? $item->notes . "\n" : "") . $formattedNote);
+                $item->save();
+                continue;
+            }
+
+            if ($item->canEditAmountByLevel(2)) { // COO = level 2
                 $item->amount = $value;
             } elseif ($item->amount != $value) {
                 return redirect()->back()->with('error', 'Jumlah tidak dapat diubah karena permintaan sudah disetujui.');
             }
 
-            // ✅ Lindungi catatan jika perlu
+            // Tambahkan catatan jika ada
             $newNote = trim($notes[$id] ?? '');
-            if ($item->coo_approval == 0 && $newNote) {
+            if ($newNote) {
                 $formattedNote = auth()->user()->role . ': ' . $newNote;
                 $item->notes = $item->notes
                     ? $item->notes . "\n" . $formattedNote
                     : $formattedNote;
             }
 
-            // Jika disetujui oleh manager
+            // Jika disetujui oleh COO
             if ($action === 'approve' && auth()->user()->role === 'coo') {
                 $item->coo_approval = 1;
             }

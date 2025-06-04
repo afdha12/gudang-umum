@@ -15,6 +15,7 @@ class Stationery extends Model
         'nama_barang',
         'harga_barang',
         'jenis_barang',
+        'status_barang',
         'satuan',
         'masuk',
         'keluar',

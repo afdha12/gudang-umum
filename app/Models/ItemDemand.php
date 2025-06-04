@@ -64,11 +64,23 @@ class ItemDemand extends Model
 
         return 'Disetujui semua pihak';
     }
-    public function canEditAmount()
+    public function canEditAmountByLevel($level)
     {
-        return is_null($this->status)
-            && is_null($this->manager_approval)
-            && is_null($this->coo_approval);
+        // $level: 1=Manager, 2=COO, 3=Admin
+
+        if ($level == 1) {
+            // Manager bisa edit jika COO & Admin belum setuju
+            return is_null($this->coo_approval) && is_null($this->status);
+        }
+        if ($level == 2) {
+            // COO bisa edit jika Admin belum setuju
+            return is_null($this->status);
+        }
+        if ($level == 3) {
+            // Admin bisa edit jika status masih null (belum approve/reject admin)
+            return is_null($this->status);
+        }
+        return false;
     }
 
     public function isRejected()
