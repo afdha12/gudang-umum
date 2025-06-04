@@ -141,7 +141,7 @@ class ItemDemandController extends Controller
         foreach ($amounts as $id => $value) {
             $item = ItemDemand::where('id', $id)
                 ->where('user_id', $userId)
-                ->whereDate('created_at', $date)
+                ->whereDate('dos', $date)
                 ->first();
 
             if ($item) {
@@ -215,7 +215,7 @@ class ItemDemandController extends Controller
         foreach ($amounts as $id => $value) {
             $item = ItemDemand::where('id', $id)
                 ->where('user_id', $userId)
-                ->whereDate('created_at', $date)
+                ->whereDate('dos', $date)
                 ->first();
 
             if (!$item)

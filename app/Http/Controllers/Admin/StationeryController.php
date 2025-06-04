@@ -114,7 +114,7 @@ class StationeryController extends Controller
         // return view('admin.stationery.show', compact('stationery'));
         $detailedItem = BarangHistory::with('stationery')
             ->where('stationery_id', $stationery_id)
-            ->orderByDesc('created_at')
+            ->orderByDesc('tanggal')
             ->paginate(10);
 
         return view('admin.stationeries.history', compact('detailedItem'));

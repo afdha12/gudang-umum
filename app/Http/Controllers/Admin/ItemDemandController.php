@@ -203,7 +203,7 @@ class ItemDemandController extends Controller
             $item = ItemDemand::with('stationery')
                 ->where('id', $id)
                 ->where('user_id', $userId)
-                ->whereDate('created_at', $date)
+                ->whereDate('dos', $date)
                 ->first();
 
             if (!$item)
