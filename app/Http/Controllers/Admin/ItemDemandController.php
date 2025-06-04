@@ -76,7 +76,8 @@ class ItemDemandController extends Controller
                 DB::raw('SUM(CASE WHEN status IS NULL THEN 1 ELSE 0 END) as pending_items')
             )
             ->groupBy('dos')
-            ->orderBy('dos', 'desc')
+            ->orderByRaw('MAX(status IS NULL) DESC') // urutkan yang status null dulu
+            ->orderByDesc('dos') // lalu urutkan dos terbaru
             ->paginate(10);
 
         return view('show.show_by_date', compact('user', 'data'));

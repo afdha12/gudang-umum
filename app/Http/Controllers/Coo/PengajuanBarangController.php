@@ -80,7 +80,8 @@ class PengajuanBarangController extends Controller
                 DB::raw('SUM(CASE WHEN coo_approval IS NULL THEN 1 ELSE 0 END) as pending_items')
             )
             ->groupBy('dos')
-            ->orderBy('dos', 'desc')
+            ->orderByRaw('MAX(coo_approval IS NULL) DESC') // urutkan yang coo_approval null dulu
+            ->orderByDesc('dos') // lalu urutkan dos terbaru
             ->paginate(10);
 
         return view('show.show_by_date', compact('data', 'user'));
