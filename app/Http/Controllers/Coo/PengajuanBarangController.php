@@ -152,7 +152,7 @@ class PengajuanBarangController extends Controller
     {
         $items = ItemDemand::with('stationery')
             ->where('user_id', $userId)
-            ->whereDate('created_at', $date)
+            ->whereDate('dos', $date)
             ->get();
 
         $user = User::findOrFail($userId);
