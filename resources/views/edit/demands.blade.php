@@ -10,7 +10,7 @@
         default => 'item-demand',
     };
 
-    $adaBelumDisetujui = $items->contains(fn($item) => $item->status == null);
+    $adaBelumDisetujui = $items->contains(fn($item) => $item->status === null);
 @endphp
 
 @section('content')
@@ -243,6 +243,8 @@
                             btn.classList.add('d-none');
                             document.querySelector(`.rejected-badge[data-id="${id}"]`)
                                 .classList.remove('d-none');
+
+                            updateGrandTotal();
 
                             Swal.fire(
                                 'Ditolak!',

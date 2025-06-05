@@ -28,11 +28,12 @@ class ItemDemandController extends Controller
                 DB::raw('COUNT(*) as total_pengajuan'),
                 DB::raw("SUM(CASE WHEN status IS NULL THEN 1 ELSE 0 END) as item_status"),
                 // DB::raw('SUM(CASE WHEN status = 0 THEN 1 ELSE 0 END) as item_status'),
+                DB::raw('MAX(created_at) as filter'),
                 DB::raw('MAX(dos) as last_pengajuan')
             )
             ->groupBy('user_id')
             ->orderByRaw('MAX(status IS NULL) DESC') // urutkan yang coo_approval null dulu
-            ->orderBy('last_pengajuan', 'desc')
+            ->orderBy('filter')
             ->paginate(10);
 
         return view('admin.demand.index', compact('data'));

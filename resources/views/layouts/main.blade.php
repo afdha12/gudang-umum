@@ -32,7 +32,8 @@
     <script src="{{ asset('modules/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
     {{-- <link href="modules/coreui/chartjs/dist/css/coreui-chartjs.css" rel="stylesheet"> --}}
     <!-- Tailwind CSS -->
-    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    {{-- <script src="https://unpkg.com/@tailwindcss/browser@4"></script> --}}
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <!-- DataTables -->
     <link href="https://cdn.datatables.net/v/bs5/dt-2.2.2/datatables.min.css" rel="stylesheet"
