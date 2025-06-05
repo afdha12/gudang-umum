@@ -33,6 +33,8 @@ class PengajuanBarangController extends Controller
                 DB::raw('MAX(dos) as last_pengajuan')
             )
             ->groupBy('user_id')
+            ->orderByRaw('MAX(coo_approval IS NULL) DESC') // urutkan yang coo_approval null dulu
+            ->orderByDesc('last_pengajuan') // lalu urutkan dos terbaru
             ->paginate(10);
 
         return view('coo.demands.index', compact('data'));

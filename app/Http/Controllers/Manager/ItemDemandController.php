@@ -31,7 +31,8 @@ class ItemDemandController extends Controller
                 DB::raw('MAX(dos) as last_pengajuan')
             )
             ->groupBy('user_id')
-            ->orderBy('last_pengajuan', 'desc')
+            ->orderByRaw('MAX(manager_approval IS NULL) DESC') // urutkan yang manager_approval null dulu
+            ->orderByDesc('last_pengajuan')
             ->paginate(10);
 
         return view('manager.demand.index', compact('data'));
