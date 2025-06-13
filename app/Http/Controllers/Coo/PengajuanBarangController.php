@@ -19,7 +19,7 @@ class PengajuanBarangController extends Controller
             ->where(function ($query) {
                 $query->where('manager_approval', 1)
                     ->orWhere(function ($q) {
-                        $q->where('manager_approval', 0)
+                        $q->whereNull('manager_approval')
                             ->whereHas('user.division', function ($d) {
                                 $d->where('managed_by_coo', true);
                             });
@@ -69,7 +69,7 @@ class PengajuanBarangController extends Controller
             ->where(function ($query) {
                 $query->where('manager_approval', 1)
                     ->orWhere(function ($q) {
-                        $q->where('manager_approval', 0)
+                        $q->whereNull('manager_approval')
                             ->whereHas('user.division', function ($d) {
                                 $d->where('managed_by_coo', true);
                             });
