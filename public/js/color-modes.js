@@ -12,12 +12,13 @@
 
   const getPreferredTheme = () => {
     const storedTheme = getStoredTheme()
+    return 'light'
 
-    if (storedTheme) {
-      return storedTheme
-    }
+    // if (storedTheme) {
+    //   return storedTheme
+    // }
 
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    // return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   }
 
   const setTheme = theme => {
