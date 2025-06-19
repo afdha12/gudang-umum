@@ -34,6 +34,7 @@ services:
     environment:
       PMA_HOST: db  # Nama service MySQL di Docker Compose
       PMA_PORT: 3306
+      UPLOAD_LIMIT: 64M
     depends_on:
       - db
 
