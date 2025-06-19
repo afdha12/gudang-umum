@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\StationeryExport;
 use App\Models\Stationery;
 use Illuminate\Http\Request;
 use App\Models\BarangHistory;
 use App\Http\Controllers\Controller;
+use Maatwebsite\Excel\Facades\Excel;
 
 class StationeryController extends Controller
 {
@@ -22,7 +24,8 @@ class StationeryController extends Controller
         $query = $request->query('q'); // Ambil parameter pencarian
 
         // Query dasar berdasarkan jenis barang
-        $queryBuilder = Stationery::where('jenis_barang', $type);
+        $queryBuilder = Stationery::where('jenis_barang', $type)
+        ->where('status_barang', true); // Hanya ambil barang yang aktif
 
         // Jika ada pencarian, filter berdasarkan nama atau kode barang
         if ($query) {
@@ -86,6 +89,7 @@ class StationeryController extends Controller
 
         $validated['harga_barang'] = preg_replace('/\D/', '', $request->harga_barang);
         $validated['masuk'] = $validated['stok'];
+        $validated['nama_barang'] = strtolower($validated['nama_barang']);
 
         // Simpan data barang ke tabel stationery
         $stationery = Stationery::create($validated);
@@ -110,7 +114,7 @@ class StationeryController extends Controller
         // return view('admin.stationery.show', compact('stationery'));
         $detailedItem = BarangHistory::with('stationery')
             ->where('stationery_id', $stationery_id)
-            ->orderByDesc('created_at')
+            ->orderByDesc('tanggal')
             ->paginate(10);
 
         return view('admin.stationeries.history', compact('detailedItem'));
@@ -180,11 +184,18 @@ class StationeryController extends Controller
     {
         $type = $stationery->jenis_barang; // Ambil kategori sebelum dihapus
 
-        $stationery->delete();
+        // $stationery->delete();
+        // Soft delete: ubah status_barang jadi false
+        $stationery->update(['status_barang' => false]);
 
         // Redirect ke index dengan type yang sesuai
         return redirect()->route('stationeries.index', ['type' => $type])
-            ->with('success', 'Data berhasil dihapus!');
+            ->with('success', 'Barang berhasil diarsipkan!');
         // return redirect()->route('stationeries.index')->with('success', 'Stationery berhasil dihapus.');
+    }
+
+    public function export()
+    {
+        return Excel::download(new StationeryExport, 'Data Barang GU.xlsx');
     }
 }

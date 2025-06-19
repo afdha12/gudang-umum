@@ -4,7 +4,7 @@
 
 @section('content')
 
-    <div class="max-h-200 overflow-y-auto border shadow-lg rounded-lg">
+    <div class="max-h-auto overflow-y-auto border shadow-lg rounded-lg">
         <div class="d-flex m-3">
             <div class="text-lg text-capitalize font-bold text-gray-700">
                 Riwayat {{ $detailedItem->first()->stationery->nama_barang }}

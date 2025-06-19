@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Coo;
 
+use App\Models\User;
 use App\Models\ItemDemand;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +19,7 @@ class PengajuanBarangController extends Controller
             ->where(function ($query) {
                 $query->where('manager_approval', 1)
                     ->orWhere(function ($q) {
-                        $q->where('manager_approval', 0)
+                        $q->whereNull('manager_approval')
                             ->whereHas('user.division', function ($d) {
                                 $d->where('managed_by_coo', true);
                             });
@@ -27,10 +28,13 @@ class PengajuanBarangController extends Controller
             ->select(
                 'user_id',
                 DB::raw('COUNT(*) as total_pengajuan'),
-                DB::raw('SUM(CASE WHEN coo_approval = 0 THEN 1 ELSE 0 END) as item_status'),
+                // DB::raw('SUM(CASE WHEN coo_approval = 0 THEN 1 ELSE 0 END) as item_status'),
+                DB::raw("SUM(CASE WHEN coo_approval IS NULL THEN 1 ELSE 0 END) as item_status"),
                 DB::raw('MAX(dos) as last_pengajuan')
             )
             ->groupBy('user_id')
+            ->orderByRaw('MAX(coo_approval IS NULL) DESC') // urutkan yang coo_approval null dulu
+            ->orderByDesc('last_pengajuan') // lalu urutkan dos terbaru
             ->paginate(10);
 
         return view('coo.demands.index', compact('data'));
@@ -58,20 +62,31 @@ class PengajuanBarangController extends Controller
      */
     public function show($user_id)
     {
-        $userDemands = ItemDemand::with('user')
+        $user = User::findOrFail($user_id);
+
+        $data = ItemDemand::with('user')
             ->where('user_id', $user_id)
             ->where(function ($query) {
                 $query->where('manager_approval', 1)
                     ->orWhere(function ($q) {
-                        $q->where('manager_approval', 0)
+                        $q->whereNull('manager_approval')
                             ->whereHas('user.division', function ($d) {
                                 $d->where('managed_by_coo', true);
                             });
                     });
             })
+            ->select(
+                'dos',
+                DB::raw('COUNT(*) as total_pengajuan'),
+                DB::raw('SUM(CASE WHEN coo_approval = 0 THEN 1 ELSE 0 END) as item_status'),
+                DB::raw('SUM(CASE WHEN coo_approval IS NULL THEN 1 ELSE 0 END) as pending_items')
+            )
+            ->groupBy('dos')
+            ->orderByRaw('MAX(coo_approval IS NULL) DESC') // urutkan yang coo_approval null dulu
+            ->orderByDesc('dos') // lalu urutkan dos terbaru
             ->paginate(10);
 
-        return view('coo.demands.detail', compact('userDemands'));
+        return view('show.show_by_date', compact('data', 'user'));
     }
 
     /**
@@ -134,5 +149,80 @@ class PengajuanBarangController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function editByDate($userId, $date)
+    {
+        $items = ItemDemand::with('stationery')
+            ->where('user_id', $userId)
+            ->whereDate('dos', $date)
+            ->get();
+
+        $user = User::findOrFail($userId);
+
+        return view('edit.demands', compact('items', 'user', 'date'));
+    }
+
+    public function updateByDate(Request $request, $userId, $date)
+    {
+        $amounts = $request->input('amount', []);
+        $notes = $request->input('notes', []);
+        $action = $request->input('action'); // menangkap 'approve' jika diklik
+        $statuses = $request->input('status', []);
+        $userRole = auth()->user()->role;
+
+        foreach ($amounts as $id => $value) {
+            $item = ItemDemand::where('id', $id)
+                ->where('user_id', $userId)
+                ->whereDate('dos', $date)
+                ->first();
+
+            if (!$item)
+                continue;
+
+            $requestStatus = $statuses[$id] ?? null;
+            $isReject = ($requestStatus === '0');
+
+            // Jika sudah di-reject sebelumnya, tidak bisa diubah lagi
+            if ($item->status === 0 || $item->manager_approval === 0 || $item->coo_approval === 0) {
+                continue;
+            }
+
+            // PROSES REJECT
+            if ($isReject) {
+                $item->coo_approval = 0;
+                $item->rejected_by = 'Wadirum';
+                $note = trim($notes[$id] ?? '');
+                $formattedNote = "wadirum: Ditolak" . ($note ? " - $note" : "");
+                $item->notes = trim(string: ($item->notes ? $item->notes . "\n" : "") . $formattedNote);
+                $item->save();
+                continue;
+            }
+
+            if ($item->canEditAmountByLevel(2)) { // COO = level 2
+                $item->amount = $value;
+            } elseif ($item->amount != $value) {
+                return redirect()->back()->with('error', 'Jumlah tidak dapat diubah karena permintaan sudah disetujui.');
+            }
+
+            // Tambahkan catatan jika ada
+            $newNote = trim($notes[$id] ?? '');
+            if ($newNote) {
+                $formattedNote = auth()->user()->role . ': ' . $newNote;
+                $item->notes = $item->notes
+                    ? $item->notes . "\n" . $formattedNote
+                    : $formattedNote;
+            }
+
+            // Jika disetujui oleh COO
+            if ($action === 'approve' && auth()->user()->role === 'coo') {
+                $item->coo_approval = 1;
+            }
+
+            $item->save();
+        }
+
+        return redirect()->route('user_demands.show', $userId)
+            ->with('success', 'Permintaan berhasil diperbarui' . ($action === 'approve' ? ' dan disetujui.' : '.'));
     }
 }

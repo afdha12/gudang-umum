@@ -20,6 +20,7 @@ return new class extends Migration {
             $table->integer('masuk')->nullable();
             $table->integer('keluar')->nullable();
             $table->integer('stok')->nullable();
+            $table->boolean('status_barang')->default(true);
             $table->timestamps();
         });
     }

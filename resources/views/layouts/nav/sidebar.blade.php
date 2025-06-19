@@ -1,15 +1,25 @@
 <div class="sidebar-header border-bottom">
-    <div class="sidebar-brand">
+    <div class="sidebar-brand d-flex align-items-center">
         <img src="{{ asset('assets/icons/hermina_logo.png') }}" class="sidebar-brand-full" width="28" height="32"
             alt="CoreUI Logo">
         <img src="{{ asset('assets/icons/hermina_logo.png') }}" class="sidebar-brand-narrow" width="28" height="32"
             alt="CoreUI Logo">
+
+        @if (Auth::check())
+            @php
+                $nameParts = explode(' ', Auth::user()->name);
+                $firstTwo = implode(' ', array_slice($nameParts, 0, 2));
+            @endphp
+            <span class="sidebar-brand-full fw-semibold text-white text-capitalize ms-3">
+                Hi, {{ $firstTwo }}
+            </span>
+        @endif
+
     </div>
     <button class="btn-close d-lg-none" type="button" data-coreui-dismiss="offcanvas" data-coreui-theme="dark"
         aria-label="Close"
         onclick="coreui.Sidebar.getInstance(document.querySelector(&quot;#sidebar&quot;)).toggle()"></button>
 </div>
-
 
 <ul class="sidebar-nav" data-coreui="navigation" data-simplebar>
     @if (Auth::check())

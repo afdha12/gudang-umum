@@ -19,7 +19,7 @@ class DashboardController extends Controller
 
         // Hitung jumlah pengajuan dari divisi yang menunggu persetujuan
         $menunggu = ItemDemand::whereIn('user_id', $userIdsInSameDivision)
-            ->where('manager_approval', 0)
+            ->whereNull('manager_approval')
             ->count();
 
         // Hitung jumlah pengajuan dari divisi yang sudah disetujui

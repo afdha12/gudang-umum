@@ -34,7 +34,7 @@ class DivisionController extends Controller
         ]);
 
         $division = Division::create([
-            'division_name' => $request->division_name // Sesuaikan dengan kolom di tabel
+            'division_name' => strtolower($request->division_name) // Sesuaikan dengan kolom di tabel
         ]);
 
         return response()->json([

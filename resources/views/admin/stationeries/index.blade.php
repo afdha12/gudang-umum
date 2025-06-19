@@ -4,10 +4,13 @@
 
 @section('content')
 
-    <div class="max-h-200 overflow-y-auto border shadow-lg rounded-lg">
+    <div class="max-h-auto overflow-y-auto border shadow-lg rounded-lg">
         <div class="d-flex m-3">
             <div>
                 <a class="btn btn-primary" href="{{ route('stationeries.create', ['type' => '1']) }}">Tambah Data Barang</a>
+            </div>
+            <div class="mx-2">
+                <a class="btn btn-secondary" href="{{ route('stationeries.export') }}">Export Data Barang</a>
             </div>
             <div class="ms-auto">
                 <input type="text" class="form-control ml-3" placeholder="Cari barang..." id="search">
@@ -17,36 +20,38 @@
             <table class="table table-striped">
                 <thead class="bg-gray-200 sticky top-0">
                     <tr class="border-b border-gray-300">
-                        <th class="py-3 px-4 text-left">No</th>
-                        <th class="py-3 px-4 text-left">Kode Barang</th>
-                        <th class="py-3 px-4 text-left">Nama Barang</th>
-                        <th class="py-3 px-4 text-left">Harga Barang</th>
-                        <th class="py-3 px-4 text-left">Satuan</th>
-                        <th class="py-3 px-4 text-left">Masuk</th>
-                        <th class="py-3 px-4">Keluar</th>
-                        <th class="py-3 px-4">Stok</th>
-                        <th class="py-3 px-4 text-center">Action</th>
+                        <th class="p-3 text-left">No</th>
+                        <th class="p-3 text-left">Kode Barang</th>
+                        <th class="p-3 text-left">Nama Barang</th>
+                        <th class="p-3 text-left">Harga Barang</th>
+                        <th class="p-3 text-left">Satuan</th>
+                        <th class="p-3 text-left">Masuk</th>
+                        <th class="p-3">Keluar</th>
+                        <th class="p-3">Stok</th>
+                        <th class="p-3">Action</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-300">
                     @foreach ($data as $key => $item)
                         <tr>
-                            <td class="py-3 px-4">{{ $data->firstItem() + $key }}</td>
-                            <td class="py-3 px-4">{{ $item->kode_barang }}</td>
-                            <td class="py-3 px-4">{{ $item->nama_barang }}</td>
-                            <td class="py-3 px-4">{{ $item->formatted_harga }}</td>
-                            <td class="py-3 px-4">{{ $item->satuan }}</td>
-                            <td class="py-3 px-4">{{ $item->masuk }}</td>
-                            <td class="py-3 px-4">{{ $item->keluar }}</td>
-                            <td class="py-3 px-4">{{ $item->stok }}</td>
-                            <td class="py-3 px-4 text-center">
-                                <div class="row">
+                            <td class="p-3">{{ $data->firstItem() + $key }}</td>
+                            <td class="p-3">{{ $item->kode_barang }}</td>
+                            <td class="text-capitalize p-3">{{ $item->nama_barang }}</td>
+                            <td class="p-3">{{ $item->formatted_harga }}</td>
+                            <td class="p-3">{{ $item->satuan }}</td>
+                            <td class="p-3">{{ $item->masuk }}</td>
+                            <td class="p-3">{{ $item->keluar }}</td>
+                            <td class="p-3">{{ $item->stok }}</td>
+                            <td class="p-3">
+                                <div class="d-flex gap-1 flex-wrap">
                                     <a href="{{ route('stationeries.edit', ['stationery' => $item->id, 'type' => $type]) }}"
-                                        class="btn btn-outline-primary btn-sm col mr-2"><i class="bi bi-pencil"></i></a>
+                                        class="btn btn-outline-primary btn-sm"><i class="bi bi-pencil"></i></a>
+
                                     <a href="{{ route('stationeries.show', ['stationery' => $item->id, 'type' => $type]) }}"
-                                        class="btn btn-outline-info btn-sm col mr-2"><i class="bi bi-list-task"></i></a>
+                                        class="btn btn-outline-info btn-sm"><i class="bi bi-list-task"></i></a>
+
                                     <a href="{{ route('stationeries.destroy', ['stationery' => $item->id, 'type' => $type]) }}"
-                                        class="btn btn-outline-danger btn-sm col" data-confirm-delete="true"><i
+                                        class="btn btn-outline-danger btn-sm" data-confirm-delete="true"><i
                                             class="bi bi-trash"></i></a>
                                 </div>
                             </td>

@@ -18,21 +18,25 @@ class PrintDemandController extends Controller
      */
     public function index(Request $request)
     {
-        // Ambil hanya data yang sudah disetujui
-        // $approvedItems = ItemDemand::where('status', '1')->paginate(10);
-        // return view('pages.print.index', compact('approvedItems'));
-        $divisions = Division::all();
-        // $approvedItems = ItemDemand::where('status', '1')->orderByDesc('dos')->paginate(10);
+        // Ambil user yang pernah mengajukan barang
+        $users = User::whereIn('id', ItemDemand::pluck('user_id')->unique())->get();
+
         $approvedItems = ItemDemand::with(['user.division', 'stationery'])
             ->where('status', 1)
-            ->when($request->division_id, function ($query) use ($request) {
-                $query->whereHas('user', function ($q) use ($request) {
-                    $q->where('division_id', $request->division_id);
-                });
+            ->when($request->user_id, function ($query) use ($request) {
+                $query->where('user_id', $request->user_id);
             })
-            ->paginate(10);
+            ->when($request->from, function ($query) use ($request) {
+                $query->whereDate('dos', '>=', $request->from);
+            })
+            ->when($request->to, function ($query) use ($request) {
+                $query->whereDate('dos', '<=', $request->to);
+            })
+            ->orderByDesc('dos')
+            ->paginate(10)
+            ->appends($request->all());
 
-        return view('pages.print.index', compact('approvedItems', 'divisions'));
+        return view('pages.print.index', compact('approvedItems', 'users'));
     }
 
     /**
@@ -48,37 +52,38 @@ class PrintDemandController extends Controller
      */
     public function store(Request $request)
     {
-        // Pastikan ada checkbox yang dipilih
-        if (!$request->selected) {
-            return redirect()->back()->with('error', 'Silakan pilih setidaknya satu item untuk dicetak!');
+        $query = ItemDemand::where('status', 1);
+
+        if ($request->user_id) {
+            $query->where('user_id', $request->user_id);
+        }
+        if ($request->from) {
+            $query->whereDate('dos', '>=', $request->from);
+        }
+        if ($request->to) {
+            $query->whereDate('dos', '<=', $request->to);
         }
 
-        $selectedIds = explode(',', $request->selected);
+        $approvedData = $query->with(['user.division', 'stationery'])->get();
 
-        $approvedData = ItemDemand::whereIn('id', $selectedIds)
-            // ->where('coo_approval', 1)
-            ->where('status', 1)
-            ->get();
-
-        // Jika tidak ada data yang memenuhi syarat
         if ($approvedData->isEmpty()) {
             return redirect()->back()->with('error', 'Tidak ada data yang dapat dicetak!');
         }
 
-        $totalJumlah = $approvedData->sum('amount'); // Hitung total jumlah barang
-
+        $totalJumlah = $approvedData->sum('amount');
         $division = optional($approvedData->first())->user->division_id;
-        $manager = User::where('role', 'manager')->where('division_id', $division)->first();
+        $manager = User::where('role', 'manager')->where('division_id', $division)->first() ??
+            User::where('role', 'coo')->first();
         $coo = User::where('role', 'coo')->first();
         $admin = User::where('role', 'admin')->first();
 
-        // Gunakan Spatie untuk generate PDF
         $pdf = Pdf::view('pages.print.pengajuan_barang', compact('approvedData', 'manager', 'admin', 'coo', 'totalJumlah'))
             ->format('A4')
             ->name('pengajuan_barang.pdf');
 
-        return $pdf->inline(); // Tampilkan di browser
+        return $pdf->inline();
     }
+
 
 
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\User;
 use App\Models\ItemDemand;
 use App\Models\Stationery;
 use Illuminate\Http\Request;
@@ -25,10 +26,14 @@ class ItemDemandController extends Controller
             ->select(
                 'user_id',
                 DB::raw('COUNT(*) as total_pengajuan'),
-                DB::raw('SUM(CASE WHEN status = 0 THEN 1 ELSE 0 END) as item_status'),
+                DB::raw("SUM(CASE WHEN status IS NULL THEN 1 ELSE 0 END) as item_status"),
+                // DB::raw('SUM(CASE WHEN status = 0 THEN 1 ELSE 0 END) as item_status'),
+                DB::raw('MAX(created_at) as filter'),
                 DB::raw('MAX(dos) as last_pengajuan')
             )
             ->groupBy('user_id')
+            ->orderByRaw('MAX(status IS NULL) DESC') // urutkan yang coo_approval null dulu
+            ->orderBy('filter')
             ->paginate(10);
 
         return view('admin.demand.index', compact('data'));
@@ -55,12 +60,29 @@ class ItemDemandController extends Controller
      */
     public function show($user_id)
     {
-        $userDemands = ItemDemand::with('user')
+        // $userDemands = ItemDemand::with('user')
+        //     ->where('user_id', $user_id)
+        //     ->where('coo_approval', 1)
+        //     ->paginate(10);
+
+        // return view('admin.demand.detail', compact('userDemands'));
+        $user = User::findOrFail($user_id);
+
+        $data = ItemDemand::with('user')
             ->where('user_id', $user_id)
             ->where('coo_approval', 1)
+            ->select(
+                'dos',
+                DB::raw('COUNT(*) as total_pengajuan'),
+                DB::raw('SUM(CASE WHEN status = 0 THEN 1 ELSE 0 END) as item_status'),
+                DB::raw('SUM(CASE WHEN status IS NULL THEN 1 ELSE 0 END) as pending_items')
+            )
+            ->groupBy('dos')
+            ->orderByRaw('MAX(status IS NULL) DESC') // urutkan yang status null dulu
+            ->orderByDesc('dos') // lalu urutkan dos terbaru
             ->paginate(10);
 
-        return view('admin.demand.detail', compact('userDemands'));
+        return view('show.show_by_date', compact('user', 'data'));
     }
 
     /**
@@ -157,5 +179,132 @@ class ItemDemandController extends Controller
     public function destroy(ItemDemand $itemDemand)
     {
         //
+    }
+
+    public function editByDate($userId, $date)
+    {
+        $items = ItemDemand::with('stationery')
+            ->where('user_id', $userId)
+            // ->where('coo_approval', 1)
+            ->whereDate('dos', $date)
+            ->get();
+
+        $user = User::findOrFail($userId);
+
+        return view('edit.demands', compact('items', 'user', 'date'));
+    }
+
+    public function updateByDate(Request $request, $userId, $date)
+    {
+        $amounts = $request->input('amount', []);
+        $notes = $request->input('notes', []);
+        $statuses = $request->input('status', []);
+        $action = $request->input('action'); // 'approve' jika tombol disetujui ditekan
+        $userRole = auth()->user()->role;
+
+        foreach ($amounts as $id => $value) {
+            $item = ItemDemand::with('stationery')
+                ->where('id', $id)
+                ->where('user_id', $userId)
+                ->whereDate('dos', $date)
+                ->first();
+
+            if (!$item)
+                continue;
+
+            $requestStatus = $statuses[$id] ?? null;
+            $isReject = ($requestStatus === '0');
+
+            // Jika sudah di-reject sebelumnya, tidak bisa diubah lagi
+            if ($item->status === 0 || $item->manager_approval === 0 || $item->coo_approval === 0) {
+                continue;
+            }
+
+            // PROSES REJECT
+            if ($isReject) {
+                $item->status = 0;
+                $item->rejected_by = 'Admin';
+                $note = trim($notes[$id] ?? '');
+                $formattedNote = "admin: Ditolak" . ($note ? " - $note" : "");
+                $item->notes = trim(($item->notes ? $item->notes . "\n" : "") . $formattedNote);
+                $item->save();
+                continue;
+            }
+
+            // PROSES EDIT JUMLAH (hanya jika belum diapprove/reject oleh admin)
+            if ($item->canEditAmountByLevel(3)) {
+                $item->amount = $value;
+            } elseif ($item->amount != $value) {
+                return redirect()->back()->with('error', 'Jumlah tidak dapat diubah karena permintaan sudah disetujui.');
+            }
+
+            // CATATAN TAMBAHAN
+            $newNote = trim($notes[$id] ?? '');
+            if ($newNote) {
+                $formattedNote = 'admin: ' . $newNote;
+                $item->notes = $item->notes
+                    ? $item->notes . "\n" . $formattedNote
+                    : $formattedNote;
+            }
+
+            // PROSES APPROVE
+            if ($action === 'approve') {
+                if ($item->status === null) {
+                    $stationery = $item->stationery;
+                    if ($stationery->stok >= $item->amount) {
+                        $stationery->stok -= $item->amount;
+                        $stationery->keluar += $item->amount;
+                        $stationery->save();
+
+                        BarangHistory::create([
+                            'stationery_id' => $stationery->id,
+                            'jenis' => 'keluar',
+                            'jumlah' => $item->amount,
+                            'tanggal' => now(),
+                        ]);
+
+                        $item->status = 1;
+                    } else {
+                        return redirect()->back()->with('error', 'Stok tidak mencukupi untuk barang: ' . $stationery->nama_barang);
+                    }
+                }
+            }
+
+            $item->save();
+        }
+
+        return redirect()->route('demand.show', $userId)
+            ->with('success', 'Permintaan berhasil diperbarui' . ($action === 'approve' ? ' dan disetujui.' : '.'));
+    }
+
+    public function reject(Request $request, ItemDemand $item)
+    {
+        $userRole = auth()->user()->role;
+        $note = $request->input('note');
+
+        if ($userRole == 'admin') {
+            if ($item->coo_approval === 0) {
+                return back()->with('error', 'Tidak disetujui oleh COO.');
+            }
+            $item->status = 0;
+            $item->rejected_by = 'Admin';
+            // } elseif ($userRole == 'coo') {
+            //     if ($item->manager_approval !== 1) {
+            //         return back()->with('error', 'Belum disetujui oleh manager.');
+            //     }
+            //     $item->coo_approval = 0;
+            // } elseif ($userRole == 'admin') {
+            //     if ($item->coo_approval !== 1) {
+            //         return back()->with('error', 'Belum disetujui oleh COO.');
+            //     }
+            //     // $item->admin_approve = 0;
+            //     $item->status = 0;
+        }
+
+        // Tambahkan note
+        $item->notes = trim($item->notes . "\n" . $userRole . ": Ditolak - " . $note);
+        $item->save();
+
+        return back()->with('success', 'Permintaan ditolak.');
     }
 }

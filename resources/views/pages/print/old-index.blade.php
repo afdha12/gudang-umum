@@ -1,13 +1,13 @@
 @extends('layouts.main')
 
-@section('title', 'Data Permintaan Barang')
+@section('title', 'Cetak Data Permintaan Barang')
 
 @section('content')
 
     <div class="max-h-auto overflow-y-auto border shadow-lg rounded-lg">
         <div class="d-flex m-3">
             <div>
-                <form id="print-form" action="{{ route('print.store') }}" method="POST" target="_blank">
+                <form id="print-form" action="{{ route('list_demands.store') }}" method="POST" target="_blank">
                     @csrf
                     <input type="hidden" name="selected" id="selected-items">
                     <button type="submit" id="print-selected" class="btn btn-success"><i class="bi bi-file-earmark-pdf"></i>
@@ -15,8 +15,24 @@
                 </form>
                 {{-- <a href="{{ route('print.create') }}" class="btn btn-primary">cek</a> --}}
             </div>
-            <div class="ms-auto">
-                <input type="text" class="form-control ml-3" placeholder="Cari barang..." id="search">
+            <div class="row ms-auto">
+                <div class="col">
+                    <form action="{{ route('list_demands.index') }}" method="GET" id="filter-form">
+                        <select name="division_id" class="form-select"
+                            onchange="document.getElementById('filter-form').submit();">
+                            <option value="">-- Semua Divisi --</option>
+                            @foreach ($divisions as $division)
+                                <option value="{{ $division->id }}"
+                                    {{ request('division_id') == $division->id ? 'selected' : '' }}>
+                                    {{ $division->division_name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </form>
+                </div>
+                <div class="col">
+                    <input type="text" class="form-control ml-3" placeholder="Cari barang..." id="search">
+                </div>
             </div>
         </div>
 
@@ -40,9 +56,9 @@
                                 <input type="checkbox" class="item-checkbox" value="{{ $item->id }}">
                             </td>
                             <td class="p-3">{{ $index + 1 }}</td>
-                            <td class="text-capitalize p-3">{{ $item->user->name }}</td>
-                            <td class="text-capitalize p-3">{{ $item->stationery->nama_barang }}</td>
-                            <td class="text-uppercase p-3">{{ $item->user->division->division_name }}</td>
+                            <td class="text-capitalize p-3">{{ $item->user->name ?? 'User tidak ditemukan' }}</td>
+                            <td class="text-capitalize p-3">{{ $item->stationery->nama_barang ?? 'Barang tidak ditemukan' }}</td>
+                            <td class="text-uppercase p-3">{{ $item->user->division->division_name ?? 'Divisi tidak ditemukan' }}</td>
                             <td class="p-3">{{ $item->amount }}</td>
                             <td class="p-3">{{ date('d M Y', strtotime($item->dos)) }}</td>
                         </tr>

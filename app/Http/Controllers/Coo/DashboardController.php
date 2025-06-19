@@ -11,7 +11,7 @@ class DashboardController extends Controller
     public function index()
     {
         // Hitung jumlah pengajuan dari divisi yang menunggu persetujuan
-        $menunggu = ItemDemand::where('manager_approval',1)->where('coo_approval', 0)
+        $menunggu = ItemDemand::where('manager_approval',1)->whereNull('coo_approval')
             ->count();
 
         // Hitung jumlah pengajuan dari divisi yang sudah disetujui

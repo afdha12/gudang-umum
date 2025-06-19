@@ -4,7 +4,7 @@
 
 @section('content')
 
-    <div class="max-h-200 overflow-y-auto border shadow-lg rounded-lg">
+    <div class="max-h-auto overflow-y-auto border shadow-lg rounded-lg">
         {{-- <div class="m-3">
             <a class="btn btn-primary" href="{{ route('stationeries.create') }}">Tambah Data Barang</a>
         </div> --}}
@@ -45,7 +45,7 @@
             </table>
 
             @include('partials.pagination', ['data' => $data])
-            
+
         </div>
     </div>
 

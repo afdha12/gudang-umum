@@ -19,7 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
             // 'redirect.notfound' => RedirectIfNotFound::class,
             'password.change' => CheckPasswordChange::class,
-            // 'redirect.authenticated' => RedirectIfAuthenticated::class,
+            'redirect.authenticated' => RedirectIfAuthenticated::class,
         ]);
         $middleware->web(append: [
             \RealRashid\SweetAlert\ToSweetAlert::class,

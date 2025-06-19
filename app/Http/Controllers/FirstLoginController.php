@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Storage;
 
 class FirstLoginController extends Controller
@@ -85,9 +86,15 @@ class FirstLoginController extends Controller
         $user->password_changed = true;
         $user->save();
 
-        Auth::logout();
+        // Auth::logout();
+        event(new Registered($user));
 
-        return redirect()->route('login')->with('success', 'Password berhasil diubah, silakan login kembali.');
+        Auth::login($user);
+
+        // return redirect()->route('login')->with('success', 'Password berhasil diubah, silakan login kembali.');
+        // Redirect ke halaman yang sesuai berdasarkan peran
+        return redirect()->route($user->role . '.dashboard')
+            ->with('success', 'Selamat datang, ' . $user->name . '!');
     }
 
     /**
