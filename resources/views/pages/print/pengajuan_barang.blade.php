@@ -69,27 +69,38 @@
                         <th>No</th>
                         <th>Tanggal Pengajuan</th>
                         <th>Nama Pengaju</th>
-                        <th>Unit/Divisi</th>
+                        {{-- <th>Unit/Divisi</th> --}}
                         <th>Nama Barang</th>
                         <th>Jumlah</th>
+                        <th>Harga Satuan</th>
+                        <th>Subtotal</th>
                     </tr>
                 </thead>
                 <tbody>
+                    @php
+                        $totalHarga = 0;
+                    @endphp
                     @foreach ($approvedData as $index => $item)
+                        @php
+                            $hargaSatuan = $item->stationery->harga_barang ?? 0;
+                            $subtotal = $item->amount * $hargaSatuan;
+                            $totalHarga += $subtotal;
+                        @endphp
                         <tr>
                             <td>{{ $index + 1 }}</td>
                             <td>{{ date('d M Y', strtotime($item->dos)) }}</td>
                             <td class="text-capitalize">{{ strtolower($item->user->name) }}</td>
-                            <td class="text-uppercase">{{ $item->user->division->division_name }}</td>
+                            {{-- <td class="text-uppercase">{{ $item->user->division->division_name }}</td> --}}
                             <td class="text-uppercase">{{ $item->stationery->nama_barang }}</td>
                             <td>{{ $item->amount }}</td>
+                            <td>Rp {{ number_format($hargaSatuan, 0, ',', '.') }}</td>
+                            <td>Rp {{ number_format($subtotal, 0, ',', '.') }}</td>
                         </tr>
                     @endforeach
-                    <!-- Baris total -->
                     <tr>
-                        {{-- <td colspan="5"></td> --}}
-                        <td colspan="5"><strong>Total</strong></td>
-                        <td><strong>{{ $totalJumlah }}</strong></td>
+                        <td colspan="6"><strong>Total</strong></td>
+                        {{-- <td><strong>{{ $totalJumlah }}</strong></td> --}}
+                        <td><strong>Rp {{ number_format($totalHarga, 0, ',', '.') }}</strong></td>
                     </tr>
                 </tbody>
             </table>
