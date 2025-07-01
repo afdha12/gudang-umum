@@ -28,7 +28,11 @@ class ApiController extends Controller
 
     public function getStationeries()
     {
-        return response()->json(Stationery::orderBy('nama_barang')->get(['id', 'nama_barang', 'stok']));
+        return response()->json(
+            Stationery::where('status_barang', 1)
+                ->orderBy('nama_barang')
+                ->get(['id', 'nama_barang', 'stok'])
+        );
     }
 
 }
