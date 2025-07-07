@@ -200,7 +200,7 @@ class ItemDemandController extends Controller
         $notes = $request->input('notes', []);
         $statuses = $request->input('status', []);
         $action = $request->input('action'); // 'approve' jika tombol disetujui ditekan
-        $userRole = auth()->user()->role;
+        // $userRole = auth()->user()->role;
 
         foreach ($amounts as $id => $value) {
             $item = ItemDemand::with('stationery')
@@ -264,6 +264,7 @@ class ItemDemandController extends Controller
                         ]);
 
                         $item->status = 1;
+                        $item->admin_approved_at = now(); // simpan waktu persetujuan
                     } else {
                         return redirect()->back()->with('error', 'Stok tidak mencukupi untuk barang: ' . $stationery->nama_barang);
                     }

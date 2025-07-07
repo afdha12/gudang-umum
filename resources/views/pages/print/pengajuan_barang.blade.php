@@ -94,13 +94,13 @@
                             <td class="text-uppercase">{{ $item->stationery->nama_barang }}</td>
                             <td>{{ $item->amount }}</td>
                             <td>Rp {{ number_format($hargaSatuan, 0, ',', '.') }}</td>
-                            <td>Rp {{ number_format($subtotal, 0, ',', '.') }}</td>
+                            <td class="text-nowrap">Rp {{ number_format($subtotal, 0, ',', '.') }}</td>
                         </tr>
                     @endforeach
                     <tr>
                         <td colspan="6"><strong>Total</strong></td>
                         {{-- <td><strong>{{ $totalJumlah }}</strong></td> --}}
-                        <td><strong>Rp {{ number_format($totalHarga, 0, ',', '.') }}</strong></td>
+                        <td class="text-nowrap"><strong>Rp {{ number_format($totalHarga, 0, ',', '.') }}</strong></td>
                     </tr>
                 </tbody>
             </table>

@@ -12,7 +12,7 @@
                 <div class="col-5">
                     <div class="mb-4">
                         <label for="name" class="form-label">Nama</label>
-                        <input type="text" class="form-control" id="name" name="name"
+                        <input type="text" class="w-full rounded border" id="name" name="name"
                             value="{{ old('name', $data->name) }}" required>
                         @error('name')
                             <div class="text-danger">{{ $message }}</div>
@@ -20,7 +20,7 @@
                     </div>
                     <div class="mb-4">
                         <label for="username" class="form-label">Username</label>
-                        <input type="text" class="form-control" id="username" name="username"
+                        <input type="text" class="w-full rounded border" id="username" name="username"
                             value="{{ old('username', $data->username) }}">
                         @error('username')
                             <div class="text-danger">{{ $message }}</div>
@@ -28,16 +28,35 @@
                     </div>
                     <div class="mb-4">
                         <label for="email" class="form-label">E-mail</label>
-                        <input type="text" class="form-control" id="email" name="email"
+                        <input type="text" class="w-full rounded border" id="email" name="email"
                             value="{{ old('email', $data->email) }}">
                         @error('email')
                             <div class="text-danger">{{ $message }}</div>
                         @enderror
                     </div>
                     <div class="mb-4">
+
                         <label for="division" class="form-label">Divisi</label>
-                        <div class="input-group">
-                            <select name="division_id" id="division_id" class="form-control text-uppercase">
+
+                        <div class="flex items-center">
+                            <select name="division_id" id="division_id" class="block w-full border rounded-l px-3 py-2 text-uppercase"
+                                required>
+                                <option value="">-- Pilih Divisi --</option>
+                                @foreach ($divisions as $division)
+                                    <option value="{{ $division->id }}" @if ($division->id == $data->division_id) selected @endif>
+                                        {{ $division->division_name }}</option>
+                                @endforeach
+                            </select>
+                            <div class="ms-1 rounded-r border-y border-r">
+                                <button type="button" class="btn" data-bs-toggle="modal"
+                                    data-bs-target="#addDivisionModal">
+                                    <i class="bi bi-plus-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        {{-- <div class="input-group">
+                            <select name="division_id" id="division_id" class="w-full rounded border text-uppercase">
                                 <option value="">-- Pilih Divisi --</option>
                                 @foreach ($divisions as $division)
                                     <option value="{{ $division->id }}" @if ($division->id == $data->division_id) selected @endif>
@@ -48,7 +67,7 @@
                                 data-bs-target="#addDivisionModal">
                                 <i class="bi bi-plus-lg"></i>
                             </button>
-                        </div>
+                        </div> --}}
                         @error('division')
                             <div class="text-danger">{{ $message }}</div>
                         @enderror
@@ -58,7 +77,7 @@
                 <div class="col-5">
                     <div class="mb-4">
                         <label for="role" class="form-label">Role</label>
-                        <select name="role" id="role" class="form-control">
+                        <select name="role" id="role" class="w-full rounded border">
                             {{-- <option value="">-- Pilih Divisi --</option> --}}
                             <option value="admin" {{ $data->role == 'admin' ? 'selected' : '' }}>Admin</option>
                             <option value="manager" {{ $data->role == 'manager' ? 'selected' : '' }}>Manager</option>
@@ -69,7 +88,7 @@
                                     {{ $role }}</option>
                             @endforeach --}}
                         </select>
-                        {{-- <input type="text" class="form-control" id="role" name="role"
+                        {{-- <input type="text" class="w-full rounded border" id="role" name="role"
                             value="{{ old('role', $data->role) }}"> --}}
                         @error('role')
                             <div class="text-danger">{{ $message }}</div>
@@ -101,7 +120,7 @@
                 <div class="modal-body">
                     <form id="addDivisionForm">
                         @csrf
-                        <input type="text" id="newDivisionName" name="division_name" class="form-control"
+                        <input type="text" id="newDivisionName" name="division_name" class="w-full rounded border"
                             placeholder="Nama Divisi" required autofocus>
                     </form>
                 </div>

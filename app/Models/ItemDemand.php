@@ -16,7 +16,10 @@ class ItemDemand extends Model
         'manager_approval',
         'coo_approval',
         'status',
-        'rejected_by'
+        'rejected_by',
+        'manager_approved_at',
+        'coo_approved_at',
+        'admin_approved_at',
     ];
 
     public function user()

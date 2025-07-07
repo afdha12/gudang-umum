@@ -261,6 +261,7 @@ class ItemDemandController extends Controller
             // Jika disetujui oleh manager
             if ($action === 'approve' && auth()->user()->role === 'manager') {
                 $item->manager_approval = 1;
+                $item->manager_approved_at = now(); // simpan waktu persetujuan
             }
 
             $item->save();

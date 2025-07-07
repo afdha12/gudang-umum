@@ -14,13 +14,13 @@
 @endphp
 
 @section('content')
-    <div class="container mt-4">
-        <div class="card shadow-lg">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Detail & Persetujuan Permintaan</h5>
-                <small>{{ $user->name }} - {{ \Carbon\Carbon::parse($date)->format('d-m-Y') }}</small>
+    <div class="max-w-7xl mx-auto mt-4 px-4">
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+            <div class="bg-blue-600 text-white px-4 py-3">
+                <h5 class="text-lg font-semibold mb-0">Detail & Persetujuan Permintaan</h5>
+                <small class="block">{{ $user->name }} - {{ \Carbon\Carbon::parse($date)->format('d-m-Y') }}</small>
             </div>
-            <div class="card-body">
+            <div class="p-4">
                 <form action="{{ route($rolePrefix . '.update_by_date', ['user' => $user->id, 'date' => $date]) }}"
                     method="POST">
                     @csrf
@@ -29,31 +29,29 @@
                     @foreach ($items as $item)
                         @php
                             $readOnly = false;
-                            // Jika sudah disetujui oleh gudang
                             if ($item->status === 1) {
                                 $readOnly = true;
-                            }
-                            // Jika sudah direject oleh siapapun
-                            elseif ($item->status === 0 || $item->manager_approval === 0 || $item->coo_approval === 0) {
+                            } elseif (
+                                $item->status === 0 ||
+                                $item->manager_approval === 0 ||
+                                $item->coo_approval === 0
+                            ) {
                                 $readOnly = true;
-                            }
-                            // Jika role coo dan sudah approve/reject
-                            elseif ($role === 'coo' && ($item->status === 1 || $item->coo_approval === 1)) {
+                            } elseif ($role === 'coo' && ($item->status === 1 || $item->coo_approval === 1)) {
                                 $readOnly = true;
-                            }
-                            // Jika role manager dan sudah approve/reject
-                            elseif (
+                            } elseif (
                                 $role === 'manager' &&
                                 ($item->status === 1 || $item->coo_approval === 1 || $item->manager_approval === 1)
                             ) {
                                 $readOnly = true;
                             }
                         @endphp
-                        <div class="mb-4 p-3 border rounded">
-                            <div class="row mb-2">
-                                <div class="col-md-3">
+
+                        <div class="mb-4 p-4 border rounded">
+                            <div class="md:flex md:gap-4 mb-2">
+                                <div class="md:w-1/4">
                                     <div>
-                                        <h6 class="text-uppercase">
+                                        <h6 class="uppercase font-semibold">
                                             {{ $item->stationery->nama_barang }}
                                         </h6>
                                         <p class="my-2">Stok: <strong>{{ $item->stationery->stok }}</strong>
@@ -67,16 +65,14 @@
                                                 Rp{{ number_format($item->amount * $item->stationery->harga_barang, 0, ',', '.') }}
                                             </strong>
                                         </p>
-                                        {{-- @if ($item->status == 1)
-                                            <span class="badge bg-success">Disetujui Gudang</span>
-                                        @endif --}}
-                                        {{-- Persetujuan Gudang/Admin --}}
+
                                         @if ($item->manager_approval === 1 && $item->coo_approval === 1 && $item->status === 1)
-                                            <span class="badge bg-success">Disetujui Gudang</span>
+                                            <span
+                                                class="inline-block bg-green-600 text-white text-xs px-2 py-1 rounded">Disetujui
+                                                Gudang</span>
                                         @endif
 
                                         @php
-                                            // $currentRole = auth()->user()->role;
                                             $isRejected = false;
                                             $approved = false;
 
@@ -87,7 +83,6 @@
                                                 $isRejected = $item->coo_approval === 0;
                                                 $approved = $item->coo_approval === 1;
                                             } elseif ($role === 'admin') {
-                                                // $isRejected = $item->status === 0;
                                                 $isRejected =
                                                     $item->status === 0 ||
                                                     $item->manager_approval === 0 ||
@@ -97,44 +92,51 @@
                                         @endphp
 
                                         @if ($isRejected)
-                                            <span class="badge bg-danger">
+                                            <span class="inline-block bg-red-600 text-white text-xs px-2 py-1 rounded">
                                                 Ditolak oleh {{ $item->rejected_by ?? '-' }}
                                             </span>
                                         @endif
-
                                     </div>
                                 </div>
-                                <div class="col-md-9">
-                                    <label class="form-label">Jumlah Permintaan</label>
+
+                                <div class="md:w-3/4 mt-4 md:mt-0">
+                                    <label class="block text-sm font-medium mb-1">Jumlah Permintaan</label>
                                     <input type="number" name="amount[{{ $item->id }}]" value="{{ $item->amount }}"
-                                        class="form-control form-control-sm jumlah-permintaan" min="1"
+                                        class="w-full px-3 py-1.5 border rounded text-sm jumlah-permintaan" min="1"
                                         data-id="{{ $item->id }}" data-harga="{{ $item->stationery->harga_barang }}"
                                         @if ($readOnly || $item->status == 1) readonly @endif>
+
                                     <input type="hidden" name="status[{{ $item->id }}]"
                                         value="{{ $item->status ?? '' }}" class="status-input"
                                         data-id="{{ $item->id }}">
-                                    <label class="form-label mt-2">Catatan Tambahan</label>
-                                    <textarea name="notes[{{ $item->id }}]" class="form-control" rows="1"
+
+                                    <label class="block text-sm font-medium mt-3">Catatan Tambahan</label>
+                                    <textarea name="notes[{{ $item->id }}]" class="w-full px-3 py-2 border rounded text-sm" rows="1"
                                         @if ($readOnly || $item->status == 1) readonly @endif>{{ old("notes.$item->id") }}</textarea>
+
                                     @if (is_null($item->status) && !$readOnly)
-                                        <button type="button" class="btn btn-danger btn-sm mt-2 reject-btn"
+                                        <button type="button"
+                                            class="mt-2 px-3 py-1.5 bg-red-600 text-white text-sm rounded reject-btn"
                                             data-id="{{ $item->id }}">
                                             <i class="bi bi-x-circle"></i> Reject
                                         </button>
-                                        <span class="badge bg-danger d-none rejected-badge"
+                                        <span
+                                            class="ml-2 bg-red-600 text-white text-xs px-2 py-1 rounded d-none rejected-badge"
                                             data-id="{{ $item->id }}">Rejected</span>
                                     @elseif ($isRejected)
-                                        <span class="badge bg-danger">Rejected</span>
+                                        <span
+                                            class="inline-block mt-2 bg-red-600 text-white text-xs px-2 py-1 rounded">Rejected</span>
                                     @elseif ($approved)
-                                        <span class="badge bg-success">Disetujui</span>
+                                        <span
+                                            class="inline-block mt-2 bg-green-600 text-white text-xs px-2 py-1 rounded">Disetujui</span>
                                     @endif
                                 </div>
                             </div>
 
                             @if ($item->notes)
                                 <div class="mt-2">
-                                    <label class="form-label">Riwayat Catatan</label>
-                                    <div class="bg-light p-2 border rounded" style="white-space: pre-line;">
+                                    <label class="block text-sm font-medium mb-1">Riwayat Catatan</label>
+                                    <div class="bg-gray-100 p-2 border rounded whitespace-pre-line text-sm">
                                         {{ $item->notes }}
                                     </div>
                                 </div>
@@ -142,27 +144,23 @@
                         </div>
                     @endforeach
 
-                    {{-- <div class="mb-3">
-                        <h5>Total Semua: <span id="grand-total">
-                                Rp{{ number_format($items->sum(fn($item) => $item->amount * $item->stationery->harga_barang), 0, ',', '.') }}
-                            </span>
-                        </h5>
-                    </div> --}}
-                    <div class="mb-3">
-                        <h5>Total Semua:
+                    <div class="mb-4">
+                        <h5 class="text-lg font-semibold">Total Semua:
                             <span id="grand-total">
                                 Rp{{ number_format($items->filter(fn($item) => $item->status !== 0)->sum(fn($item) => $item->amount * $item->stationery->harga_barang), 0, ',', '.') }}
                             </span>
                         </h5>
                     </div>
 
-                    <div class="d-flex justify-content-between">
+                    <div class="flex justify-between items-center">
                         @if ($adaBelumDisetujui)
-                            <button type="submit" name="action" value="approve" class="btn btn-success">
+                            <button type="submit" name="action" value="approve"
+                                class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
                                 <i class="bi bi-check-circle"></i> Setujui Semua
                             </button>
                         @endif
-                        <a href="{{ route($rolePrefix . '.index') }}" class="btn btn-secondary">Kembali</a>
+                        <a href="{{ route($rolePrefix . '.index') }}"
+                            class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 text-sm">Kembali</a>
                     </div>
                 </form>
             </div>

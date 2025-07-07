@@ -169,7 +169,7 @@ class PengajuanBarangController extends Controller
         $notes = $request->input('notes', []);
         $action = $request->input('action'); // menangkap 'approve' jika diklik
         $statuses = $request->input('status', []);
-        $userRole = auth()->user()->role;
+        // $userRole = auth()->user()->role;
 
         foreach ($amounts as $id => $value) {
             $item = ItemDemand::where('id', $id)
@@ -217,6 +217,7 @@ class PengajuanBarangController extends Controller
             // Jika disetujui oleh COO
             if ($action === 'approve' && auth()->user()->role === 'coo') {
                 $item->coo_approval = 1;
+                $item->coo_approved_at = now(); // simpan waktu persetujuan
             }
 
             $item->save();

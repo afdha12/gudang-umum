@@ -120,6 +120,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('demand.edit_by_date');
         Route::put('/demand/{user}/date/{date}', [AdminItemDemandController::class, 'updateByDate'])
             ->name('demand.update_by_date');
+        Route::get('/export-bulanan', [PrintDemandController::class, 'exportExcel'])->name('export.bulanan');
     });
 });
 

@@ -13,7 +13,7 @@
                 <a class="btn btn-secondary" href="{{ route('stationeries.export') }}">Export Data Barang</a>
             </div>
             <div class="ms-auto">
-                <input type="text" class="form-control ml-3" placeholder="Cari barang..." id="search">
+                <input type="text" class="border rounded" placeholder="Cari barang..." id="search">
             </div>
         </div>
         <div class="table-responsive">

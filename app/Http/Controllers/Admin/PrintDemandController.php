@@ -8,6 +8,8 @@ use App\Models\ItemDemand;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\MonthlyUserDemandExport;
 use Barryvdh\DomPDF\Facade\Pdf as Dompdf;
 use Spatie\LaravelPdf\Facades\Pdf as Pdf;
 
@@ -35,8 +37,16 @@ class PrintDemandController extends Controller
             ->orderByDesc('dos')
             ->paginate(10)
             ->appends($request->all());
+            
+        // Ambil daftar bulan dan tahun unik dari ItemDemand
+        $availablePeriods = ItemDemand::selectRaw('YEAR(dos) as tahun, MONTH(dos) as bulan')
+            ->where('status', 1)
+            ->distinct()
+            ->orderByDesc('tahun')
+            ->orderByDesc('bulan')
+            ->get();
 
-        return view('pages.print.index', compact('approvedItems', 'users'));
+        return view('pages.print.index', compact('approvedItems', 'users', 'availablePeriods'));
     }
 
     /**
@@ -80,8 +90,13 @@ class PrintDemandController extends Controller
         $pdf = Pdf::view('pages.print.pengajuan_barang', compact('approvedData', 'manager', 'admin', 'coo', 'totalJumlah'))
             ->format('A4')
             ->name('pengajuan_barang.pdf');
-
         return $pdf->inline();
+
+        // $pdf = Dompdf::loadView('pages.print.pengajuan_barang', compact('approvedData', 'manager', 'admin', 'coo', 'totalJumlah'))
+        //     ->setPaper('A4')
+        //     ->setWarnings(false);
+
+        // return $pdf->stream();
     }
 
 
@@ -117,5 +132,33 @@ class PrintDemandController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function exportExcel(Request $request)
+    {
+        $from = $request->input('from');
+        $to = $request->input('to');
+        $bulan = $request->input('bulan');
+        $tahun = $request->input('tahun');
+
+        // Nama bulan Indonesia
+        $bulanIndo = [
+            1 => 'Januari',
+            2 => 'Februari',
+            3 => 'Maret',
+            4 => 'April',
+            5 => 'Mei',
+            6 => 'Juni',
+            7 => 'Juli',
+            8 => 'Agustus',
+            9 => 'September',
+            10 => 'Oktober',
+            11 => 'November',
+            12 => 'Desember'
+        ];
+        $namaBulan = $bulanIndo[(int) $bulan] ?? $bulan;
+
+        $filename = 'Rekap_Permintaan_' . $namaBulan . '_' . $tahun . '.xlsx';
+        return Excel::download(new MonthlyUserDemandExport($from, $to), $filename);
     }
 }

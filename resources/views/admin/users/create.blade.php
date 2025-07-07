@@ -15,7 +15,7 @@
 
                 <div class="mb-4">
                     <label for="name" class="form-label">Name</label>
-                    <input type="text" name="name" class="form-control" required>
+                    <input type="text" name="name" class="w-full border rounded px-3 py-2" required>
                     @error('name')
                         <div class="text-danger">{{ $message }}</div>
                     @enderror
@@ -23,7 +23,7 @@
 
                 <div class="mb-4">
                     <label for="username" class="form-label">Username</label>
-                    <input type="text" name="username" class="form-control" required>
+                    <input type="text" name="username" class="w-full border rounded px-3 py-2" required>
                     @error('username')
                         <div class="text-danger">{{ $message }}</div>
                     @enderror
@@ -31,7 +31,7 @@
 
                 <div class="mb-4">
                     <label for="email" class="form-label">Email</label>
-                    <input type="email" name="email" class="form-control" required>
+                    <input type="email" name="email" class="w-full border rounded px-3 py-2" required>
                     @error('email')
                         <div class="text-danger">{{ $message }}</div>
                     @enderror
@@ -39,7 +39,7 @@
 
                 <div class="mb-4">
                     <label for="role" class="form-label">Role</label>
-                    <select name="role" class="form-control" required>
+                    <select name="role" class="w-full border rounded px-3 py-2" required>
                         <option value="user">Staff</option>
                         <option value="coo">Wadirum</option>
                         <option value="manager">Manager</option>
@@ -52,8 +52,34 @@
 
                 <div class="mb-4">
                     <label for="division" class="form-label">Divisi</label>
-                    <div class="input-group">
-                        <select name="division_id" id="division_id" class="form-control text-uppercase" required>
+
+                    <div class="flex items-center">
+                        <select name="division_id" id="division_id"
+                            class="block w-full border rounded-l px-3 py-2 text-uppercase" required>
+                            <option value="">-- Pilih Divisi --</option>
+                            @foreach ($divisions as $division)
+                                <option value="{{ $division->id }}">{{ $division->division_name }}</option>
+                            @endforeach
+                        </select>
+                        {{-- <input type="text" name="price" id="price"
+                            class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none sm:text-sm/6"
+                            placeholder="0.00" /> --}}
+                        <div class="grid rounded-r border shrink-0 grid-cols-1 focus-within:relative">
+                            <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#addDivisionModal">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                            {{-- <svg class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"
+                                viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" data-slot="icon">
+                                <path fill-rule="evenodd"
+                                    d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z"
+                                    clip-rule="evenodd" />
+                            </svg> --}}
+                        </div>
+                    </div>
+
+                    {{-- <div class="input-group">
+                        <select name="division_id" id="division_id"
+                            class="block w-full border rounded px-3 py-2 text-uppercase" required>
                             <option value="">-- Pilih Divisi --</option>
                             @foreach ($divisions as $division)
                                 <option value="{{ $division->id }}">{{ $division->division_name }}</option>
@@ -63,7 +89,7 @@
                             data-bs-target="#addDivisionModal">
                             <i class="bi bi-plus-lg"></i>
                         </button>
-                    </div>
+                    </div> --}}
                     @error('division')
                         <div class="text-danger">{{ $message }}</div>
                     @enderror
@@ -84,7 +110,7 @@
                 <div class="modal-body">
                     <form id="addDivisionForm">
                         @csrf
-                        <input type="text" id="newDivisionName" name="division_name" class="form-control"
+                        <input type="text" id="newDivisionName" name="division_name" class="w-full border rounded px-3 py-2"
                             placeholder="Nama Divisi" required>
                     </form>
                 </div>
@@ -106,8 +132,8 @@
                 <div class="modal-body">
                     <form id="addDivisionForm">
                         @csrf
-                        <input type="text" id="newDivisionName" name="division_name" class="form-control text-uppercase"
-                            placeholder="Nama Divisi" required>
+                        <input type="text" id="newDivisionName" name="division_name"
+                            class="w-full border rounded px-3 py-2 text-uppercase" placeholder="Nama Divisi" required>
                     </form>
                 </div>
                 <div class="modal-footer">
