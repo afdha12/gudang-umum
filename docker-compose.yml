@@ -1,42 +1,26 @@
 version: '3.8'
 
 services:
-  laravel_franken:
-    container_name: laravel_franken
-    build: .
-    image: image_laravel_franken
+  app_gu:
+    container_name: app_gu
+    image: laravel_app_gu
+    restart: unless-stopped
+    build:
+      context: .
+      # dockerfile: worker.dockerfile
     ports:
-      - "8080:80"
-    volumes:
-      - .:/app
+      - "8001:8001"
+    # volumes:
+    #   - .:/app
     env_file:
       - .env
-    depends_on:
-      - db
-      
-  db:
-    container_name: mysql_laravel
-    image: mysql:8.0
-    ports:
-      - "3307:3306"
     environment:
-      MYSQL_DATABASE: gudang_umum
-      MYSQL_ROOT_PASSWORD: secret
-    volumes:
-      - db_data:/var/lib/mysql
+      - APP_ENV=${APP_ENV}
+      - APP_DEBUG=${APP_DEBUG}
+      - APP_URL=${APP_URL}
+    networks:
+      - docker_appnet
 
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    container_name: phpmyadmin
-    restart: always
-    ports:
-      - "8085:80"  # Port untuk phpMyAdmin di host
-    environment:
-      PMA_HOST: db  # Nama service MySQL di Docker Compose
-      PMA_PORT: 3306
-      UPLOAD_LIMIT: 64M
-    depends_on:
-      - db
-
-volumes:
-  db_data:
+networks:
+  docker_appnet:
+    external: true  # ← karena jaringan sudah dibuat di luar compose
