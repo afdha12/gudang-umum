@@ -72,14 +72,18 @@ class ItemDemand extends Model
         // $level: 1=Manager, 2=COO, 3=Admin
 
         if ($level == 1) {
+            // User bisa edit jika Manager, COO, dan Admin belum setuju
+            return is_null($this->manager_approval) && is_null($this->coo_approval) && is_null($this->status);
+        }
+        if ($level == 2) {
             // Manager bisa edit jika COO & Admin belum setuju
             return is_null($this->coo_approval) && is_null($this->status);
         }
-        if ($level == 2) {
+        if ($level == 3) {
             // COO bisa edit jika Admin belum setuju
             return is_null($this->status);
         }
-        if ($level == 3) {
+        if ($level == 4) {
             // Admin bisa edit jika status masih null (belum approve/reject admin)
             return is_null($this->status);
         }

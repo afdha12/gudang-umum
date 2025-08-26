@@ -25,7 +25,7 @@ class StationeryController extends Controller
 
         // Query dasar berdasarkan jenis barang
         $queryBuilder = Stationery::where('jenis_barang', $type)
-        ->where('status_barang', true); // Hanya ambil barang yang aktif
+            ->where('status_barang', true); // Hanya ambil barang yang aktif
 
         // Jika ada pencarian, filter berdasarkan nama atau kode barang
         if ($query) {
@@ -114,7 +114,7 @@ class StationeryController extends Controller
         // return view('admin.stationery.show', compact('stationery'));
         $detailedItem = BarangHistory::with('stationery')
             ->where('stationery_id', $stationery_id)
-            ->orderByDesc('tanggal')
+            ->orderByDesc('created_at')
             ->paginate(10);
 
         return view('admin.stationeries.history', compact('detailedItem'));
@@ -143,32 +143,50 @@ class StationeryController extends Controller
             'harga_barang' => 'required|string|max:255',
             'satuan' => 'required|string|max:255',
             'stok' => 'required|integer',
-            'masuk' => 'nullable|integer',
-            'tambah' => 'nullable|integer', // pastikan ini divalidasi juga
+            // 'masuk' => 'nullable|integer',
+            'tambah' => 'nullable|integer', // untuk menambah stok
+            'kurang' => 'nullable|integer', // untuk mengurangi stok
         ]);
 
         // Format harga_barang agar hanya angka
         $validated['harga_barang'] = preg_replace('/\D/', '', $request->harga_barang);
 
+        // Inisialisasi variabel untuk history
+        $jenisHistory = null;
+        $jumlahHistory = 0;
+
         if ($request->filled('tambah') && $request->tambah > 0) {
             // Jika menambah stok
             $validated['stok'] = $stationery->stok + $request->tambah;
             $validated['masuk'] = $stationery->masuk + $request->tambah;
+            $jenisHistory = 'masuk';
+            $jumlahHistory = $request->tambah;
 
-            // Simpan ke history
-            BarangHistory::create([
-                'stationery_id' => $stationery->id,
-                'jenis' => 'masuk',
-                'jumlah' => $request->tambah,
-                'tanggal' => now(),
-            ]);
+        } elseif ($request->filled('kurang') && $request->kurang > 0) {
+            // Jika mengurangi stok
+            // Pastikan tidak mengurangi lebih dari stok yang ada
+            $jumlahKurang = min($request->kurang, $stationery->stok);
+            $validated['stok'] = $stationery->stok - $jumlahKurang;
+            $jenisHistory = 'keluar';
+            $jumlahHistory = $jumlahKurang;
+
         } else {
-            // Tidak menambah stok, pakai stok lama
+            // Tidak ada perubahan stok, pakai stok lama
             $validated['stok'] = $stationery->stok;
             $validated['masuk'] = $stationery->masuk;
         }
 
         $stationery->update($validated);
+
+        // Simpan ke history jika ada perubahan stok
+        if ($jenisHistory && $jumlahHistory > 0) {
+            BarangHistory::create([
+                'stationery_id' => $stationery->id,
+                'jenis' => $jenisHistory,
+                'jumlah' => $jumlahHistory,
+                'tanggal' => now(),
+            ]);
+        }
 
         $type = $stationery->jenis_barang;
 

@@ -31,7 +31,7 @@ class ApiController extends Controller
         return response()->json(
             Stationery::where('status_barang', 1)
                 ->orderBy('nama_barang')
-                ->get(['id', 'nama_barang', 'stok'])
+                ->get(['id', 'nama_barang', 'stok', 'harga_barang'])
         );
     }
 

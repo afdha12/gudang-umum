@@ -63,14 +63,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Route::get('/change-password', [FirstLoginController::class, 'show'])->name('password.change');
     // Route::post('/change-password', [FirstLoginController::class, 'update'])->name('password.update');
     Route::resource('change-password', FirstLoginController::class);
-    Route::resource('act-btn', ActionButtonController::class);
+    // Route::resource('act-btn', ActionButtonController::class);
+    Route::get('/proxy/stationeries', function () {
+        $token = env('GO_API_TOKEN');
+
+        $response = Http::withToken($token)
+            ->get('http://10.32.1.219:3000/api/stationeries');
+
+        return response()->json($response->json(), $response->status());
+    });
+
     // Route untuk User
     Route::prefix('user')->middleware(['role:user', 'password.change'])->group(function () {
-        Route::get('/get-stationery', [ApiController::class, 'getStationeries'])->name('getStationeries');
         // Route::resource('item-demands', ItemDemandController::class);
         Route::get('/dashboard', [UserDashboardController::class, 'index'])->name('user.dashboard');
         // Route::resource('data-pengajuan', PengajuanBarangController::class);
         Route::resource('item-demand', UserItemDemandController::class);
+        Route::get('request/stationeries', [ApiController::class, 'getStationeries'])->name('req.stationeries');
+        Route::get('/item-demand/{user}/date/{date}/edit', [UserItemDemandController::class, 'editByDate'])
+            ->name('item-demand.edit_by_date');
+        Route::put('/item-demand/{user}/date/{date}', [UserItemDemandController::class, 'updateByDate'])
+            ->name('item-demand.update_by_date');
     });
 
     // Route untuk Manager

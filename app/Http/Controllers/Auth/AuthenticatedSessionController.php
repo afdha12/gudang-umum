@@ -48,8 +48,8 @@ class AuthenticatedSessionController extends Controller
         }
 
         // Redirect ke halaman yang sesuai berdasarkan peran
-        return redirect()->intended(route($user->role . '.dashboard'))
-            ->with('success', 'Selamat datang, ' . $user->name . '!');
+        return redirect()->intended(route($user->role . '.dashboard'));
+            // ->with('success', 'Selamat datang, ' . $user->name . '!');
     }
 
 

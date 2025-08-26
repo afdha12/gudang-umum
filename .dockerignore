@@ -1,3 +1,8 @@
+
+.env
+.env.example
+.env.docker
+.env.host
 vendor
 node_modules
 public/build

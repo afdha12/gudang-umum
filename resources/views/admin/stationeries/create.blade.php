@@ -15,7 +15,7 @@
 
                 <div class="mb-4">
                     <label for="kode_barang" class="form-label">Kode Barang</label>
-                    <input type="text" name="kode_barang" class="form-control" value="{{ $kode_barang }}" disabled>
+                    <input type="text" name="kode_barang" class="w-full px-3 py-1.5 border rounded" value="{{ $kode_barang }}" disabled>
                     <input type="hidden" name="kode_barang" value="{{ $kode_barang }}">
                     @error('kode_barang')
                         <div class="text-danger">{{ $message }}</div>
@@ -27,7 +27,7 @@
 
                 <div class="mb-4">
                     <label for="nama_barang" class="form-label">Nama Barang</label>
-                    <input type="text" name="nama_barang" class="form-control text-capitalize" value="{{ old('nama_barang') }}" required>
+                    <input type="text" name="nama_barang" class="w-full px-3 py-1.5 border rounded text-capitalize" value="{{ old('nama_barang') }}" required>
                     @error('nama_barang')
                         <div class="text-danger">{{ $message }}</div>
                     @enderror
@@ -35,7 +35,7 @@
 
                 <div class="mb-4">
                     <label for="harga_barang" class="form-label">Harga Barang</label>
-                    <input type="text" name="harga_barang" id="harga" value="{{ old('harga_barang') }}" class="form-control" required>
+                    <input type="text" name="harga_barang" id="harga" value="{{ old('harga_barang') }}" class="w-full px-3 py-1.5 border rounded" required>
                     @error('harga_barang')
                         <div class="text-danger">{{ $message }}</div>
                     @enderror
@@ -43,14 +43,14 @@
 
                 {{-- <div class="mb-4">
                     <label for="jenis_barang" class="form-label">Jenis Barang</label>
-                    <input type="text" name="jenis_barang" value="{{ old('nama_barang') }}" class="form-control" required>
+                    <input type="text" name="jenis_barang" value="{{ old('nama_barang') }}" class="w-full px-3 py-1.5 border rounded" required>
                     @error('jenis_barang')
                         <div class="text-danger">{{ $message }}</div>
                     @enderror
                 </div> --}}
                 <div class="mb-4">
                     <label for="stok" class="form-label">Jumlah</label>
-                    <input type="number" name="stok" value="{{ old('stok') }}" class="form-control">
+                    <input type="number" name="stok" value="{{ old('stok') }}" class="w-full px-3 py-1.5 border rounded">
                     @error('stok')
                         <div class="text-danger">{{ $message }}</div>
                     @enderror
@@ -58,7 +58,7 @@
 
                 <div class="mb-4">
                     <label for="satuan" class="form-label">Satuan</label>
-                    <input type="text" name="satuan" value="{{ old('satuan') }}" class="form-control">
+                    <input type="text" name="satuan" value="{{ old('satuan') }}" class="w-full px-3 py-1.5 border rounded">
                     @error('satuan')
                         <div class="text-danger">{{ $message }}</div>
                     @enderror

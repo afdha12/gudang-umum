@@ -3,8 +3,7 @@
 @section('title', 'Pengajuan Barang')
 
 @section('content')
-    <div class="container max-w-2xl mx-auto">
-        {{-- <form id="pengajuanForm" action="{{ route('item-demand.storeMultiple') }}" method="POST"> --}}
+    <div class="container max-w-7xl mx-auto mt-4 px-4">
         <form action="{{ route('item-demand.store') }}" method="POST">
             @csrf
 
@@ -17,8 +16,8 @@
                 <div class="grid grid-cols-1 gap-4">
                     <div class="relative">
                         <label for="searchBarang" class="block mb-2 font-medium text-sm text-gray-700">Nama Barang</label>
-                        <input type="text" id="searchBarang" class="form-control mb-2" placeholder="Cari nama barang..."
-                            autocomplete="off">
+                        <input type="text" id="searchBarang" class="w-full px-3 py-1.5 border rounded mb-2"
+                            placeholder="Cari nama barang..." autocomplete="off">
                         <div id="dropdownBarang" class="bg-white border rounded shadow absolute z-10 w-full"
                             style="display:none; max-height:200px; overflow-y:auto;"></div>
                         <input type="hidden" id="stationery_id" name="stationery_id">
@@ -26,12 +25,18 @@
 
                     <div>
                         <label class="mb-2">Stok</label>
-                        <input type="number" id="stok" class="form-control" readonly>
+                        <input type="number" id="stok" class="w-full px-3 py-1.5 border rounded" readonly>
                     </div>
+
+                    {{-- <div>
+                        <label class="mb-2">Harga</label>
+                        <input type="text" id="harga" class="w-full px-3 py-1.5 border rounded">
+                    </div> --}}
+                    <input type="hidden" id="harga">
 
                     <div>
                         <label class="mb-2">Jumlah</label>
-                        <input type="number" id="jumlah" class="form-control">
+                        <input type="number" id="jumlah" class="w-full px-3 py-1.5 border rounded">
                     </div>
 
                     <button type="button" id="tambahBarang" class="btn btn-success">Tambah Barang</button>
@@ -46,12 +51,18 @@
                         <tr>
                             <th>Nama Barang</th>
                             <th>Jumlah</th>
+                            <th>Harga Satuan</th>
+                            <th>Total Harga</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <!-- List item akan ditambahkan dengan JS -->
-                    </tbody>
+                    <tbody></tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="3" class="text-right">Subtotal</th>
+                            <th colspan="2" id="subtotal">Rp0</th>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
 
@@ -61,21 +72,20 @@
         </form>
     </div>
 
-    <!-- Script -->
     <script>
         let daftarBarang = [];
         let allBarang = [];
+        const stationeriesUrl = "{{ route('req.stationeries') }}";
 
-        $(document).ready(function() {
-            // Ambil semua barang saat halaman dimuat
+        $(document).ready(function () {
             $.ajax({
-                url: "{{ url('user/get-stationery') }}",
+                url: stationeriesUrl,
                 type: "GET",
                 dataType: "json",
-                success: function(response) {
+                success: function (response) {
                     allBarang = response;
                 },
-                error: function(xhr) {
+                error: function () {
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',
@@ -84,18 +94,9 @@
                 }
             });
 
-            // Pencarian manual dengan dropdown custom
-            $('#searchBarang').on('input', function() {
+            $('#searchBarang').on('input', function () {
                 const keyword = $(this).val().toLowerCase();
-                let filtered = [];
-
-                if (!keyword) {
-                    // Jika input kosong, tampilkan semua barang
-                    filtered = allBarang;
-                } else {
-                    // Jika ada keyword, filter barang
-                    filtered = allBarang.filter(item => item.nama_barang.toLowerCase().includes(keyword));
-                }
+                const filtered = !keyword ? allBarang : allBarang.filter(item => item.nama_barang.toLowerCase().includes(keyword));
 
                 if (filtered.length === 0) {
                     $('#dropdownBarang').hide();
@@ -105,97 +106,100 @@
                 let html = '';
                 filtered.forEach(item => {
                     html += `<div class="px-3 py-2 hover:bg-gray-200 cursor-pointer" 
-                        data-id="${item.id}" 
-                        data-nama="${item.nama_barang.toUpperCase()}" 
-                        data-stok="${item.stok}">
-                        ${item.nama_barang.toUpperCase()}
-                    </div>`;
+                    data-id="${item.id}" 
+                    data-nama="${item.nama_barang.toUpperCase()}" 
+                    data-harga="${item.harga_barang}" 
+                    data-stok="${item.stok}">
+                    ${item.nama_barang.toUpperCase()} (Rp${formatRupiah(item.harga_barang)})
+                </div>`;
                 });
                 $('#dropdownBarang').html(html).show();
             });
 
-            // Pilih barang dari dropdown
-            $('#dropdownBarang').on('click', 'div', function() {
-                const id = $(this).data('id');
-                const nama = $(this).data('nama');
-                const stok = $(this).data('stok');
-                $('#searchBarang').val(nama);
-                $('#stationery_id').val(id);
-                $('#stok').val(stok);
+            $('#dropdownBarang').on('click', 'div', function () {
+                $('#searchBarang').val($(this).data('nama'));
+                $('#stationery_id').val($(this).data('id'));
+                $('#harga').val($(this).data('harga'));
+                $('#stok').val($(this).data('stok'));
                 $('#dropdownBarang').hide();
             });
 
-            // Sembunyikan dropdown jika klik di luar
-            $(document).on('click', function(e) {
+            $(document).on('click', function (e) {
                 if (!$(e.target).closest('#searchBarang, #dropdownBarang').length) {
                     $('#dropdownBarang').hide();
                 }
             });
         });
 
-        $('#tambahBarang').click(function() {
+        $('#tambahBarang').click(function () {
             const id = $('#stationery_id').val();
             const nama = $('#searchBarang').val();
             const jumlah = parseInt($('#jumlah').val());
             const stok = parseInt($('#stok').val());
+            const harga = parseFloat($('#harga').val());
 
             if (!id || !jumlah) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Barang dan jumlah harus diisi'
-                });
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Barang dan jumlah harus diisi' });
                 return;
             }
 
             if (jumlah > stok) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Jumlah yang diminta melebihi stok tersedia!'
-                });
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Jumlah melebihi stok!' });
                 return;
             }
 
-            daftarBarang.push({
-                id,
-                nama,
-                jumlah
-            });
-
+            daftarBarang.push({ id, nama, jumlah, harga });
             renderTabel();
 
-            // reset form atas
             $('#searchBarang').val('');
             $('#stationery_id').val('');
             $('#stok').val('');
+            $('#harga').val('');
             $('#jumlah').val('');
         });
 
         function renderTabel() {
             let html = '';
+            let subtotal = 0;
             $('#tabelBarang tbody').empty();
+
             daftarBarang.forEach((item, index) => {
+                const totalHarga = item.harga * item.jumlah;
+                subtotal += totalHarga;
                 html += `
-        <tr>
-            <td>
-                ${item.nama}
-                <input type="hidden" name="items[${index}][stationery_id]" value="${item.id}">
-            </td>
-            <td>
-                ${item.jumlah}
-                <input type="hidden" name="items[${index}][amount]" value="${item.jumlah}">
-            </td>
-            <td><button type="button" onclick="hapusItem(${index})" class="btn btn-danger btn-sm">Hapus</button></td>
-        </tr>
-    `;
+                            <tr>
+                                <td>
+                                    ${item.nama}
+                                    <input type="hidden" name="items[${index}][stationery_id]" value="${item.id}">
+                                </td>
+                                <td>
+                                    ${item.jumlah}
+                                    <input type="hidden" name="items[${index}][amount]" value="${item.jumlah}">
+                                </td>
+                                <td>
+                                    Rp${item.harga.toLocaleString('id-ID')}
+                                    <input type="hidden" name="items[${index}][harga]" value="${item.harga}">
+                                </td>
+                                <td>
+                                    Rp${totalHarga.toLocaleString('id-ID')}
+                                </td>
+                                <td>
+                                    <button type="button" onclick="hapusItem(${index})" class="btn btn-danger btn-sm">Hapus</button>
+                                </td>
+                            </tr>`;
             });
+
             $('#tabelBarang tbody').html(html);
+            $('#subtotal').text(`Rp${subtotal.toLocaleString('id-ID')}`);
         }
 
         function hapusItem(index) {
             daftarBarang.splice(index, 1);
             renderTabel();
+        }
+
+        function formatRupiah(angka) {
+            return angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         }
     </script>
 @endsection

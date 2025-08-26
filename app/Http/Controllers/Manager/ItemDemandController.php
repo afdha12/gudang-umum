@@ -243,7 +243,7 @@ class ItemDemandController extends Controller
             }
 
             // PROSES EDIT JUMLAH (hanya jika belum diapprove/reject oleh COO/Admin)
-            if ($item->canEditAmountByLevel(1)) {
+            if ($item->canEditAmountByLevel(2)) {
                 $item->amount = $value;
             } elseif ($item->amount != $value) {
                 return redirect()->back()->with('error', 'Jumlah tidak dapat diubah karena permintaan sudah disetujui oleh COO/Admin.');

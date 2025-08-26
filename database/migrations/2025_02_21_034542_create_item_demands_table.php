@@ -17,14 +17,10 @@ return new class extends Migration {
             $table->string('amount');
             $table->date('dos');
             $table->text('notes')->nullable();
-            $table->boolean('manager_approval')->default(null);
-            $table->boolean('coo_approval')->default(null);
-            $table->boolean('status')->default(null);
+            $table->boolean('manager_approval')->nullable()->default(null);
+            $table->boolean('coo_approval')->nullable()->default(null);
+            $table->boolean('status')->nullable()->default(null);
             $table->string('rejected_by')->nullable();
-            // $table->string('satuan')->nullable();
-            // $table->integer('masuk')->nullable();
-            // $table->integer('keluar')->nullable();
-            // $table->integer('stok')->nullable();
             $table->timestamps();
         });
     }

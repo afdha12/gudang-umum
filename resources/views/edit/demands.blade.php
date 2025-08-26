@@ -49,7 +49,7 @@
 
                         <div class="mb-4 p-4 border rounded">
                             <div class="md:flex md:gap-4 mb-2">
-                                <div class="md:w-1/4">
+                                <div class="md:w-2/6">
                                     <div>
                                         <h6 class="uppercase font-semibold">
                                             {{ $item->stationery->nama_barang }}
@@ -66,10 +66,63 @@
                                             </strong>
                                         </p>
 
-                                        @if ($item->manager_approval === 1 && $item->coo_approval === 1 && $item->status === 1)
+                                        {{-- @if ($item->manager_approval === 1 && $item->coo_approval === 1 && $item->status === 1)
                                             <span
                                                 class="inline-block bg-green-600 text-white text-xs px-2 py-1 rounded">Disetujui
                                                 Gudang</span>
+                                        @endif --}}
+
+                                        @if ($role === 'user')
+                                            @if ($item->status === 0 || $item->manager_approval === 0 || $item->coo_approval === 0)
+                                                <span class="inline-block bg-red-600 text-white text-xs px-2 py-1 rounded">
+                                                    Ditolak oleh {{ $item->rejected_by ?? '-' }}
+                                                </span>
+                                            @elseif ($item->status === 1)
+                                                <span
+                                                    class="inline-block bg-green-600 text-white text-xs px-2 py-1 rounded">
+                                                    Disetujui Semua Pihak
+                                                </span>
+                                            @elseif ($item->coo_approval === 1)
+                                                <span class="inline-block bg-blue-600 text-white text-xs px-2 py-1 rounded">
+                                                    Disetujui Wadirum
+                                                </span>
+                                            @elseif ($item->manager_approval === 1)
+                                                <span
+                                                    class="inline-block bg-yellow-600 text-white text-xs px-2 py-1 rounded">
+                                                    Disetujui Manager
+                                                </span>
+                                            @else
+                                                <span class="inline-block bg-gray-600 text-white text-xs px-2 py-1 rounded">
+                                                    Menunggu Persetujuan
+                                                </span>
+                                            @endif
+                                        @endif
+
+                                        {{-- Progress bar untuk visualisasi --}}
+                                        @if ($role === 'user' && !$item->isRejected())
+                                            <div class="mt-2">
+                                                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                                    @php
+                                                        $progress = 0;
+                                                        if ($item->manager_approval === 1) {
+                                                            $progress += 33.33;
+                                                        }
+                                                        if ($item->coo_approval === 1) {
+                                                            $progress += 33.33;
+                                                        }
+                                                        if ($item->status === 1) {
+                                                            $progress += 33.34;
+                                                        }
+                                                    @endphp
+                                                    <div class="bg-blue-600 h-2.5 rounded-full"
+                                                        style="width: {{ $progress }}%"></div>
+                                                </div>
+                                                <div class="flex justify-between text-xs mt-1">
+                                                    <span>Manager</span>
+                                                    <span>Wadirum</span>
+                                                    <span>Gudang</span>
+                                                </div>
+                                            </div>
                                         @endif
 
                                         @php
@@ -99,8 +152,9 @@
                                     </div>
                                 </div>
 
-                                <div class="md:w-3/4 mt-4 md:mt-0">
+                                <div class="md:w-4/6 mt-4 md:mt-0">
                                     <label class="block text-sm font-medium mb-1">Jumlah Permintaan</label>
+                                    {{-- Fixed: Remove typo, add data attributes --}}
                                     <input type="number" name="amount[{{ $item->id }}]" value="{{ $item->amount }}"
                                         class="w-full px-3 py-1.5 border rounded text-sm jumlah-permintaan" min="1"
                                         data-id="{{ $item->id }}" data-harga="{{ $item->stationery->harga_barang }}"
@@ -110,25 +164,41 @@
                                         value="{{ $item->status ?? '' }}" class="status-input"
                                         data-id="{{ $item->id }}">
 
-                                    <label class="block text-sm font-medium mt-3">Catatan Tambahan</label>
-                                    <textarea name="notes[{{ $item->id }}]" class="w-full px-3 py-2 border rounded text-sm" rows="1"
-                                        @if ($readOnly || $item->status == 1) readonly @endif>{{ old("notes.$item->id") }}</textarea>
+                                    @if ($role != 'user')
+                                        <label class="block text-sm font-medium mt-3">Catatan Tambahan</label>
+                                        <textarea name="notes[{{ $item->id }}]" class="w-full px-3 py-2 border rounded text-sm" rows="1"
+                                            @if ($readOnly || $item->status == 1) readonly @endif>{{ old("notes.$item->id") }}</textarea>
+                                    @endif
 
-                                    @if (is_null($item->status) && !$readOnly)
-                                        <button type="button"
-                                            class="mt-2 px-3 py-1.5 bg-red-600 text-white text-sm rounded reject-btn"
-                                            data-id="{{ $item->id }}">
-                                            <i class="bi bi-x-circle"></i> Reject
-                                        </button>
-                                        <span
-                                            class="ml-2 bg-red-600 text-white text-xs px-2 py-1 rounded d-none rejected-badge"
-                                            data-id="{{ $item->id }}">Rejected</span>
-                                    @elseif ($isRejected)
+                                    @if ($role === 'user')
+                                        {{-- Tombol hapus untuk user --}}
+                                        @if (is_null($item->status) && !$readOnly)
+                                            <button type="button"
+                                                class="mt-2 px-3 py-1.5 bg-red-600 text-white text-sm rounded delete-btn"
+                                                data-id="{{ $item->id }}">
+                                                <i class="bi bi-trash"></i> Hapus
+                                            </button>
+                                        @endif
+                                    @else
+                                        {{-- Tombol reject untuk manager/coo/admin --}}
+                                        @if (is_null($item->status) && !$readOnly)
+                                            <button type="button"
+                                                class="mt-2 px-3 py-1.5 bg-red-600 text-white text-sm rounded reject-btn"
+                                                data-id="{{ $item->id }}">
+                                                <i class="bi bi-x-circle"></i> Reject
+                                            </button>
+                                            <span
+                                                class="ml-2 bg-red-600 text-white text-xs px-2 py-1 rounded d-none rejected-badge"
+                                                data-id="{{ $item->id }}">Rejected</span>
+                                        @endif
+                                    @endif
+
+                                    @if ($isRejected)
                                         <span
                                             class="inline-block mt-2 bg-red-600 text-white text-xs px-2 py-1 rounded">Rejected</span>
                                     @elseif ($approved)
                                         <span
-                                            class="inline-block mt-2 bg-green-600 text-white text-xs px-2 py-1 rounded">Disetujui</span>
+                                            class="inline-block mt-2 bg-green-600 text-white text-xs px-2 py-1 rounded">Approved</span>
                                     @endif
                                 </div>
                             </div>
@@ -154,9 +224,10 @@
 
                     <div class="flex justify-between items-center">
                         @if ($adaBelumDisetujui)
-                            <button type="submit" name="action" value="approve"
-                                class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
-                                <i class="bi bi-check-circle"></i> Setujui Semua
+                            <button type="submit" name="action" value="{{ $role === 'user' ? 'update' : 'approve' }}"
+                                class="px-4 py-2 {{ $role === 'user' ? 'bg-blue-600' : 'bg-green-600' }} text-white rounded hover:{{ $role === 'user' ? 'bg-blue-700' : 'bg-green-700' }} text-sm">
+                                <i class="bi {{ $role === 'user' ? 'bi-save' : 'bi-check-circle' }}"></i>
+                                {{ $role === 'user' ? 'Simpan Perubahan' : 'Setujui Semua' }}
                             </button>
                         @endif
                         <a href="{{ route($rolePrefix . '.index') }}"
@@ -184,23 +255,75 @@
                 let grandTotal = 0;
                 inputs.forEach(input => {
                     const id = input.dataset.id;
-                    const statusInput = document.querySelector(`input.status-input[data-id="${id}"]`);
-                    if (statusInput && statusInput.value == "0") {
-                        return; // skip item rejected
+                    const itemContainer = input.closest('.mb-4.p-4.border.rounded');
+
+                    // Skip jika container tersembunyi (item dihapus)
+                    if (itemContainer && itemContainer.style.display === 'none') {
+                        return;
                     }
+
+                    // Perbaikan pengecekan status reject - lebih akurat
+                    const statusInput = document.querySelector(`input.status-input[data-id="${id}"]`);
+                    const isRejected =
+                        // Cek dari status input hidden
+                        (statusInput && statusInput.value === "0") ||
+                        // Cek dari badge reject yang visible
+                        itemContainer.querySelector('.bg-red-600.text-white:not(.d-none)') !== null ||
+                        itemContainer.querySelector('.rejected-badge:not(.d-none)') !== null ||
+                        // Cek jika input readonly karena direject
+                        (input.readOnly && input.value === "0");
+
+                    // Skip jika item direject
+                    if (isRejected) {
+                        console.log('Skipping rejected item:', id, 'Reason: rejected');
+                        return;
+                    }
+
                     const jumlah = parseInt(input.value) || 0;
                     const harga = parseInt(input.dataset.harga) || 0;
-                    grandTotal += jumlah * harga;
+                    const itemTotal = jumlah * harga;
+
+                    console.log('Adding to total:', {
+                        id,
+                        jumlah,
+                        harga,
+                        itemTotal
+                    });
+
+                    grandTotal += itemTotal;
                 });
-                document.getElementById('grand-total').textContent = formatRupiah(grandTotal);
+
+                // Update tampilan grand total
+                const grandTotalElement = document.getElementById('grand-total');
+                grandTotalElement.textContent = formatRupiah(grandTotal);
+
+                console.log('Final grand total:', {
+                    total: grandTotal,
+                    formatted: formatRupiah(grandTotal)
+                });
             }
 
             inputs.forEach(input => {
+                // Add debug logging
+                console.log('Input data:', {
+                    id: input.dataset.id,
+                    harga: input.dataset.harga,
+                    value: input.value
+                });
+
                 input.addEventListener('input', function() {
                     const jumlah = parseInt(this.value) || 0;
                     const harga = parseInt(this.dataset.harga) || 0;
                     const id = this.dataset.id;
                     const totalElement = document.querySelector(`.total-harga[data-id="${id}"]`);
+
+                    console.log('Updating item:', {
+                        id,
+                        jumlah,
+                        harga,
+                        total: jumlah * harga
+                    });
+
                     if (totalElement) {
                         totalElement.textContent = formatRupiah(jumlah * harga);
                     }
@@ -210,6 +333,7 @@
 
             updateGrandTotal(); // initial load
 
+            // Handle reject button untuk manager/coo/admin
             document.querySelectorAll('.reject-btn').forEach(function(btn) {
                 btn.addEventListener('click', function() {
                     const id = btn.dataset.id;
@@ -232,17 +356,21 @@
                                 `textarea[name="notes[${id}]"]`);
 
                             if (statusInput) {
-                                statusInput.value = "0";
+                                statusInput.value = "0"; // Set status ke rejected
                             }
 
-                            if (amountInput) amountInput.readOnly = true;
+                            if (amountInput) {
+                                amountInput.readOnly = true;
+                                amountInput.value = "0"; // Set jumlah ke 0
+                            }
+
                             if (noteInput) noteInput.readOnly = true;
 
                             btn.classList.add('d-none');
                             document.querySelector(`.rejected-badge[data-id="${id}"]`)
                                 .classList.remove('d-none');
 
-                            updateGrandTotal();
+                            updateGrandTotal(); // Panggil update setelah reject
 
                             Swal.fire(
                                 'Ditolak!',
@@ -252,16 +380,90 @@
                         }
                     });
                 });
-
             });
 
+            // Handle delete button untuk user
+            document.querySelectorAll('.delete-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    const id = btn.dataset.id;
+                    const itemContainer = btn.closest('.mb-4.p-4.border.rounded');
+
+                    Swal.fire({
+                        title: 'Hapus item ini?',
+                        text: "Item yang dihapus tidak dapat dikembalikan.",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Ya, Hapus!',
+                        cancelButtonText: 'Batal'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Show loading
+                            Swal.fire({
+                                title: 'Menghapus...',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+
+                            // Send AJAX request to delete
+                            fetch(`/user/item-demand/${id}`, {
+                                    method: 'DELETE',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector(
+                                            'meta[name="csrf-token"]').getAttribute(
+                                            'content')
+                                    }
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        // Hide the entire item container
+                                        if (itemContainer) {
+                                            itemContainer.style.display = 'none';
+                                            updateGrandTotal();
+
+                                            Swal.fire(
+                                                'Dihapus!',
+                                                'Item berhasil dihapus.',
+                                                'success'
+                                            );
+                                        }
+                                    } else {
+                                        Swal.fire(
+                                            'Error!',
+                                            data.message ||
+                                            'Terjadi kesalahan saat menghapus item.',
+                                            'error'
+                                        );
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                    Swal.fire(
+                                        'Error!',
+                                        'Terjadi kesalahan saat menghapus item.',
+                                        'error'
+                                    );
+                                });
+                        }
+                    });
+                });
+            });
+
+            // Debug form submission
             document.querySelector('form').addEventListener('submit', function(e) {
-                e.preventDefault();
+                console.log('Form being submitted...');
                 const formData = new FormData(this);
+                console.log('Form data:');
                 for (let [key, value] of formData.entries()) {
                     console.log(key, value);
                 }
-                this.submit(); // remove this line after checking console
+                // Remove the prevention after debugging
+                // e.preventDefault();
             });
         });
     </script>

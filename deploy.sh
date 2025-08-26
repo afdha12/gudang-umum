@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "🔨 Membangun Laravel image..."
-sudo docker compose build
+sudo docker compose build --no-cache
 
 # echo "🎨 Membangun frontend (Tailwind/Vite)..."
 # make build-frontend

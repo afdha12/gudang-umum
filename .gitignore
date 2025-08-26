@@ -6,11 +6,11 @@
 /storage/*.key
 /storage/pail
 /vendor
-.env
-.env.docker
-.env.local
-.env.backup
-.env.production
+.env*
+# .env.docker
+# .env.local
+# .env.backup
+# .env.production
 .phpactor.json
 .phpunit.result.cache
 Homestead.json

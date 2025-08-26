@@ -167,63 +167,80 @@ class PengajuanBarangController extends Controller
     {
         $amounts = $request->input('amount', []);
         $notes = $request->input('notes', []);
-        $action = $request->input('action'); // menangkap 'approve' jika diklik
+        $action = $request->input('action');
         $statuses = $request->input('status', []);
-        // $userRole = auth()->user()->role;
 
-        foreach ($amounts as $id => $value) {
-            $item = ItemDemand::where('id', $id)
-                ->where('user_id', $userId)
-                ->whereDate('dos', $date)
-                ->first();
+        // Get user with division
+        $user = User::with('division')->find($userId);
 
-            if (!$item)
-                continue;
+        DB::beginTransaction();
+        try {
+            foreach ($amounts as $id => $value) {
+                $item = ItemDemand::where('id', $id)
+                    ->where('user_id', $userId)
+                    ->whereDate('dos', $date)
+                    ->first();
 
-            $requestStatus = $statuses[$id] ?? null;
-            $isReject = ($requestStatus === '0');
+                if (!$item)
+                    continue;
 
-            // Jika sudah di-reject sebelumnya, tidak bisa diubah lagi
-            if ($item->status === 0 || $item->manager_approval === 0 || $item->coo_approval === 0) {
-                continue;
-            }
+                $requestStatus = $statuses[$id] ?? null;
+                $isReject = ($requestStatus === '0');
 
-            // PROSES REJECT
-            if ($isReject) {
-                $item->coo_approval = 0;
-                $item->rejected_by = 'Wadirum';
-                $note = trim($notes[$id] ?? '');
-                $formattedNote = "wadirum: Ditolak" . ($note ? " - $note" : "");
-                $item->notes = trim(string: ($item->notes ? $item->notes . "\n" : "") . $formattedNote);
+                // Jika sudah di-reject sebelumnya, tidak bisa diubah lagi
+                if ($item->status === 0 || $item->manager_approval === 0 || $item->coo_approval === 0) {
+                    continue;
+                }
+
+                // PROSES REJECT
+                if ($isReject) {
+                    $item->coo_approval = 0;
+                    $item->rejected_by = 'Wadirum';
+                    $note = trim($notes[$id] ?? '');
+                    $formattedNote = "wadirum: Ditolak" . ($note ? " - $note" : "");
+                    $item->notes = trim(($item->notes ? $item->notes . "\n" : "") . $formattedNote);
+                    $item->save();
+                    continue;
+                }
+
+                if ($item->canEditAmountByLevel(3)) { // COO = level 3
+                    $item->amount = $value;
+                } elseif ($item->amount != $value) {
+                    DB::rollBack();
+                    return redirect()->back()->with('error', 'Jumlah tidak dapat diubah karena permintaan sudah disetujui.');
+                }
+
+                // Tambahkan catatan jika ada
+                $newNote = trim($notes[$id] ?? '');
+                if ($newNote) {
+                    $formattedNote = auth()->user()->role . ': ' . $newNote;
+                    $item->notes = $item->notes
+                        ? $item->notes . "\n" . $formattedNote
+                        : $formattedNote;
+                }
+
+                // Jika disetujui oleh COO
+                if ($action === 'approve' && auth()->user()->role === 'coo') {
+                    $item->coo_approval = 1;
+                    $item->coo_approved_at = now();
+
+                    // Jika user dari divisi managed_by_coo, otomatis set manager_approval
+                    if ($user->division->managed_by_coo) {
+                        $item->manager_approval = 1;
+                        $item->manager_approved_at = now();
+                    }
+                }
+
                 $item->save();
-                continue;
             }
 
-            if ($item->canEditAmountByLevel(2)) { // COO = level 2
-                $item->amount = $value;
-            } elseif ($item->amount != $value) {
-                return redirect()->back()->with('error', 'Jumlah tidak dapat diubah karena permintaan sudah disetujui.');
-            }
+            DB::commit();
+            return redirect()->route('user_demands.show', $userId)
+                ->with('success', 'Permintaan berhasil diperbarui' . ($action === 'approve' ? ' dan disetujui.' : '.'));
 
-            // Tambahkan catatan jika ada
-            $newNote = trim($notes[$id] ?? '');
-            if ($newNote) {
-                $formattedNote = auth()->user()->role . ': ' . $newNote;
-                $item->notes = $item->notes
-                    ? $item->notes . "\n" . $formattedNote
-                    : $formattedNote;
-            }
-
-            // Jika disetujui oleh COO
-            if ($action === 'approve' && auth()->user()->role === 'coo') {
-                $item->coo_approval = 1;
-                $item->coo_approved_at = now(); // simpan waktu persetujuan
-            }
-
-            $item->save();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
-
-        return redirect()->route('user_demands.show', $userId)
-            ->with('success', 'Permintaan berhasil diperbarui' . ($action === 'approve' ? ' dan disetujui.' : '.'));
     }
 }

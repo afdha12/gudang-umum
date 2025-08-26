@@ -1,59 +1,72 @@
 @extends('layouts.main')
 
-@section('title', 'Users Management')
+@section('title', 'Daftar Pengajuan - ' . $currentUser->name)
 
 @section('content')
+    <div class="mb-4">
+        <h4 class="text-xl font-semibold">Daftar Permintaan Berdasarkan Tanggal</h4>
+    </div>
+
+    @php
+        $rolePrefix = match (auth()->user()->role) {
+            'manager' => 'item_demands',
+            'coo' => 'user_demands',
+            'admin' => 'demand',
+            default => 'item-demand', // user biasa
+        };
+    @endphp
 
     <div class="max-h-auto overflow-y-auto border shadow-lg rounded-lg">
-        <div class="m-3">
-            <a class="btn btn-primary" href="{{ route('item-demand.create') }}">Buat Permintaan</a>
+        <div class="flex flex-row m-3">
+            <a class="btn btn-primary me-auto" href="{{ route('item-demand.create') }}">Buat Permintaan</a>
+
+            <div >
+                <span class="font-semibold">Total Permintaan bulan ini:</span>
+                <span class="{{ $totalHargaBulanIni > $limitBulanIni ? 'text-red-600 font-bold' : 'text-green-600' }}">
+                    Rp {{ number_format($totalHargaBulanIni, 0, ',', '.') }}
+                </span>
+                @if ($totalHargaBulanIni > $limitBulanIni)
+                    <span class="ml-2 text-red-500 font-semibold">⚠️ Melebihi batas bulanan!</span>
+                @endif
+            </div>
         </div>
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead class="bg-gray-200 sticky top-0">
                     <tr class="border-b border-gray-300">
-                        <th class="py-3 px-4 text-left">No</th>
-                        <th class="py-3 px-4 text-left">Tanggal Pengajuan</th>
-                        <th class="py-3 px-4 text-left">Kode Barang</th>
-                        <th class="py-3 px-4 text-left">Nama Barang</th>
-                        <th class="py-3 px-4 text-left">Satuan</th>
-                        <th class="py-3 px-4 text-left">Jumlah</th>
-                        <th class="py-3 px-4 text-left">Catatan</th>
+                        <th class="py-3 px-4">No</th>
+                        <th class="py-3 px-4">Tanggal Permintaan</th>
+                        <th class="py-3 px-4">Total Item</th>
                         <th class="py-3 px-4">Status</th>
-                        {{-- <th class="py-3 px-4">Stok</th> --}}
-                        <th class="py-3 px-4 text-center">Action</th>
+                        <th class="py-3 px-4">Detail</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-300">
                     @foreach ($data as $item)
                         <tr>
                             <td class="py-3 px-4">{{ $loop->iteration }}</td>
-                            <td class="py-3 px-4">{{ date('d M Y', strtotime($item->dos)) }}</td>
-                            <td class="py-3 px-4">{{ $item->stationery['kode_barang'] ?? 'Barang tidak ditemukan' }}</td>
-                            <td class="py-3 px-4 text-capitalize">
-                                {{ $item->stationery['nama_barang'] ?? 'Barang tidak ditemukan' }}</td>
-                            <td class="py-3 px-4 text-uppercase">
-                                {{ $item->stationery['satuan'] ?? 'Barang tidak ditemukan' }}</td>
-                            <td class="py-3 px-4">{{ $item->amount }}</td>
-                            <td class="py-3 px-4" style="white-space: pre-line;">{{ $item->notes ?? 'Belum ada catatan' }}</td>
-                            <td class="py-3 px-4">{{ $item->progress_persetujuan }}</td>
-                            <td class="py-3 px-4 text-center">
-                                @if ($item->manager_approval == 0)
-                                    <a href="{{ route('item-demand.edit', $item->id) }}"
-                                        class="btn btn-outline-primary btn-sm mr-2"><i class="bi bi-pencil"></i></a>
-                                    <a href="{{ route('item-demand.destroy', $item->id) }}"
-                                        class="btn btn-outline-danger btn-sm" data-confirm-delete="true"><i
-                                            class="bi bi-trash"></i></a>
+                            <td class="py-3 px-4">{{ \Carbon\Carbon::parse($item->dos)->format('d-m-Y') }}</td>
+                            <td class="py-3 px-4">{{ $item->total_pengajuan }}</td>
+                            <td class="py-3 px-4">
+                                @if ($item->item_status > 0)
+                                    <span class="badge bg-danger">Ada yang Ditolak</span>
+                                @elseif ($item->pending_items > 0)
+                                    <span class="badge bg-warning text-dark">Belum Disetujui</span>
                                 @else
-                                    <span class="text-muted">Terkunci</span>
+                                    <span class="badge bg-success">Semua Disetujui</span>
                                 @endif
+                            </td>
+
+                            <td class="py-3 px-4">
+                                <a href="{{ route($rolePrefix . '.edit_by_date', ['user' => $currentUser->id, 'date' => $item->dos]) }}"
+                                    class="btn btn-outline-primary btn-sm">Lihat detail</a>
                             </td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
+
             @include('partials.pagination', ['data' => $data])
         </div>
     </div>
-
 @endsection

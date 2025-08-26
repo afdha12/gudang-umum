@@ -8,10 +8,12 @@ use App\Models\ItemDemand;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\MonthlyUserDemandExport;
 use Barryvdh\DomPDF\Facade\Pdf as Dompdf;
-use Spatie\LaravelPdf\Facades\Pdf as Pdf;
+// use Spatie\LaravelPdf\Facades\Pdf as Pdf;
+use Barryvdh\Snappy\Facades\SnappyPdf as PDF;
 
 class PrintDemandController extends Controller
 {
@@ -37,7 +39,7 @@ class PrintDemandController extends Controller
             ->orderByDesc('dos')
             ->paginate(10)
             ->appends($request->all());
-            
+
         // Ambil daftar bulan dan tahun unik dari ItemDemand
         $availablePeriods = ItemDemand::selectRaw('YEAR(dos) as tahun, MONTH(dos) as bulan')
             ->where('status', 1)
@@ -87,10 +89,20 @@ class PrintDemandController extends Controller
         $coo = User::where('role', 'coo')->first();
         $admin = User::where('role', 'admin')->first();
 
-        $pdf = Pdf::view('pages.print.pengajuan_barang', compact('approvedData', 'manager', 'admin', 'coo', 'totalJumlah'))
-            ->format('A4')
-            ->name('pengajuan_barang.pdf');
-        return $pdf->inline();
+        // Render view sebagai HTML
+        $html = view('pages.print.pengajuan_barang', compact('approvedData', 'manager', 'admin', 'coo', 'totalJumlah'))->render();
+
+        // Generate PDF pakai Laravel Snappy (wkhtmltopdf)
+        return Pdf::loadHTML($html)
+            ->setPaper('A4')
+            ->setOption('enable-local-file-access', true)
+            ->inline('pengajuan_barang.pdf');
+
+        // Uncomment the following lines to generate the PDF using spatie
+        // $pdf = Pdf::view('pages.print.pengajuan_barang', compact('approvedData', 'manager', 'admin', 'coo', 'totalJumlah'))
+        //     ->format('A4')
+        //     ->name('pengajuan_barang.pdf');
+        // return $pdf->inline();
 
         // $pdf = Dompdf::loadView('pages.print.pengajuan_barang', compact('approvedData', 'manager', 'admin', 'coo', 'totalJumlah'))
         //     ->setPaper('A4')
