@@ -180,36 +180,18 @@
                         <h5 class="text-lg font-semibold">Total Semua:
                             <span id="grand-total">
                                 @php
-                                    $grandTotal = 0;
+                                    // Hitung grand total menggunakan helper method yang lebih bersih
+                                    $validItems = $items->filter(fn($item) => !$item->isRejected());
+                                    $grandTotal = $validItems->sum(
+                                        fn($item) => $item->amount * $item->stationery->harga_barang,
+                                    );
 
+                                    // Juga cek rejected items dari form submission jika ada
                                     foreach ($items as $item) {
-                                        // Cek status reject dari database
-                                        $isRejected = $item->isRejected();
-
-                                        // Cek status reject dari form submission
                                         $isRejectedFromForm = old("is_rejected.{$item->id}") === '1';
-                                        $statusFromForm = old("status.{$item->id}");
-                                        $isRejectedStatus = $statusFromForm === '0';
-
-                                        // Skip perhitungan jika item direject
-                                        if ($isRejected || $isRejectedFromForm || $isRejectedStatus) {
-                                            continue;
-                                        }
-
-                                        // Tambahkan ke grand total jika tidak direject
-                                        $itemTotal = $item->amount * $item->stationery->harga_barang;
-                                        $grandTotal += $itemTotal;
-
-                                        // Debug info
-                                        if (config('app.debug')) {
-                                            \Log::info("Item {$item->id} calculation:", [
-                                                'amount' => $item->amount,
-                                                'price' => $item->stationery->harga_barang,
-                                                'total' => $itemTotal,
-                                                'isRejected' => $isRejected,
-                                                'isRejectedFromForm' => $isRejectedFromForm,
-                                                'isRejectedStatus' => $isRejectedStatus
-                                            ]);
+                                        if ($isRejectedFromForm && !$item->isRejected()) {
+                                            // Kurangi dari grand total jika direject via form tapi belum tersimpan
+                                            $grandTotal -= $item->amount * $item->stationery->harga_barang;
                                         }
                                     }
                                 @endphp
@@ -253,45 +235,20 @@
                     const id = input.dataset.id;
                     const itemContainer = input.closest('.mb-4.p-4.border.rounded');
 
-                    // Skip jika container tersembunyi
+                    // Skip jika container tersembunyi (item dihapus)
                     if (itemContainer && itemContainer.style.display === 'none') {
                         console.log('Skipping hidden item:', id);
                         return;
                     }
 
-                    // Check semua kemungkinan status reject
-                    let isRejected = false;
-
-                    // 1. Cek dari data attribute server-side
-                    if (itemContainer.getAttribute('data-is-rejected') === '1') {
-                        isRejected = true;
-                        console.log('Item rejected from server data:', id);
-                    }
-
-                    // 2. Cek dari form inputs
+                    // Cek jika item direject (melalui status input, badge, atau class rejected)
                     const statusInput = document.querySelector(`input.status-input[data-id="${id}"]`);
                     const isRejectedInput = document.querySelector(`input[name="is_rejected[${id}]"]`);
-
-                    if (statusInput && statusInput.value === "0") {
-                        isRejected = true;
-                        console.log('Item rejected from status input:', id);
-                    }
-
-                    if (isRejectedInput && isRejectedInput.value === "1") {
-                        isRejected = true;
-                        console.log('Item rejected from rejected flag:', id);
-                    }
-
-                    // 3. Cek dari UI elements
-                    if (itemContainer.querySelector('.rejected-badge:not(.d-none)')) {
-                        isRejected = true;
-                        console.log('Item rejected from UI badge:', id);
-                    }
-
-                    if (itemContainer.classList.contains('rejected-item')) {
-                        isRejected = true;
-                        console.log('Item rejected from CSS class:', id);
-                    }
+                    const isRejected =
+                        (statusInput && statusInput.value === "0") ||
+                        (isRejectedInput && isRejectedInput.value === "1") ||
+                        itemContainer.querySelector('.rejected-badge:not(.d-none)') !== null ||
+                        itemContainer.classList.contains('rejected-item');
 
                     // Skip jika item direject
                     if (isRejected) {
@@ -299,28 +256,21 @@
                         return;
                     }
 
-                    // Hitung total jika tidak direject
                     const jumlah = parseInt(input.value) || 0;
                     const harga = parseInt(input.dataset.harga) || 0;
                     const itemTotal = jumlah * harga;
 
-                    console.log('Adding to total:', {
-                        id,
-                        jumlah,
-                        harga,
-                        total: itemTotal
-                    });
+                    console.log('Adding to total - Item:', id, 'Jumlah:', jumlah, 'Harga:', harga, 'Total:',
+                        itemTotal);
 
                     grandTotal += itemTotal;
                 });
 
                 // Update tampilan grand total
                 const grandTotalElement = document.getElementById('grand-total');
-                if (grandTotalElement) {
-                    grandTotalElement.textContent = formatRupiah(grandTotal);
-                }
+                grandTotalElement.textContent = formatRupiah(grandTotal);
 
-                console.log('Final grand total:', grandTotal);
+                console.log('Final grand total:', grandTotal, 'Formatted:', formatRupiah(grandTotal));
             }
 
             inputs.forEach(input => {
@@ -344,17 +294,7 @@
                 });
             });
 
-            // PENTING: Jangan panggil updateGrandTotal() pada initial load
-            // Biarkan nilai dari server-side yang ditampilkan
-            // updateGrandTotal() hanya dipanggil saat ada perubahan input atau aksi user
-
-            // Uncomment baris di bawah jika ingin debug JavaScript calculation vs Server calculation
-            // setTimeout(() => {
-            //     console.log('=== DEBUGGING GRAND TOTAL ===');
-            //     console.log('Server-side grand total element:', document.getElementById('grand-total').textContent);
-            //     updateGrandTotal();
-            //     console.log('JavaScript calculated grand total:', document.getElementById('grand-total').textContent);
-            // }, 100);
+            updateGrandTotal(); // initial load
 
             // Handle reject button untuk manager/coo/admin
             document.querySelectorAll('.reject-btn').forEach(function(btn) {
@@ -382,21 +322,20 @@
 
                             // Set status ke rejected DI FORM INPUT
                             if (statusInput) {
-                                statusInput.value = "0";
+                                statusInput.value = "0"; // Set status ke rejected
                             }
 
-                            // Set is_rejected flag ke 1
+                            // PENTING: Set is_rejected flag ke 1 untuk menandai item direject
                             if (isRejectedInput) {
                                 isRejectedInput.value = "1";
                             }
 
+                            // Jangan ubah nilai amount, biarkan seperti semula
                             if (amountInput) {
                                 amountInput.readOnly = true;
                             }
 
-                            if (noteInput) {
-                                noteInput.readOnly = true;
-                            }
+                            if (noteInput) noteInput.readOnly = true;
 
                             btn.classList.add('d-none');
                             const rejectedBadge = document.querySelector(
@@ -410,8 +349,6 @@
                                 '.mb-4.p-4.border.rounded');
                             if (itemContainer) {
                                 itemContainer.classList.add('rejected-item');
-                                // Update data attribute juga
-                                itemContainer.setAttribute('data-is-rejected', '1');
                             }
 
                             updateGrandTotal(); // Update grand total
@@ -465,6 +402,7 @@
                                 .then(response => response.json())
                                 .then(data => {
                                     if (data.success) {
+                                        // Hide the entire item container
                                         if (itemContainer) {
                                             itemContainer.style.display = 'none';
                                             updateGrandTotal();
@@ -505,6 +443,8 @@
                 for (let [key, value] of formData.entries()) {
                     console.log(key, value);
                 }
+                // Remove the prevention after debugging
+                // e.preventDefault();
             });
         });
     </script>

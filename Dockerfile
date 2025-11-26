@@ -75,7 +75,12 @@ RUN php artisan storage:link || true
 
 # Set file permissions
 RUN chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache
+    && chmod -R 775 storage bootstrap/cache \
+    && chmod 644 .env.prod \
+    && touch .env \
+    && chown www-data:www-data .env \
+    && chmod 644 .env \
+    && chmod 644 .env.prod
 
 # ========================
 # ✅ Runtime Setup

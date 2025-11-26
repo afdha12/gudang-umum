@@ -167,7 +167,7 @@ class StationeryController extends Controller
             // Pastikan tidak mengurangi lebih dari stok yang ada
             $jumlahKurang = min($request->kurang, $stationery->stok);
             $validated['stok'] = $stationery->stok - $jumlahKurang;
-            $jenisHistory = 'keluar';
+            $jenisHistory = 'defisit';
             $jumlahHistory = $jumlahKurang;
 
         } else {

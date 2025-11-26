@@ -13,7 +13,7 @@ return new class extends Migration {
         Schema::create('barang_history', function (Blueprint $table) {
             $table->id();
             $table->foreignId('stationery_id')->constrained()->onDelete('cascade'); // Barang terkait
-            $table->enum('jenis', ['masuk', 'keluar']); // Menyimpan jenis transaksi
+            $table->enum('jenis', ['masuk', 'keluar', 'defisit']); // Menyimpan jenis transaksi
             $table->integer('jumlah'); // Jumlah barang masuk atau keluar
             $table->date('tanggal'); // Tanggal transaksi
             $table->timestamps();

@@ -21,9 +21,9 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-300">
-                    @foreach ($data as $item)
+                    @foreach ($data as $key => $item)
                         <tr>
-                            <td class="py-3 px-4">{{ $loop->iteration }}</td>
+                            <td class="py-3 px-4">{{ $data->firstItem() + $key }}</td>
                             <td class="py-3 px-4">{{ date('d-m-Y', strtotime($item->last_pengajuan)) }}</td>
                             <td class="py-3 px-4">{{ $item->user->name ?? 'User Tidak Ditemukan' }}</td>
                             <td class="py-3 px-4">{{ $item->total_pengajuan }}</td>

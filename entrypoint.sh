@@ -6,11 +6,23 @@ echo "🚀 ENTRYPOINT START"
 # Pastikan kita di direktori yang benar
 cd /app
 
-# Salin .env.prod ke .env jika belum ada .env
-if [ ! -f ".env" ]; then
-  echo "📄 Copying .env.prod to .env"
-  cp .env.prod .env
+# Cek permissions
+echo "📋 Checking permissions..."
+ls -la .env .env.prod 2>/dev/null || true
+
+# Backup .env jika bisa, jika tidak langsung copy
+if [ -f ".env" ]; then
+    echo "📄 Attempting to backup .env"
+    cp .env .env.backup 2>/dev/null || echo "⚠️  Cannot backup .env, proceeding without backup"
 fi
+
+# Copy .env.prod ke .env
+echo "📄 Copying .env.prod to .env"
+cat .env.prod > .env 2>/dev/null || {
+    echo "❌ Cannot write to .env, checking permissions..."
+    ls -la .env .env.prod
+    exit 1
+}
 
 # Check if artisan exists
 if [ ! -f "artisan" ]; then
@@ -23,16 +35,13 @@ echo "🧹 Clearing cache..."
 php artisan config:clear || true
 php artisan route:clear || true
 php artisan view:clear || true
+php artisan config:cache || true
 
-# Create storage link
-php artisan storage:link || true
+# # Create storage link
+# php artisan storage:link || true
 
 # Cache untuk production (aktifkan jika kamu pakai production)
 # php artisan config:cache || true
-
-# Test APP_KEY
-echo "🧪 Testing APP_KEY..."
-php artisan tinker --execute="echo 'APP_KEY: ' . config('app.key');" || echo "Warning: APP_KEY test failed"
 
 echo "✅ Starting Laravel Octane..."
 exec "$@"

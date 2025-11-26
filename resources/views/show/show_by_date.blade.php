@@ -29,9 +29,9 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-300">
-                    @foreach ($data as $item)
+                    @foreach ($data as $key => $item)
                         <tr>
-                            <td class="py-3 px-4">{{ $loop->iteration }}</td>
+                            <td class="py-3 px-4">{{ $data->firstItem() + $key }}</td>
                             <td class="py-3 px-4">{{ \Carbon\Carbon::parse($item->dos)->format('d-m-Y') }}</td>
                             <td class="py-3 px-4">{{ $item->total_pengajuan }}</td>
                             <td class="py-3 px-4">

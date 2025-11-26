@@ -45,13 +45,18 @@ class UserDemandSheetExport implements FromView, WithTitle, ShouldAutoSize
                     'satuan' => $item->stationery->satuan ?? '-',
                     'harga' => $item->stationery->harga_barang ?? 0,
                     'tanggal' => [],
-                    'total' => 0,
-                    'jumlah' => 0,
                 ];
             }
-            $grouped[$kode]['tanggal'][$item->dos] = $item->amount;
-            $grouped[$kode]['total'] += $item->amount;
-            $grouped[$kode]['jumlah'] += $item->amount * ($item->stationery->harga_barang ?? 0);
+
+            // jumlahkan jika ada item dengan tanggal sama
+            $grouped[$kode]['tanggal'][$item->dos] =
+                ($grouped[$kode]['tanggal'][$item->dos] ?? 0) + $item->amount;
+        }
+
+        // Hitung total & jumlah setelah grouping selesai
+        foreach ($grouped as $kode => &$g) {
+            $g['total'] = array_sum($g['tanggal']);
+            $g['jumlah'] = $g['total'] * ($g['harga'] ?? 0);
         }
 
         // Ubah ke array numerik untuk foreach di blade

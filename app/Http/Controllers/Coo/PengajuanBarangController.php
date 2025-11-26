@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Coo;
 use App\Models\User;
 use App\Models\ItemDemand;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 
@@ -15,27 +16,42 @@ class PengajuanBarangController extends Controller
      */
     public function index()
     {
-        $data = ItemDemand::with('user')
-            ->where(function ($query) {
-                $query->where('manager_approval', 1)
-                    ->orWhere(function ($q) {
-                        $q->whereNull('manager_approval')
-                            ->whereHas('user.division', function ($d) {
-                                $d->where('managed_by_coo', true);
-                            });
-                    });
-            })
-            ->select(
+        // Ambil semua permintaan yang SUDAH disetujui Manager
+        $collection = ItemDemand::where(function ($query) {
+            $query->where('manager_approval', 1)
+                ->orWhere(function ($q) {
+                    $q->whereNull('manager_approval')
+                        ->whereHas('user.division', function ($d) {
+                            $d->where('managed_by_coo', true);
+                        });
+                });
+        })->select(
                 'user_id',
                 DB::raw('COUNT(*) as total_pengajuan'),
-                // DB::raw('SUM(CASE WHEN coo_approval = 0 THEN 1 ELSE 0 END) as item_status'),
+                // Hanya hitung item yang BELUM disetujui COO (null)
                 DB::raw("SUM(CASE WHEN coo_approval IS NULL THEN 1 ELSE 0 END) as item_status"),
                 DB::raw('MAX(dos) as last_pengajuan')
             )
             ->groupBy('user_id')
-            ->orderByRaw('MAX(coo_approval IS NULL) DESC') // urutkan yang coo_approval null dulu
-            ->orderByDesc('last_pengajuan') // lalu urutkan dos terbaru
-            ->paginate(10);
+            ->orderByRaw('MAX(coo_approval IS NULL) DESC')
+            ->orderBy('last_pengajuan')
+            ->get();
+
+        // Load relasi user biar tidak N+1 query di Blade
+        $collection->load('user');
+
+        // Manual paginate karena data < 100
+        $perPage = 10;
+        $currentPage = request('page', 1);
+        $pagedData = $collection->forPage($currentPage, $perPage);
+
+        $data = new LengthAwarePaginator(
+            $pagedData,
+            $collection->count(),
+            $perPage,
+            $currentPage,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
 
         return view('coo.demands.index', compact('data'));
     }

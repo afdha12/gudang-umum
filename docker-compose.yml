@@ -1,26 +1,26 @@
-version: '3.8'
-
 services:
-  app_gu:
-    container_name: app_gu
-    image: laravel_app_gu
-    restart: unless-stopped
-    build:
-      context: .
-      # dockerfile: worker.dockerfile
-    ports:
-      - "8001:8001"
-    # volumes:
-    #   - .:/app
-    env_file:
-      - .env
-    environment:
-      - APP_ENV=${APP_ENV}
-      - APP_DEBUG=${APP_DEBUG}
-      - APP_URL=${APP_URL}
-    networks:
-      - docker_appnet
+    app_gu:
+        container_name: app_gu
+        image: laravel_app_gu
+        restart: unless-stopped
+        build:
+            context: .
+            # dockerfile: worker.dockerfile
+        ports:
+            - "8001:8001"
+        # volumes:
+        #   - .:/app
+        # env_file:
+        # - .env
+        environment:
+            - APP_ENV=production
+            - APP_URL=https://gu.rshlampung.my.id
+            - APP_DEBUG=${APP_DEBUG}
+            - TRUSTED_PROXIES=*
+            - FORCE_HTTPS=true
+        networks:
+            - docker_appnet
 
 networks:
-  docker_appnet:
-    external: true  # ← karena jaringan sudah dibuat di luar compose
+    docker_appnet:
+        external: true # ← karena jaringan sudah dibuat di luar compose

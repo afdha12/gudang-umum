@@ -27,11 +27,20 @@ class ItemDemandController extends Controller
             ->select(
                 'dos',
                 DB::raw('COUNT(*) as total_pengajuan'),
-                DB::raw('SUM(CASE WHEN status = 0 THEN 1 ELSE 0 END) as item_status'),
-                DB::raw('SUM(CASE WHEN status IS NULL THEN 1 ELSE 0 END) as pending_items')
+                DB::raw('SUM(CASE WHEN status = 0 OR manager_approval = 0 OR coo_approval = 0 THEN 1 ELSE 0 END) as rejected_items'),
+                DB::raw('SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as approved_items'),
+                DB::raw('SUM(CASE 
+                    WHEN status IS NULL AND coo_approval = 1 THEN 1 
+                    ELSE 0 END) as pending_admin'),
+                DB::raw('SUM(CASE 
+                    WHEN status IS NULL AND coo_approval IS NULL AND manager_approval = 1 THEN 1 
+                    ELSE 0 END) as pending_coo'),
+                DB::raw('SUM(CASE 
+                    WHEN status IS NULL AND coo_approval IS NULL AND manager_approval IS NULL THEN 1 
+                    ELSE 0 END) as pending_manager')
             )
             ->groupBy('dos')
-            ->orderByRaw('MAX(status IS NULL) DESC') // urutkan yang status null dulu
+            // ->orderByRaw('MAX(status IS NULL) DESC') // urutkan yang status null dulu
             ->orderByDesc('dos') // lalu urutkan dos terbaru
             ->paginate(10);
 

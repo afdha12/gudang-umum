@@ -7,6 +7,7 @@ use App\Models\ItemDemand;
 use App\Models\Stationery;
 use Illuminate\Http\Request;
 use App\Models\BarangHistory;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 
@@ -21,20 +22,35 @@ class ItemDemandController extends Controller
         $text = "Apakah Anda Yakin Ingin Menghapusnya?";
 
         // $data = ItemDemand::paginate(10);
-        $data = ItemDemand::with('user')
-            ->where('coo_approval', 1)
+        // Ambil semua permintaan yang SUDAH disetujui COO
+        $collection = ItemDemand::where('coo_approval', 1)
             ->select(
                 'user_id',
                 DB::raw('COUNT(*) as total_pengajuan'),
+                // Hanya hitung item yang BELUM disetujui gudang (null)
                 DB::raw("SUM(CASE WHEN status IS NULL THEN 1 ELSE 0 END) as item_status"),
-                // DB::raw('SUM(CASE WHEN status = 0 THEN 1 ELSE 0 END) as item_status'),
-                DB::raw('MAX(created_at) as filter'),
                 DB::raw('MAX(dos) as last_pengajuan')
             )
             ->groupBy('user_id')
-            ->orderByRaw('MAX(status IS NULL) DESC') // urutkan yang coo_approval null dulu
-            ->orderBy('filter')
-            ->paginate(10);
+            ->orderByRaw('MAX(status IS NULL) DESC')
+            ->orderBy('last_pengajuan')
+            ->get();
+
+        // Load relasi user biar tidak N+1 query di Blade
+        $collection->load('user');
+
+        // Manual paginate karena data < 100
+        $perPage = 10;
+        $currentPage = request('page', 1);
+        $pagedData = $collection->forPage($currentPage, $perPage);
+
+        $data = new LengthAwarePaginator(
+            $pagedData,
+            $collection->count(),
+            $perPage,
+            $currentPage,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
 
         return view('admin.demand.index', compact('data'));
     }
@@ -308,4 +324,48 @@ class ItemDemandController extends Controller
 
         return back()->with('success', 'Permintaan ditolak.');
     }
+
+    public function cancelDemand($id)
+    {
+        $item = ItemDemand::with('stationery')->findOrFail($id);
+
+        // Hanya admin
+        if (auth()->user()->role !== 'admin') {
+            abort(403, 'Unauthorized');
+        }
+
+        DB::transaction(function () use ($item) {
+
+            // Cari history keluarnya berdasar reference id
+            $histories = BarangHistory::where('reference_type', 'demand')
+                ->where('reference_id', $item->id)
+                ->get();
+
+            foreach ($histories as $h) {
+
+                // Reversal : keluar -> masuk
+                BarangHistory::create([
+                    'stationery_id' => $h->stationery_id,
+                    'jenis' => 'masuk',
+                    'jumlah' => $h->jumlah,
+                    'tanggal' => now(),
+                    'reference_type' => 'reversal',
+                    'reference_id' => $h->id,
+                    'note' => 'Pembatalan permintaan #' . $item->id . ' oleh admin'
+                ]);
+
+                // Kembalikan stok barang
+                $item->stationery->increment('stok', $h->jumlah);
+                $item->stationery->increment('masuk', $h->jumlah);
+            }
+
+            // Tandai request sebagai cancelled
+            $item->status = 0;
+            $item->notes = trim($item->notes . "\nadmin: dibatalkan");
+            $item->save();
+        });
+
+        return back()->with('success', 'Permintaan berhasil dibatalkan dan stok dikembalikan.');
+    }
+
 }

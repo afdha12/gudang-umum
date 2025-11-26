@@ -48,13 +48,33 @@
                             <td class="py-3 px-4">{{ \Carbon\Carbon::parse($item->dos)->format('d-m-Y') }}</td>
                             <td class="py-3 px-4">{{ $item->total_pengajuan }}</td>
                             <td class="py-3 px-4">
-                                @if ($item->item_status > 0)
-                                    <span class="badge bg-danger">Ada yang Ditolak</span>
-                                @elseif ($item->pending_items > 0)
-                                    <span class="badge bg-warning text-dark">Belum Disetujui</span>
-                                @else
-                                    <span class="badge bg-success">Semua Disetujui</span>
-                                @endif
+                                @php
+                                    $status = '';
+                                    $badgeClass = '';
+                                    
+                                    if ($item->rejected_items > 0) {
+                                        $status = 'Beberapa Item Ditolak';
+                                        $badgeClass = 'bg-danger';
+                                    } 
+                                    elseif ($item->pending_admin > 0) {
+                                        $status = 'Menunggu Persetujuan Admin';
+                                        $badgeClass = 'bg-warning text-dark';
+                                    }
+                                    elseif ($item->pending_coo > 0) {
+                                        $status = 'Menunggu Persetujuan Wadirum';
+                                        $badgeClass = 'bg-warning text-dark';
+                                    }
+                                    elseif ($item->pending_manager > 0) {
+                                        $status = 'Menunggu Persetujuan Manager';
+                                        $badgeClass = 'bg-warning text-dark';
+                                    }
+                                    elseif ($item->total_pengajuan == $item->approved_items) {
+                                        $status = 'Semua Disetujui';
+                                        $badgeClass = 'bg-success';
+                                    }
+                                @endphp
+                                
+                                <span class="badge {{ $badgeClass }}">{{ $status }}</span>
                             </td>
 
                             <td class="py-3 px-4">

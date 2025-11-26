@@ -28,10 +28,6 @@
 
                     @foreach ($items as $item)
                         @php
-                            $statusInfo = $item->getStatusDisplay();
-                            $canProcess = $item->canBeProcessedBy($role);
-                            $isRejected = $item->isRejected(); // Simpan status rejection
-
                             $readOnly = false;
                             if ($item->status === 1) {
                                 $readOnly = true;
@@ -51,12 +47,7 @@
                             }
                         @endphp
 
-                        {{-- PENTING: Tambahkan data attributes untuk JavaScript --}}
-                        <div class="mb-4 p-4 border rounded" data-item-id="{{ $item->id }}"
-                            data-is-rejected="{{ $isRejected ? '1' : '0' }}"
-                            data-manager-approval="{{ $item->manager_approval ?? 'null' }}"
-                            data-coo-approval="{{ $item->coo_approval ?? 'null' }}"
-                            data-admin-status="{{ $item->status ?? 'null' }}">
+                        <div class="mb-4 p-4 border rounded">
                             <div class="md:flex md:gap-4 mb-2">
                                 <div class="md:w-2/6">
                                     <div>
@@ -75,16 +66,40 @@
                                             </strong>
                                         </p>
 
-                                        {{-- Status display untuk user --}}
-                                        @if ($role === 'user')
+                                        {{-- @if ($item->manager_approval === 1 && $item->coo_approval === 1 && $item->status === 1)
                                             <span
-                                                class="inline-block {{ $statusInfo['class'] }} text-white text-xs px-2 py-1 rounded">
-                                                {{ $statusInfo['text'] }}
-                                            </span>
+                                                class="inline-block bg-green-600 text-white text-xs px-2 py-1 rounded">Disetujui
+                                                Gudang</span>
+                                        @endif --}}
+
+                                        @if ($role === 'user')
+                                            @if ($item->status === 0 || $item->manager_approval === 0 || $item->coo_approval === 0)
+                                                <span class="inline-block bg-red-600 text-white text-xs px-2 py-1 rounded">
+                                                    Ditolak oleh {{ $item->rejected_by ?? '-' }}
+                                                </span>
+                                            @elseif ($item->status === 1)
+                                                <span
+                                                    class="inline-block bg-green-600 text-white text-xs px-2 py-1 rounded">
+                                                    Disetujui Semua Pihak
+                                                </span>
+                                            @elseif ($item->coo_approval === 1)
+                                                <span class="inline-block bg-blue-600 text-white text-xs px-2 py-1 rounded">
+                                                    Disetujui Wadirum
+                                                </span>
+                                            @elseif ($item->manager_approval === 1)
+                                                <span
+                                                    class="inline-block bg-yellow-600 text-white text-xs px-2 py-1 rounded">
+                                                    Disetujui Manager
+                                                </span>
+                                            @else
+                                                <span class="inline-block bg-gray-600 text-white text-xs px-2 py-1 rounded">
+                                                    Menunggu Persetujuan
+                                                </span>
+                                            @endif
                                         @endif
 
-                                        {{-- Progress bar untuk user (hanya jika tidak direject) --}}
-                                        @if ($role === 'user' && !$statusInfo['rejected'])
+                                        {{-- Progress bar untuk visualisasi --}}
+                                        @if ($role === 'user' && !$item->isRejected())
                                             <div class="mt-2">
                                                 <div class="w-full bg-gray-200 rounded-full h-2.5">
                                                     @php
@@ -110,21 +125,38 @@
                                             </div>
                                         @endif
 
-                                        {{-- Status display untuk role lain --}}
-                                        @if ($role !== 'user')
-                                            <span
-                                                class="inline-block {{ $statusInfo['class'] }} text-white text-xs px-2 py-1 rounded">
-                                                {{ $statusInfo['text'] }}
+                                        @php
+                                            $isRejected = false;
+                                            $approved = false;
+
+                                            if ($role === 'manager') {
+                                                $isRejected = $item->manager_approval === 0;
+                                                $approved = $item->manager_approval === 1;
+                                            } elseif ($role === 'coo') {
+                                                $isRejected = $item->coo_approval === 0;
+                                                $approved = $item->coo_approval === 1;
+                                            } elseif ($role === 'admin') {
+                                                $isRejected =
+                                                    $item->status === 0 ||
+                                                    $item->manager_approval === 0 ||
+                                                    $item->coo_approval === 0;
+                                                $approved = $item->status === 1;
+                                            }
+                                        @endphp
+
+                                        @if ($isRejected)
+                                            <span class="inline-block bg-red-600 text-white text-xs px-2 py-1 rounded">
+                                                Ditolak oleh {{ $item->rejected_by ?? '-' }}
                                             </span>
                                         @endif
                                     </div>
                                 </div>
 
-                                <input type="hidden" name="is_rejected[{{ $item->id }}]" value="0"
-                                    id="rejected-{{ $item->id }}">
-
+                                <input type="hidden" name="is_rejected[{{ $item->id }}]" value="0" id="rejected-{{ $item->id }}">
+                                
                                 <div class="md:w-4/6 mt-4 md:mt-0">
                                     <label class="block text-sm font-medium mb-1">Jumlah Permintaan</label>
+                                    {{-- Fixed: Remove typo, add data attributes --}}
                                     <input type="number" name="amount[{{ $item->id }}]" value="{{ $item->amount }}"
                                         class="w-full px-3 py-1.5 border rounded text-sm jumlah-permintaan" min="1"
                                         data-id="{{ $item->id }}" data-harga="{{ $item->stationery->harga_barang }}"
@@ -150,8 +182,8 @@
                                             </button>
                                         @endif
                                     @else
-                                        {{-- Tombol reject hanya jika bisa diproses --}}
-                                        @if ($canProcess)
+                                        {{-- Tombol reject untuk manager/coo/admin --}}
+                                        @if (is_null($item->status) && !$readOnly)
                                             <button type="button"
                                                 class="mt-2 px-3 py-1.5 bg-red-600 text-white text-sm rounded reject-btn"
                                                 data-id="{{ $item->id }}">
@@ -161,6 +193,14 @@
                                                 class="ml-2 bg-red-600 text-white text-xs px-2 py-1 rounded d-none rejected-badge"
                                                 data-id="{{ $item->id }}">Rejected</span>
                                         @endif
+                                    @endif
+
+                                    @if ($isRejected)
+                                        <span
+                                            class="inline-block mt-2 bg-red-600 text-white text-xs px-2 py-1 rounded">Rejected</span>
+                                    @elseif ($approved)
+                                        <span
+                                            class="inline-block mt-2 bg-green-600 text-white text-xs px-2 py-1 rounded">Approved</span>
                                     @endif
                                 </div>
                             </div>
@@ -179,41 +219,7 @@
                     <div class="mb-4">
                         <h5 class="text-lg font-semibold">Total Semua:
                             <span id="grand-total">
-                                @php
-                                    $grandTotal = 0;
-
-                                    foreach ($items as $item) {
-                                        // Cek status reject dari database
-                                        $isRejected = $item->isRejected();
-
-                                        // Cek status reject dari form submission
-                                        $isRejectedFromForm = old("is_rejected.{$item->id}") === '1';
-                                        $statusFromForm = old("status.{$item->id}");
-                                        $isRejectedStatus = $statusFromForm === '0';
-
-                                        // Skip perhitungan jika item direject
-                                        if ($isRejected || $isRejectedFromForm || $isRejectedStatus) {
-                                            continue;
-                                        }
-
-                                        // Tambahkan ke grand total jika tidak direject
-                                        $itemTotal = $item->amount * $item->stationery->harga_barang;
-                                        $grandTotal += $itemTotal;
-
-                                        // Debug info
-                                        if (config('app.debug')) {
-                                            \Log::info("Item {$item->id} calculation:", [
-                                                'amount' => $item->amount,
-                                                'price' => $item->stationery->harga_barang,
-                                                'total' => $itemTotal,
-                                                'isRejected' => $isRejected,
-                                                'isRejectedFromForm' => $isRejectedFromForm,
-                                                'isRejectedStatus' => $isRejectedStatus
-                                            ]);
-                                        }
-                                    }
-                                @endphp
-                                Rp{{ number_format($grandTotal, 0, ',', '.') }}
+                                Rp{{ number_format($items->filter(fn($item) => $item->status !== 0)->sum(fn($item) => $item->amount * $item->stationery->harga_barang), 0, ',', '.') }}
                             </span>
                         </h5>
                     </div>
@@ -253,45 +259,18 @@
                     const id = input.dataset.id;
                     const itemContainer = input.closest('.mb-4.p-4.border.rounded');
 
-                    // Skip jika container tersembunyi
+                    // Skip jika container tersembunyi (item dihapus)
                     if (itemContainer && itemContainer.style.display === 'none') {
                         console.log('Skipping hidden item:', id);
                         return;
                     }
 
-                    // Check semua kemungkinan status reject
-                    let isRejected = false;
-
-                    // 1. Cek dari data attribute server-side
-                    if (itemContainer.getAttribute('data-is-rejected') === '1') {
-                        isRejected = true;
-                        console.log('Item rejected from server data:', id);
-                    }
-
-                    // 2. Cek dari form inputs
+                    // Cek jika item direject (melalui status input, badge, atau class rejected)
                     const statusInput = document.querySelector(`input.status-input[data-id="${id}"]`);
-                    const isRejectedInput = document.querySelector(`input[name="is_rejected[${id}]"]`);
-
-                    if (statusInput && statusInput.value === "0") {
-                        isRejected = true;
-                        console.log('Item rejected from status input:', id);
-                    }
-
-                    if (isRejectedInput && isRejectedInput.value === "1") {
-                        isRejected = true;
-                        console.log('Item rejected from rejected flag:', id);
-                    }
-
-                    // 3. Cek dari UI elements
-                    if (itemContainer.querySelector('.rejected-badge:not(.d-none)')) {
-                        isRejected = true;
-                        console.log('Item rejected from UI badge:', id);
-                    }
-
-                    if (itemContainer.classList.contains('rejected-item')) {
-                        isRejected = true;
-                        console.log('Item rejected from CSS class:', id);
-                    }
+                    const isRejected =
+                        (statusInput && statusInput.value === "0") ||
+                        itemContainer.querySelector('.rejected-badge:not(.d-none)') !== null ||
+                        itemContainer.classList.contains('rejected-item');
 
                     // Skip jika item direject
                     if (isRejected) {
@@ -299,28 +278,21 @@
                         return;
                     }
 
-                    // Hitung total jika tidak direject
                     const jumlah = parseInt(input.value) || 0;
                     const harga = parseInt(input.dataset.harga) || 0;
                     const itemTotal = jumlah * harga;
 
-                    console.log('Adding to total:', {
-                        id,
-                        jumlah,
-                        harga,
-                        total: itemTotal
-                    });
+                    console.log('Adding to total - Item:', id, 'Jumlah:', jumlah, 'Harga:', harga, 'Total:',
+                        itemTotal);
 
                     grandTotal += itemTotal;
                 });
 
                 // Update tampilan grand total
                 const grandTotalElement = document.getElementById('grand-total');
-                if (grandTotalElement) {
-                    grandTotalElement.textContent = formatRupiah(grandTotal);
-                }
+                grandTotalElement.textContent = formatRupiah(grandTotal);
 
-                console.log('Final grand total:', grandTotal);
+                console.log('Final grand total:', grandTotal, 'Formatted:', formatRupiah(grandTotal));
             }
 
             inputs.forEach(input => {
@@ -344,17 +316,7 @@
                 });
             });
 
-            // PENTING: Jangan panggil updateGrandTotal() pada initial load
-            // Biarkan nilai dari server-side yang ditampilkan
-            // updateGrandTotal() hanya dipanggil saat ada perubahan input atau aksi user
-
-            // Uncomment baris di bawah jika ingin debug JavaScript calculation vs Server calculation
-            // setTimeout(() => {
-            //     console.log('=== DEBUGGING GRAND TOTAL ===');
-            //     console.log('Server-side grand total element:', document.getElementById('grand-total').textContent);
-            //     updateGrandTotal();
-            //     console.log('JavaScript calculated grand total:', document.getElementById('grand-total').textContent);
-            // }, 100);
+            updateGrandTotal(); // initial load
 
             // Handle reject button untuk manager/coo/admin
             document.querySelectorAll('.reject-btn').forEach(function(btn) {
@@ -373,30 +335,21 @@
                         if (result.isConfirmed) {
                             const statusInput = document.querySelector(
                                 `input.status-input[data-id="${id}"]`);
-                            const isRejectedInput = document.querySelector(
-                                `input[name="is_rejected[${id}]"]`);
                             const amountInput = document.querySelector(
                                 `input[name="amount[${id}]"]`);
                             const noteInput = document.querySelector(
                                 `textarea[name="notes[${id}]"]`);
 
-                            // Set status ke rejected DI FORM INPUT
                             if (statusInput) {
-                                statusInput.value = "0";
+                                statusInput.value = "0"; // Set status ke rejected
                             }
 
-                            // Set is_rejected flag ke 1
-                            if (isRejectedInput) {
-                                isRejectedInput.value = "1";
-                            }
-
+                            // Jangan ubah nilai amount, biarkan seperti semula
                             if (amountInput) {
                                 amountInput.readOnly = true;
                             }
 
-                            if (noteInput) {
-                                noteInput.readOnly = true;
-                            }
+                            if (noteInput) noteInput.readOnly = true;
 
                             btn.classList.add('d-none');
                             const rejectedBadge = document.querySelector(
@@ -410,8 +363,6 @@
                                 '.mb-4.p-4.border.rounded');
                             if (itemContainer) {
                                 itemContainer.classList.add('rejected-item');
-                                // Update data attribute juga
-                                itemContainer.setAttribute('data-is-rejected', '1');
                             }
 
                             updateGrandTotal(); // Update grand total
@@ -465,6 +416,7 @@
                                 .then(response => response.json())
                                 .then(data => {
                                     if (data.success) {
+                                        // Hide the entire item container
                                         if (itemContainer) {
                                             itemContainer.style.display = 'none';
                                             updateGrandTotal();
@@ -505,6 +457,8 @@
                 for (let [key, value] of formData.entries()) {
                     console.log(key, value);
                 }
+                // Remove the prevention after debugging
+                // e.preventDefault();
             });
         });
     </script>
