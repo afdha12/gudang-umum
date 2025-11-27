@@ -25,8 +25,8 @@
                         <th class="p-3 text-left">Nama Barang</th>
                         <th class="p-3 text-left">Harga Barang</th>
                         <th class="p-3 text-left">Satuan</th>
-                        <th class="p-3 text-left">Masuk</th>
-                        <th class="p-3">Keluar</th>
+                        {{-- <th class="p-3 text-left">Masuk</th>
+                        <th class="p-3">Keluar</th> --}}
                         <th class="p-3">Stok</th>
                         <th class="p-3">Action</th>
                     </tr>
@@ -39,8 +39,8 @@
                             <td class="text-capitalize p-3">{{ $item->nama_barang }}</td>
                             <td class="p-3">{{ $item->formatted_harga }}</td>
                             <td class="p-3">{{ $item->satuan }}</td>
-                            <td class="p-3">{{ $item->masuk }}</td>
-                            <td class="p-3">{{ $item->keluar }}</td>
+                            {{-- <td class="p-3">{{ $item->masuk }}</td>
+                            <td class="p-3">{{ $item->keluar }}</td> --}}
                             <td class="p-3">{{ $item->stok }}</td>
                             <td class="p-3">
                                 <div class="d-flex gap-1 flex-wrap">
