@@ -52,6 +52,7 @@ class ItemDemandController extends Controller
             ->whereYear('dos', now()->year)
             ->whereMonth('dos', now()->month)
             ->where('status', 1)
+            ->where('is_cancelled', 0)
             ->with('stationery')
             ->get()
             ->sum(function ($item) {
