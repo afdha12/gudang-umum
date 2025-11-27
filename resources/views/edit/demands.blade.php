@@ -29,6 +29,8 @@
                     @foreach ($items as $item)
                         @php
                             $statusInfo = $item->getStatusDisplay();
+                            $approvedItem = $item->isFullyApproved();
+                            $approvalStatus = $item->getApprovalStatus();
                             $canProcess = $item->canBeProcessedBy($role);
                             $isRejected = $item->isRejected(); // Simpan status rejection
 
@@ -113,10 +115,19 @@
                                         {{-- Status display untuk role lain --}}
                                         @if ($role !== 'user')
                                             <span
-                                                class="inline-block {{ $statusInfo['class'] }} text-white text-xs px-2 py-1 rounded">
+                                                class="inline-block {{ $statusInfo['class'] }} text-white text-xs px-2 py-1.5 rounded">
                                                 {{ $statusInfo['text'] }}
                                             </span>
                                         @endif
+
+                                        @if ($approvalStatus['status'] == 1 && !$item->isCancelled())
+                                            <button type="button"
+                                                class="mt-2 px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded cancel-btn"
+                                                data-id="{{ $item->id }}">
+                                                <i class="bi bi-x-circle"></i> Cancel
+                                            </button>
+                                        @endif
+
                                     </div>
                                 </div>
 
@@ -208,7 +219,7 @@
                                                 'total' => $itemTotal,
                                                 'isRejected' => $isRejected,
                                                 'isRejectedFromForm' => $isRejectedFromForm,
-                                                'isRejectedStatus' => $isRejectedStatus
+                                                'isRejectedStatus' => $isRejectedStatus,
                                             ]);
                                         }
                                     }
@@ -426,6 +437,45 @@
                 });
             });
 
+            // Handle cancel button (set item kembali ke pending)
+            document.querySelectorAll('.cancel-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.dataset.id;
+                    const url = cancelRouteTemplate.replace('__ID__', id);
+
+                    Swal.fire({
+                        title: 'Batalkan permintaan?',
+                        text: 'Barang akan dikembalikan ke stok.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, batalkan',
+                        cancelButtonText: 'Tidak'
+                    }).then(result => {
+                        if (!result.isConfirmed) return;
+
+                        fetch(url, {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector(
+                                        'meta[name="csrf-token"]').content,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({})
+                            })
+                            .then(res => res.json())
+                            .then(res => {
+                                if (res.success) {
+                                    Swal.fire('Dibatalkan!', res.message, 'success')
+                                        .then(() => location.reload());
+                                } else {
+                                    Swal.fire('Error', res.message, 'error');
+                                }
+                            });
+                    });
+                });
+            });
+
+
             // Handle delete button untuk user
             document.querySelectorAll('.delete-btn').forEach(function(btn) {
                 btn.addEventListener('click', function() {
@@ -508,4 +558,9 @@
             });
         });
     </script>
+
+    <script>
+        const cancelRouteTemplate = "{{ route('demand.cancel', ['id' => '__ID__']) }}";
+    </script>
+
 @endsection

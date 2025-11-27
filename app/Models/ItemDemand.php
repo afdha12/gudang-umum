@@ -20,6 +20,7 @@ class ItemDemand extends Model
         'manager_approved_at',
         'coo_approved_at',
         'admin_approved_at',
+        'is_cancelled',
     ];
 
     public function user()
@@ -121,13 +122,13 @@ class ItemDemand extends Model
         ]);
 
         // Cek status reject dari database
-        $dbRejected = $this->status === 0 || 
-                      $this->manager_approval === 0 || 
-                      $this->coo_approval === 0;
+        $dbRejected = $this->status === 0 ||
+            $this->manager_approval === 0 ||
+            $this->coo_approval === 0;
 
         // Cek status reject dari form submission
-        $formRejected = request()->old("is_rejected.{$this->id}") === '1' || 
-                        request()->old("status.{$this->id}") === '0';
+        $formRejected = request()->old("is_rejected.{$this->id}") === '1' ||
+            request()->old("status.{$this->id}") === '0';
 
         return $dbRejected || $formRejected;
     }
@@ -152,6 +153,14 @@ class ItemDemand extends Model
             return [
                 'class' => 'bg-red-600',
                 'text' => 'Ditolak oleh Manager',
+                'rejected' => true
+            ];
+        }
+        
+        if ($this->is_cancelled == 1) {
+            return [
+                'class' => 'bg-red-600',
+                'text' => 'Dibatalkan Admin',
                 'rejected' => true
             ];
         }
@@ -289,5 +298,10 @@ class ItemDemand extends Model
             'is_rejected' => $this->isRejected(),
             'rejected_by' => $this->rejected_by
         ];
+    }
+
+    public function isCancelled()
+    {
+        return $this->is_cancelled == 1;
     }
 }

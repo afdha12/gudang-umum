@@ -16,6 +16,8 @@ class BarangHistory extends Model
         'jenis',
         'jumlah',
         'tanggal',
+        'reference_id',
+        'reference_type',
     ];
 
     // Relasi ke tabel stationery

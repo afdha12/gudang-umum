@@ -125,6 +125,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/stationeries-export', [StationeryController::class, 'export'])->name('stationeries.export');
         Route::resource('demand', AdminItemDemandController::class);
         Route::put('demand/{item}/reject', [AdminItemDemandController::class, 'reject'])->name('demand.reject');
+        Route::post('/demand/{id}/cancel', [AdminItemDemandController::class, 'cancelDemand'])->name('demand.cancel');
+
         // Route::resource('list_demands', StockController::class);
         Route::resource('list_demands', PrintDemandController::class);
         Route::resource('divisions', DivisionController::class);

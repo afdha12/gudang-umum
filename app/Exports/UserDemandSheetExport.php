@@ -28,6 +28,7 @@ class UserDemandSheetExport implements FromView, WithTitle, ShouldAutoSize
         $rawItems = ItemDemand::with('stationery')
             ->where('user_id', $this->user->id)
             ->where('status', 1)
+            // ->where('is_cancelled', 0)
             ->when($this->from, fn($q) => $q->whereDate('dos', '>=', $this->from))
             ->when($this->to, fn($q) => $q->whereDate('dos', '<=', $this->to))
             ->get();

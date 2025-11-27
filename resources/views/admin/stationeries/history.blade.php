@@ -16,7 +16,8 @@
                     <tr class="border-b border-gray-300">
                         <th class="py-3 px-4 text-left">No</th>
                         <th class="py-3 px-4 text-left">Tanggal</th>
-                        <th class="py-3 px-4 text-left">Status</th>
+                        <th class="py-3 px-4 text-left">Jenis Transaksi</th>
+                        <th class="py-3 px-4 text-left">Tipe Transaksi</th>
                         <th class="py-3 px-4 text-left">Jumlah</th>
                     </tr>
                 </thead>
@@ -26,6 +27,7 @@
                             <td class="py-3 px-4">{{ $loop->iteration }}</td>
                             <td class="py-3 px-4">{{ $item->tanggal }}</td>
                             <td class="py-3 px-4">{{ $item->jenis }}</td>
+                            <td class="py-3 px-4">{{ $item->reference_type ?? 'Tidak Tersedia'}}</td>
                             <td class="py-3 px-4">{{ $item->jumlah }}</td>
                         </tr>
                     @endforeach

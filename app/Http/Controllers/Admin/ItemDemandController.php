@@ -277,6 +277,8 @@ class ItemDemandController extends Controller
                             'jenis' => 'keluar',
                             'jumlah' => $item->amount,
                             'tanggal' => now(),
+                            'reference_id'  => $item->id,
+                            'reference_type' => 'demand',
                         ]);
 
                         $item->status = 1;
@@ -334,16 +336,29 @@ class ItemDemandController extends Controller
             abort(403, 'Unauthorized');
         }
 
+        // Tidak boleh cancel dua kali
+        if ($item->is_cancelled == 1) {
+            return back()->with('error', 'Permintaan ini sudah dibatalkan sebelumnya.');
+        }
+
+        // Hanya boleh cancel jika sudah approve
+        if ($item->status !== 1) {
+            return back()->with('error', 'Hanya permintaan yang sudah disetujui yang dapat dibatalkan.');
+        }
+
         DB::transaction(function () use ($item) {
 
-            // Cari history keluarnya berdasar reference id
+            $stationery = $item->stationery;
+
+            // Ambil semua history keluar berdasarkan permintaan ini
             $histories = BarangHistory::where('reference_type', 'demand')
                 ->where('reference_id', $item->id)
+                ->where('jenis', 'keluar')
                 ->get();
 
             foreach ($histories as $h) {
 
-                // Reversal : keluar -> masuk
+                // Buat reversal history (masuk)
                 BarangHistory::create([
                     'stationery_id' => $h->stationery_id,
                     'jenis' => 'masuk',
@@ -351,21 +366,19 @@ class ItemDemandController extends Controller
                     'tanggal' => now(),
                     'reference_type' => 'reversal',
                     'reference_id' => $h->id,
-                    'note' => 'Pembatalan permintaan #' . $item->id . ' oleh admin'
+                    'note' => 'Reversal pembatalan permintaan #' . $item->id . ' oleh admin'
                 ]);
 
-                // Kembalikan stok barang
-                $item->stationery->increment('stok', $h->jumlah);
-                $item->stationery->increment('masuk', $h->jumlah);
+                // Kembalikan stok
+                $stationery->increment('stok', $h->jumlah);
             }
 
-            // Tandai request sebagai cancelled
-            $item->status = 0;
-            $item->notes = trim($item->notes . "\nadmin: dibatalkan");
+            // Tandai sebagai dibatalkan
+            $item->is_cancelled = 1;
+            $item->notes = trim($item->notes . "\nadmin: permintaan dibatalkan");
             $item->save();
         });
 
         return back()->with('success', 'Permintaan berhasil dibatalkan dan stok dikembalikan.');
     }
-
 }
