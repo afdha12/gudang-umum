@@ -4,7 +4,7 @@
 
 @section('content')
 
-    @php
+    {{-- @php
         $bulanIndo = [
             1 => 'Januari',
             2 => 'Februari',
@@ -20,7 +20,7 @@
             12 => 'Desember',
         ];
         $daftarTahun = $availablePeriods->pluck('tahun')->unique()->sortDesc();
-    @endphp
+    @endphp --}}
 
     <div class="max-h-auto overflow-y-auto border shadow-lg rounded-lg">
         <div class="flex flex-row gap-2 m-3">
@@ -38,53 +38,12 @@
             </div>
             <div class="me-auto">
                 <!-- Tombol trigger modal -->
-                <button type="button" class="px-3 py-2 rounded bg-cyan-600 text-white hover:bg-cyan-700 transition-colors"
-                    onclick="document.getElementById('exportExcelModal').classList.remove('hidden')">
-                    <i class="bi bi-file-earmark-excel"></i> Export Excel Bulanan
-                </button>
-
+                @include('components.export-excel-button', ['btn' => 'Export Data'])
                 <!-- Modal Export Excel -->
-                <div id="exportExcelModal"
-                    class="fixed inset-0 flex items-center justify-center modal-backdrop-blur z-[9999] hidden">
-                    <div class="bg-white rounded-lg shadow-lg w-full max-w-md relative">
-                        <!-- Tombol close -->
-                        <button type="button" onclick="document.getElementById('exportExcelModal').classList.add('hidden')"
-                            class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-2xl font-bold">&times;</button>
-                        <form method="GET" action="{{ route('export.bulanan') }}" class="p-6" id="exportExcelForm">
-                            <h2 class="text-lg font-semibold mb-4 text-center">Pilih Bulan & Tahun</h2>
-                            <div class="flex gap-4 mb-6">
-                                <div class="flex-1">
-                                    <label for="tahunExport" class="block text-sm font-medium mb-1">Tahun</label>
-                                    <select name="tahun" id="tahunExport" class="w-full border rounded px-2 py-1"
-                                        required>
-                                        <option value="">Pilih Tahun</option>
-                                        @foreach ($daftarTahun as $tahun)
-                                            <option value="{{ $tahun }}">{{ $tahun }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="flex-1">
-                                    <label for="bulanExport" class="block text-sm font-medium mb-1">Bulan</label>
-                                    <select name="bulan" id="bulanExport" class="w-full border rounded px-2 py-1"
-                                        required>
-                                        <option value="">Pilih Bulan</option>
-                                        {{-- Bulan akan diisi via JS sesuai tahun yang dipilih --}}
-                                    </select>
-                                </div>
-                            </div>
-                            <!-- Hidden input untuk from dan to -->
-                            <input type="hidden" name="from" id="fromExport">
-                            <input type="hidden" name="to" id="toExport">
-                            <div class="flex justify-end gap-2">
-                                <button type="button"
-                                    onclick="document.getElementById('exportExcelModal').classList.add('hidden')"
-                                    class="px-4 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-100">Batal</button>
-                                <button type="submit"
-                                    class="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700">Download</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+                @include('components.export-excel-modal', [
+                    'availablePeriods' => $availablePeriods,
+                    'action' => route('export.bulanan'),
+                ])
 
             </div>
             <form action="{{ route('list_demands.index') }}" method="GET" id="filter-form" class="d-flex gap-2">
@@ -149,54 +108,7 @@
             @include('partials.pagination', ['data' => $approvedItems])
         </div>
     </div>
+    
+    @include('components.export-excel-script', ['availablePeriods' => $availablePeriods])
 
-    <script>
-        // Cegah modal tertutup jika klik backdrop
-        document.getElementById('exportExcelModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                // Tidak melakukan apa-apa (modal tidak tertutup)
-            }
-        });
-
-        // Data periode dari backend
-        const periods = @json($availablePeriods);
-
-        // Saat tahun dipilih, filter bulan yang tersedia
-        document.getElementById('tahunExport').addEventListener('change', function() {
-            const tahun = this.value;
-            const bulanSelect = document.getElementById('bulanExport');
-            bulanSelect.innerHTML = '<option value="">Pilih Bulan</option>';
-            if (!tahun) return;
-            const bulanIndo = [
-                '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September',
-                'Oktober', 'November', 'Desember'
-            ];
-            const bulanTersedia = periods.filter(p => p.tahun == tahun).map(p => p.bulan);
-            bulanTersedia.sort((a, b) => a - b);
-            bulanTersedia.forEach(b => {
-                bulanSelect.innerHTML += `<option value="${b}">${bulanIndo[b]}</option>`;
-            });
-        });
-
-        // Validasi sebelum submit
-        document.getElementById('exportExcelForm').addEventListener('submit', function(e) {
-            var tahun = document.getElementById('tahunExport').value;
-            var bulan = document.getElementById('bulanExport').value;
-            // Cek apakah kombinasi tahun-bulan ada di database
-            const valid = periods.some(p => p.tahun == tahun && p.bulan == bulan);
-            if (!valid) {
-                e.preventDefault();
-                alert('Bulan dan tahun yang dipilih tidak tersedia dalam data!');
-                return false;
-            }
-            // Hitung tanggal awal dan akhir bulan
-            var from = tahun + '-' + String(bulan).padStart(2, '0') + '-01';
-            var lastDay = new Date(tahun, bulan, 0).getDate();
-            var to = tahun + '-' + String(bulan).padStart(2, '0') + '-' + lastDay;
-            document.getElementById('fromExport').value = from;
-            document.getElementById('toExport').value = to;
-            // Tutup modal setelah submit
-            document.getElementById('exportExcelModal').classList.add('hidden');
-        });
-    </script>
 @endsection

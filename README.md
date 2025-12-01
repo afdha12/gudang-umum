@@ -1,66 +1,154 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# gudang-umum
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## Overview
 
-## About Laravel
+This repository contains the codebase for a project, built using a combination of modern web technologies. The project leverages JavaScript, PHP, and TypeScript for its various functionalities, along with Docker for containerization, Node.js for backend execution, and Tailwind CSS for frontend styling.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Key Features & Benefits
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+-   **Modern Tech Stack:** Utilizes JavaScript, PHP, TypeScript, Node.js, Tailwind CSS, and Docker for a robust and scalable architecture.
+-   **Containerized Deployment:** Docker support ensures consistent deployment across different environments.
+-   **Export Functionality:** Provides exporting capabilities for Monthly User Demand, Stationery, and User Demand Sheet data.
+-   **Admin Panel:** Includes an admin panel for managing the application's various components.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Prerequisites & Dependencies
 
-## Learning Laravel
+Before setting up the project, ensure you have the following installed:
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+-   **Docker:** Required for containerization. Installation instructions can be found [here](https://docs.docker.com/get-docker/).
+-   **Node.js:** Needed for managing JavaScript dependencies and potentially running frontend builds.  Installation instructions can be found [here](https://nodejs.org/).
+-   **PHP:**  Required for the backend, version 8.3 or higher is recommended. Installation instructions can be found [here](https://www.php.net/manual/en/install.php).
+-   **Composer:** A PHP dependency manager.  Installation instructions can be found [here](https://getcomposer.org/).
+-   **Git:** For version control. Installation instructions can be found [here](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## Installation & Setup Instructions
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+1.  **Clone the repository:**
 
-## Laravel Sponsors
+    ```bash
+    git clone git@github.com:afdha12/gudang-umum.git
+    cd gudang-umum
+    ```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+2.  **Install PHP Dependencies:**
 
-### Premium Partners
+    ```bash
+    composer install
+    ```
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+3.  **Install JavaScript Dependencies:**
 
-## Contributing
+    ```bash
+    npm install
+    # or
+    yarn install
+    ```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+4.  **Configure Environment Variables:**
 
-## Code of Conduct
+    -   Copy `.env.example` to `.env` and update the necessary configurations (database connection, application URL, etc.).
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+        ```bash
+        cp .env.example .env
+        # Edit .env file
+        nano .env
+        ```
 
-## Security Vulnerabilities
+5.  **Generate Application Key:**
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+    ```bash
+    php artisan key:generate
+    ```
 
-## License
+6.  **Database Setup:**
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+    -   Create a database as specified in your `.env` file.
+    -   Run database migrations:
+
+        ```bash
+        php artisan migrate
+        ```
+
+    -   Optionally, seed the database with initial data:
+
+        ```bash
+        php artisan db:seed
+        ```
+
+7.  **Build Frontend Assets:**
+
+    ```bash
+    npm run build
+    # or
+    yarn build
+    ```
+
+8.  **Docker Setup (Optional):**
+
+    -   Build the Docker image:
+
+        ```bash
+        docker build -t gudang-umum .
+        ```
+
+    -   Run the Docker container:
+
+        ```bash
+        docker run -p 8000:8000 gudang-umum
+        ```
+
+        *Note: Adjust the port mapping as needed.*
+
+## Usage Examples & API Documentation
+
+-   **Running the Application:** After setup, the application can be run using PHP's built-in server (not recommended for production):
+
+    ```bash
+    php artisan serve
+    ```
+
+    Alternatively, use a web server like Apache or Nginx.  If using Docker, the application will be served through the container.
+
+-   **Accessing the Application:** Open your web browser and navigate to the URL specified in your `.env` file (or the Docker container's port mapping, e.g., `http://localhost:8000`).
+
+- **API Documentation:** API documentation is not currently included within this README.  It is recommended that you create a separate API documentation using tools like Swagger or similar.
+
+## Configuration Options
+
+The application can be configured via environment variables in the `.env` file. Key settings include:
+
+-   `APP_NAME`:  The name of the application.
+-   `APP_ENV`:  The environment (local, production, etc.).
+-   `APP_DEBUG`: Enable or disable debugging mode.
+-   `APP_URL`:  The URL of the application.
+-   `DB_CONNECTION`: The database connection type.
+-   `DB_HOST`:  The database host.
+-   `DB_PORT`:  The database port.
+-   `DB_DATABASE`:  The database name.
+-   `DB_USERNAME`:  The database username.
+-   `DB_PASSWORD`:  The database password.
+
+## Contributing Guidelines
+
+We welcome contributions to this project! To contribute:
+
+1.  Fork the repository.
+2.  Create a new branch for your feature or bug fix.
+3.  Make your changes and commit them with clear, descriptive messages.
+4.  Submit a pull request.
+
+Please follow these guidelines:
+
+-   Adhere to the project's coding style and conventions.
+-   Include tests for new features or bug fixes.
+-   Write clear and concise documentation.
+
+## License Information
+
+License is not specified. All rights reserved by the owner.
+
+## Acknowledgments
+
+-   Laravel framework.
+-   Tailwind CSS.
+-   The open-source community.

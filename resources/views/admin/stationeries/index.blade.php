@@ -1,8 +1,12 @@
 @extends('layouts.main')
-
 @section('title', 'Data Stok Barang')
-
 @section('content')
+
+    @include('components.export-excel-modal', [
+        'availablePeriods' => $availablePeriods,
+        'action' => route('stationeries.export'),
+    ])
+    @include('components.export-excel-script', ['availablePeriods' => $availablePeriods])
 
     <div class="max-h-auto overflow-y-auto border shadow-lg rounded-lg">
         <div class="d-flex m-3">
@@ -10,7 +14,7 @@
                 <a class="btn btn-primary" href="{{ route('stationeries.create', ['type' => '1']) }}">Tambah Data Barang</a>
             </div>
             <div class="mx-2">
-                <a class="btn btn-secondary" href="{{ route('stationeries.export') }}">Export Data Barang</a>
+                @include('components.export-excel-button', ['btn' => 'Export Data Barang'])
             </div>
             <div class="ms-auto">
                 <input type="text" class="border rounded" placeholder="Cari barang..." id="search">

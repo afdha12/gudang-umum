@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Exports\StationeryExport;
+use App\Exports\StationeryMonthlyExport;
 use App\Models\Stationery;
 use Illuminate\Http\Request;
 use App\Models\BarangHistory;
@@ -38,9 +39,14 @@ class StationeryController extends Controller
         // Ambil data dengan pagination
         $data = $queryBuilder->paginate(10);
 
+        $availablePeriods = BarangHistory::selectRaw('YEAR(tanggal) as tahun, MONTH(tanggal) as bulan')
+            ->distinct()
+            ->orderBy('tahun', 'desc')
+            ->orderBy('bulan', 'desc')
+            ->get();
         // Tentukan view yang sesuai berdasarkan jenis barang
         if ($type === '1') {
-            return view('admin.stationeries.index', compact('data', 'type'));
+            return view('admin.stationeries.index', compact('data', 'type', 'availablePeriods'));
         } elseif ($type === '2') {
             return view('admin.supplies.index', compact('data', 'type'));
         }
@@ -212,8 +218,33 @@ class StationeryController extends Controller
         // return redirect()->route('stationeries.index')->with('success', 'Stationery berhasil dihapus.');
     }
 
-    public function export()
+    public function export(Request $request)
     {
-        return Excel::download(new StationeryExport, 'Data Barang GU.xlsx');
+        // return Excel::download(new StationeryExport, 'Data Barang GU.xlsx');
+
+        $from = $request->input('from');
+        $to = $request->input('to');
+        $bulan = $request->input('bulan');
+        $tahun = $request->input('tahun');
+
+        // Nama bulan Indonesia
+        $bulanIndo = [
+            1 => 'Januari',
+            2 => 'Februari',
+            3 => 'Maret',
+            4 => 'April',
+            5 => 'Mei',
+            6 => 'Juni',
+            7 => 'Juli',
+            8 => 'Agustus',
+            9 => 'September',
+            10 => 'Oktober',
+            11 => 'November',
+            12 => 'Desember'
+        ];
+        $namaBulan = $bulanIndo[(int) $bulan] ?? $bulan;
+
+        $filename = 'Rekap_Barang_' . $namaBulan . '_' . $tahun . '.xlsx';
+        return Excel::download(new StationeryMonthlyExport($bulan, $tahun), $filename);
     }
 }

@@ -3,8 +3,6 @@
 namespace App\Exports;
 
 use App\Models\Stationery;
-use Illuminate\Contracts\View\View;
-use Maatwebsite\Excel\Concerns\FromView;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -13,16 +11,6 @@ use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Maatwebsite\Excel\Concerns\WithColumnFormatting;
-
-// class StationeryExport implements FromView
-// {
-//     public function view(): View
-//     {
-//         return view('pages.export.stationery', [
-//             'stationeries' => Stationery::all()
-//         ]);
-//     }
-// }
 
 class StationeryExport implements FromCollection, WithMapping, WithHeadings, WithColumnFormatting, ShouldAutoSize, WithStyles
 {

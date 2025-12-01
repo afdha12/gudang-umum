@@ -171,6 +171,17 @@ class PrintDemandController extends Controller
         $namaBulan = $bulanIndo[(int) $bulan] ?? $bulan;
 
         $filename = 'Rekap_Permintaan_' . $namaBulan . '_' . $tahun . '.xlsx';
+
+        // Cek apakah ada data
+        $hasData = ItemDemand::where('is_cancelled', 0)
+            ->where('status', 1)
+            ->when($from, fn($q) => $q->whereDate('dos', '>=', $from))
+            ->when($to, fn($q) => $q->whereDate('dos', '<=', $to))
+            ->exists();
+
+        if (!$hasData) {
+            return back()->with('error', 'Tidak ada data permintaan pada periode yang dipilih');
+        }
         return Excel::download(new MonthlyUserDemandExport($from, $to), $filename);
     }
 }

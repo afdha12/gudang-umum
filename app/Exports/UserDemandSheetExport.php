@@ -22,13 +22,26 @@ class UserDemandSheetExport implements FromView, WithTitle, ShouldAutoSize
         $this->to = $to;
     }
 
+    /**
+     * Cek apakah user memiliki data permintaan yang valid
+     */
+    public function hasData(): bool
+    {
+        return ItemDemand::where('is_cancelled', 0)
+            ->where('user_id', $this->user->id)
+            ->where('status', 1)
+            ->when($this->from, fn($q) => $q->whereDate('dos', '>=', $this->from))
+            ->when($this->to, fn($q) => $q->whereDate('dos', '<=', $this->to))
+            ->exists();
+    }
+
     public function view(): View
     {
         // Ambil data permintaan
         $rawItems = ItemDemand::with('stationery')
+            ->where('is_cancelled', 0)
             ->where('user_id', $this->user->id)
             ->where('status', 1)
-            // ->where('is_cancelled', 0)
             ->when($this->from, fn($q) => $q->whereDate('dos', '>=', $this->from))
             ->when($this->to, fn($q) => $q->whereDate('dos', '<=', $this->to))
             ->get();

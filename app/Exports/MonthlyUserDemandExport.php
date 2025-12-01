@@ -20,14 +20,21 @@ class MonthlyUserDemandExport implements WithMultipleSheets
     public function sheets(): array
     {
         $sheets = [];
-        $users = User::whereIn('id', ItemDemand::where('status', 1)
-            ->when($this->from, fn($q) => $q->whereDate('dos', '>=', $this->from))
-            ->when($this->to, fn($q) => $q->whereDate('dos', '<=', $this->to))
-            ->pluck('user_id')->unique())->get();
+
+        // Ambil user yang memiliki permintaan valid (tidak dibatalkan dan status = 1)
+        $users = User::whereIn(
+            'id',
+            ItemDemand::where('is_cancelled', 0)
+                ->where('status', 1)
+                ->when($this->from, fn($q) => $q->whereDate('dos', '>=', $this->from))
+                ->when($this->to, fn($q) => $q->whereDate('dos', '<=', $this->to))
+                ->pluck('user_id')->unique()
+        )->get();
 
         foreach ($users as $user) {
             $sheets[] = new UserDemandSheetExport($user, $this->from, $this->to);
         }
+
         return $sheets;
     }
 }
