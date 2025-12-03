@@ -33,6 +33,7 @@
                             $approvalStatus = $item->getApprovalStatus();
                             $canProcess = $item->canBeProcessedBy($role);
                             $isRejected = $item->isRejected(); // Simpan status rejection
+                            $isCancelled = $item->isCancelled(); // Cek status cancelled dari database
 
                             $readOnly = false;
                             if ($item->status === 1) {
@@ -133,6 +134,8 @@
 
                                 <input type="hidden" name="is_rejected[{{ $item->id }}]" value="0"
                                     id="rejected-{{ $item->id }}">
+                                <input type="hidden" name="is_cancelled[{{ $item->id }}]"
+                                    value="{{ $item->isCancelled() ? '1' : '0' }}">
 
                                 <div class="md:w-4/6 mt-4 md:mt-0">
                                     <label class="block text-sm font-medium mb-1">Jumlah Permintaan</label>
@@ -197,17 +200,23 @@
                                         // Cek status reject dari database
                                         $isRejected = $item->isRejected();
 
+                                        // Cek status cancel dari database
+                                        $isCancelled = $item->isCancelled();
+
                                         // Cek status reject dari form submission
                                         $isRejectedFromForm = old("is_rejected.{$item->id}") === '1';
                                         $statusFromForm = old("status.{$item->id}");
                                         $isRejectedStatus = $statusFromForm === '0';
 
-                                        // Skip perhitungan jika item direject
-                                        if ($isRejected || $isRejectedFromForm || $isRejectedStatus) {
+                                        // Cek status cancel dari form submission
+                                        $isCancelledFromForm = old("is_cancelled.{$item->id}") === '1';
+
+                                        // Skip perhitungan jika item direject atau dicancel
+                                        if ($isRejected || $isRejectedFromForm || $isRejectedStatus || $isCancelled || $isCancelledFromForm) {
                                             continue;
                                         }
 
-                                        // Tambahkan ke grand total jika tidak direject
+                                        // Tambahkan ke grand total jika tidak direject atau dicancel
                                         $itemTotal = $item->amount * $item->stationery->harga_barang;
                                         $grandTotal += $itemTotal;
 
@@ -272,6 +281,7 @@
 
                     // Check semua kemungkinan status reject
                     let isRejected = false;
+                    let isCancelled = false;
 
                     // 1. Cek dari data attribute server-side
                     if (itemContainer.getAttribute('data-is-rejected') === '1') {
@@ -279,9 +289,15 @@
                         console.log('Item rejected from server data:', id);
                     }
 
+                    if (itemContainer.getAttribute('data-is-cancelled') === '1') {
+                        isCancelled = true;
+                        console.log('Item cancelled from server data:', id);
+                    }
+
                     // 2. Cek dari form inputs
                     const statusInput = document.querySelector(`input.status-input[data-id="${id}"]`);
                     const isRejectedInput = document.querySelector(`input[name="is_rejected[${id}]"]`);
+                    const isCancelledInput = document.querySelector(`input[name="is_cancelled[${id}]"]`);
 
                     if (statusInput && statusInput.value === "0") {
                         isRejected = true;
@@ -293,10 +309,20 @@
                         console.log('Item rejected from rejected flag:', id);
                     }
 
+                    if (isCancelledInput && isCancelledInput.value === "1") {
+                        isCancelled = true;
+                        console.log('Item cancelled from cancelled flag:', id);
+                    }
+
                     // 3. Cek dari UI elements
                     if (itemContainer.querySelector('.rejected-badge:not(.d-none)')) {
                         isRejected = true;
                         console.log('Item rejected from UI badge:', id);
+                    }
+
+                    if (itemContainer.querySelector('.cancelled-badge:not(.d-none)')) {
+                        isCancelled = true;
+                        console.log('Item cancelled from UI badge:', id);
                     }
 
                     if (itemContainer.classList.contains('rejected-item')) {
@@ -304,13 +330,18 @@
                         console.log('Item rejected from CSS class:', id);
                     }
 
-                    // Skip jika item direject
-                    if (isRejected) {
-                        console.log('Skipping rejected item:', id);
+                    if (itemContainer.classList.contains('cancelled-item')) {
+                        isCancelled = true;
+                        console.log('Item cancelled from CSS class:', id);
+                    }
+
+                    // Skip jika item direject atau dicancel
+                    if (isRejected || isCancelled) {
+                        console.log('Skipping rejected/cancelled item:', id);
                         return;
                     }
 
-                    // Hitung total jika tidak direject
+                    // Hitung total jika tidak direject atau dicancel
                     const jumlah = parseInt(input.value) || 0;
                     const harga = parseInt(input.dataset.harga) || 0;
                     const itemTotal = jumlah * harga;
@@ -354,18 +385,6 @@
                     updateGrandTotal();
                 });
             });
-
-            // PENTING: Jangan panggil updateGrandTotal() pada initial load
-            // Biarkan nilai dari server-side yang ditampilkan
-            // updateGrandTotal() hanya dipanggil saat ada perubahan input atau aksi user
-
-            // Uncomment baris di bawah jika ingin debug JavaScript calculation vs Server calculation
-            // setTimeout(() => {
-            //     console.log('=== DEBUGGING GRAND TOTAL ===');
-            //     console.log('Server-side grand total element:', document.getElementById('grand-total').textContent);
-            //     updateGrandTotal();
-            //     console.log('JavaScript calculated grand total:', document.getElementById('grand-total').textContent);
-            // }, 100);
 
             // Handle reject button untuk manager/coo/admin
             document.querySelectorAll('.reject-btn').forEach(function(btn) {
@@ -445,7 +464,7 @@
 
                     Swal.fire({
                         title: 'Batalkan permintaan?',
-                        text: 'Barang akan dikembalikan ke stok.',
+                        text: 'Barang akan dikembalikan ke stok dan tidak akan masuk perhitungan total.',
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonText: 'Ya, batalkan',
@@ -453,23 +472,152 @@
                     }).then(result => {
                         if (!result.isConfirmed) return;
 
+                        // Show loading
+                        Swal.fire({
+                            title: 'Membatalkan...',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+
                         fetch(url, {
                                 method: 'POST',
                                 headers: {
                                     'X-CSRF-TOKEN': document.querySelector(
                                         'meta[name="csrf-token"]').content,
-                                    'Content-Type': 'application/json'
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json'
                                 },
                                 body: JSON.stringify({})
                             })
-                            .then(res => res.json())
                             .then(res => {
-                                if (res.success) {
-                                    Swal.fire('Dibatalkan!', res.message, 'success')
-                                        .then(() => location.reload());
-                                } else {
-                                    Swal.fire('Error', res.message, 'error');
+                                // Log response untuk debugging
+                                console.log('Response status:', res.status);
+                                console.log('Response ok:', res.ok);
+
+                                // Check jika response bukan JSON
+                                const contentType = res.headers.get("content-type");
+                                if (!contentType || !contentType.includes(
+                                        "application/json")) {
+                                    throw new TypeError(
+                                        "Response bukan JSON, kemungkinan ada error di server"
+                                    );
                                 }
+
+                                return res.json();
+                            })
+                            .then(res => {
+                                console.log('Response data:', res);
+
+                                // Check apakah response berhasil
+                                if (res.success) {
+                                    // Update UI SEBELUM reload
+                                    const itemContainer = document.querySelector(
+                                        `[data-item-id="${id}"]`);
+
+                                    if (itemContainer) {
+                                        // Tambahkan hidden input untuk is_cancelled jika belum ada
+                                        let isCancelledInput = itemContainer
+                                            .querySelector(
+                                                `input[name="is_cancelled[${id}]"]`);
+                                        if (!isCancelledInput) {
+                                            isCancelledInput = document.createElement(
+                                                'input');
+                                            isCancelledInput.type = 'hidden';
+                                            isCancelledInput.name =
+                                                `is_cancelled[${id}]`;
+                                            isCancelledInput.value = '0';
+                                            itemContainer.appendChild(isCancelledInput);
+                                        }
+                                        isCancelledInput.value = "1";
+
+                                        const amountInput = itemContainer.querySelector(
+                                            `input[name="amount[${id}]"]`);
+                                        const noteInput = itemContainer.querySelector(
+                                            `textarea[name="notes[${id}]"]`);
+
+                                        if (amountInput) {
+                                            amountInput.readOnly = true;
+                                            amountInput.classList.add('bg-gray-100');
+                                        }
+
+                                        if (noteInput) {
+                                            noteInput.readOnly = true;
+                                            noteInput.classList.add('bg-gray-100');
+                                        }
+
+                                        // Tambahkan class cancelled untuk penanda
+                                        itemContainer.classList.add('cancelled-item',
+                                            'opacity-60',
+                                            'bg-gray-50');
+                                        itemContainer.setAttribute('data-is-cancelled',
+                                            '1');
+
+                                        // Hide cancel button
+                                        btn.classList.add('d-none');
+
+                                        // Tambahkan atau update cancelled badge
+                                        let cancelledBadge = itemContainer
+                                            .querySelector(
+                                                `.cancelled-badge[data-id="${id}"]`);
+                                        if (!cancelledBadge) {
+                                            // Buat badge baru jika belum ada
+                                            cancelledBadge = document.createElement(
+                                                'span');
+                                            cancelledBadge.className =
+                                                'ml-2 bg-orange-600 text-white text-xs px-2 py-1 rounded cancelled-badge';
+                                            cancelledBadge.setAttribute('data-id', id);
+                                            cancelledBadge.innerHTML =
+                                                '<i class="bi bi-x-circle"></i> Dibatalkan';
+                                            btn.parentNode.appendChild(cancelledBadge);
+                                        } else {
+                                            cancelledBadge.classList.remove('d-none');
+                                        }
+
+                                        // Update status badge yang sudah ada
+                                        const statusBadge = itemContainer.querySelector(
+                                            '.inline-block.text-white.text-xs.px-2.py-1'
+                                        );
+                                        if (statusBadge) {
+                                            statusBadge.className =
+                                                'inline-block bg-orange-600 text-white text-xs px-2 py-1.5 rounded';
+                                            statusBadge.textContent = 'Dibatalkan';
+                                        }
+
+                                        // Update grand total
+                                        updateGrandTotal();
+                                    }
+
+                                    // Tampilkan success message dan reload
+                                    Swal.fire({
+                                        title: 'Dibatalkan!',
+                                        text: res.message ||
+                                            'Permintaan berhasil dibatalkan.',
+                                        icon: 'success',
+                                        timer: 1500,
+                                        showConfirmButton: false
+                                    }).then(() => {
+                                        location.reload();
+                                    });
+                                } else {
+                                    // Jika success = false tapi ada response
+                                    Swal.fire({
+                                        title: 'Error',
+                                        text: res.message ||
+                                            'Gagal membatalkan permintaan.',
+                                        icon: 'error'
+                                    });
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Cancel Error:', error);
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: 'Terjadi kesalahan: ' + error.message,
+                                    icon: 'error',
+                                    confirmButtonText: 'OK'
+                                });
                             });
                     });
                 });
@@ -558,7 +706,6 @@
             });
         });
     </script>
-
     <script>
         const cancelRouteTemplate = "{{ route('demand.cancel', ['id' => '__ID__']) }}";
     </script>

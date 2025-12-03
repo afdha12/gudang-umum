@@ -156,7 +156,7 @@ class ItemDemand extends Model
                 'rejected' => true
             ];
         }
-        
+
         if ($this->is_cancelled == 1) {
             return [
                 'class' => 'bg-red-600',
@@ -302,6 +302,6 @@ class ItemDemand extends Model
 
     public function isCancelled()
     {
-        return $this->is_cancelled == 1;
+        return $this->is_cancelled == 1 || $this->is_cancelled === true;
     }
 }
