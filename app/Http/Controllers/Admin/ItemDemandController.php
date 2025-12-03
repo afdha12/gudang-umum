@@ -201,7 +201,7 @@ class ItemDemandController extends Controller
     {
         $items = ItemDemand::with('stationery')
             ->where('user_id', $userId)
-            // ->where('coo_approval', 1)
+            ->where('coo_approval', 1)
             ->whereDate('dos', $date)
             ->get();
 
@@ -215,8 +215,9 @@ class ItemDemandController extends Controller
         $amounts = $request->input('amount', []);
         $notes = $request->input('notes', []);
         $statuses = $request->input('status', []);
+        $isRejected = $request->input('is_rejected', []); // Tambahan untuk track rejected items
+        $isCancelled = $request->input('is_cancelled', []); // Tambahan untuk track cancelled items
         $action = $request->input('action'); // 'approve' jika tombol disetujui ditekan
-        // $userRole = auth()->user()->role;
 
         foreach ($amounts as $id => $value) {
             $item = ItemDemand::with('stationery')
@@ -228,8 +229,16 @@ class ItemDemandController extends Controller
             if (!$item)
                 continue;
 
+            // Skip jika item sudah di-cancel
+            if (isset($isCancelled[$id]) && $isCancelled[$id] == '1') {
+                continue;
+            }
+
+            // Check apakah item di-reject dari form
+            $isRejectFromForm = (isset($isRejected[$id]) && $isRejected[$id] === '1');
             $requestStatus = $statuses[$id] ?? null;
-            $isReject = ($requestStatus === '0');
+            $isRejectFromStatus = ($requestStatus === '0');
+            $isReject = $isRejectFromForm || $isRejectFromStatus;
 
             // Jika sudah di-reject sebelumnya, tidak bisa diubah lagi
             if ($item->status === 0 || $item->manager_approval === 0 || $item->coo_approval === 0) {
@@ -263,8 +272,13 @@ class ItemDemandController extends Controller
                     : $formattedNote;
             }
 
-            // PROSES APPROVE
+            // PROSES APPROVE - HANYA JIKA SUDAH DISETUJUI MANAGER DAN COO
             if ($action === 'approve') {
+                // Validasi: item harus sudah disetujui manager dan COO
+                if ($item->manager_approval !== 1 || $item->coo_approval !== 1) {
+                    return redirect()->back()->with('error', 'Item "' . $item->stationery->nama_barang . '" belum disetujui oleh Manager dan COO.');
+                }
+
                 if ($item->status === null) {
                     $stationery = $item->stationery;
                     if ($stationery->stok >= $item->amount) {
@@ -277,7 +291,7 @@ class ItemDemandController extends Controller
                             'jenis' => 'keluar',
                             'jumlah' => $item->amount,
                             'tanggal' => now(),
-                            'reference_id'  => $item->id,
+                            'reference_id' => $item->id,
                             'reference_type' => 'demand',
                         ]);
 
@@ -329,56 +343,112 @@ class ItemDemandController extends Controller
 
     public function cancelDemand($id)
     {
-        $item = ItemDemand::with('stationery')->findOrFail($id);
+        try {
+            $item = ItemDemand::with('stationery')->findOrFail($id);
 
-        // Hanya admin
-        if (auth()->user()->role !== 'admin') {
-            abort(403, 'Unauthorized');
-        }
-
-        // Tidak boleh cancel dua kali
-        if ($item->is_cancelled == 1) {
-            return back()->with('error', 'Permintaan ini sudah dibatalkan sebelumnya.');
-        }
-
-        // Hanya boleh cancel jika sudah approve
-        if ($item->status !== 1) {
-            return back()->with('error', 'Hanya permintaan yang sudah disetujui yang dapat dibatalkan.');
-        }
-
-        DB::transaction(function () use ($item) {
-
-            $stationery = $item->stationery;
-
-            // Ambil semua history keluar berdasarkan permintaan ini
-            $histories = BarangHistory::where('reference_type', 'demand')
-                ->where('reference_id', $item->id)
-                ->where('jenis', 'keluar')
-                ->get();
-
-            foreach ($histories as $h) {
-
-                // Buat reversal history (masuk)
-                BarangHistory::create([
-                    'stationery_id' => $h->stationery_id,
-                    'jenis' => 'masuk',
-                    'jumlah' => $h->jumlah,
-                    'tanggal' => now(),
-                    'reference_type' => 'reversal',
-                    'reference_id' => $h->id,
-                    'note' => 'Reversal pembatalan permintaan #' . $item->id . ' oleh admin'
-                ]);
-
-                // Kembalikan stok
-                $stationery->increment('stok', $h->jumlah);
+            // Hanya admin
+            if (auth()->user()->role !== 'admin') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda tidak memiliki akses untuk membatalkan permintaan.'
+                ], 403);
             }
 
-            // Tandai sebagai dibatalkan
-            $item->is_cancelled = 1;
-            $item->notes = trim($item->notes . "\nadmin: permintaan dibatalkan");
-            $item->save();
-        });
+            // Tidak boleh cancel dua kali
+            if ($item->is_cancelled == 1) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Permintaan ini sudah dibatalkan sebelumnya.'
+                ], 400);
+            }
 
-        return back()->with('success', 'Permintaan berhasil dibatalkan dan stok dikembalikan.');
+            // Hanya boleh cancel jika sudah approve
+            if ($item->status !== 1) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Hanya permintaan yang sudah disetujui yang dapat dibatalkan.'
+                ], 400);
+            }
+
+            DB::beginTransaction();
+
+            try {
+                $stationery = $item->stationery;
+
+                // Ambil semua history keluar berdasarkan permintaan ini
+                $histories = BarangHistory::where('reference_type', 'demand')
+                    ->where('reference_id', $item->id)
+                    ->where('jenis', 'keluar')
+                    ->get();
+
+                foreach ($histories as $h) {
+                    // Buat reversal history (masuk)
+                    BarangHistory::create([
+                        'stationery_id' => $h->stationery_id,
+                        'jenis' => 'masuk',
+                        'jumlah' => $h->jumlah,
+                        'tanggal' => now(),
+                        'reference_type' => 'reversal',
+                        'reference_id' => $h->id,
+                        'note' => 'Reversal pembatalan permintaan #' . $item->id . ' oleh admin'
+                    ]);
+
+                    // Kembalikan stok
+                    $stationery->increment('stok', $h->jumlah);
+                }
+
+                // Tandai sebagai dibatalkan
+                $item->is_cancelled = 1;
+                // $item->cancelled_at = now();
+                // $item->cancelled_by = auth()->user()->id;
+                $item->notes = trim($item->notes . "\nadmin: permintaan dibatalkan pada " . now()->format('d-m-Y H:i'));
+                $item->save();
+
+                DB::commit();
+
+                \Log::info('Item demand cancelled successfully', [
+                    'item_id' => $item->id,
+                    'stationery_id' => $stationery->id,
+                    'histories_count' => $histories->count(),
+                    'cancelled_by' => auth()->user()->id
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Permintaan berhasil dibatalkan dan stok dikembalikan.'
+                ], 200);
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+
+                \Log::error('Error in cancelDemand transaction', [
+                    'item_id' => $id,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal membatalkan permintaan: ' . $e->getMessage()
+                ], 500);
+            }
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Item tidak ditemukan.'
+            ], 404);
+        } catch (\Exception $e) {
+            \Log::error('Unexpected error in cancelDemand', [
+                'item_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan yang tidak terduga.'
+            ], 500);
+        }
     }
 }
