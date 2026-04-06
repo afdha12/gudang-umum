@@ -6,23 +6,7 @@ echo "🚀 ENTRYPOINT START"
 # Pastikan kita di direktori yang benar
 cd /app
 
-# Cek permissions
-echo "📋 Checking permissions..."
-ls -la .env .env.prod 2>/dev/null || true
 
-# Backup .env jika bisa, jika tidak langsung copy
-if [ -f ".env" ]; then
-    echo "📄 Attempting to backup .env"
-    cp .env .env.backup 2>/dev/null || echo "⚠️  Cannot backup .env, proceeding without backup"
-fi
-
-# Copy .env.prod ke .env
-echo "📄 Copying .env.prod to .env"
-cat .env.prod > .env 2>/dev/null || {
-    echo "❌ Cannot write to .env, checking permissions..."
-    ls -la .env .env.prod
-    exit 1
-}
 
 # Check if artisan exists
 if [ ! -f "artisan" ]; then

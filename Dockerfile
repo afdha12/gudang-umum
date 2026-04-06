@@ -59,11 +59,7 @@ RUN npm ci
 COPY . .
 # RUN npm install && npm run build
 RUN npm run build
-# Environment setup
-RUN if [ ! -f .env ]; then cp .env.prod .env; fi
 
-# Generate app key first
-RUN php artisan key:generate --force
 
 # ========================
 # 🚀 Laravel Octane + FrankenPHP
@@ -75,12 +71,7 @@ RUN php artisan storage:link || true
 
 # Set file permissions
 RUN chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache \
-    && chmod 644 .env.prod \
-    && touch .env \
-    && chown www-data:www-data .env \
-    && chmod 644 .env \
-    && chmod 644 .env.prod
+    && chmod -R 775 storage bootstrap/cache
 
 # ========================
 # ✅ Runtime Setup
