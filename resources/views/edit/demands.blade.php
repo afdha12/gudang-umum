@@ -121,7 +121,7 @@
                                             </span>
                                         @endif
 
-                                        @if ($approvalStatus['status'] == 1 && !$item->isCancelled())
+                                        @if ($role === 'admin' && $approvalStatus['status'] == 1 && !$item->isCancelled())
                                             <button type="button"
                                                 class="mt-2 px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded cancel-btn"
                                                 data-id="{{ $item->id }}">

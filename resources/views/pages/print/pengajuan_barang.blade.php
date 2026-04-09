@@ -190,7 +190,8 @@
                     <td>{{ $index + 1 }}</td>
                     <td>{{ date('d M Y', strtotime($item->dos)) }}</td>
                     <td class="text-capitalize">{{ strtolower($item->user->name) }}</td>
-                    <td class="text-uppercase">{{ optional($item->stationery)->nama_barang ?? 'Barang sudah dihapus' }}</td>
+                    <td class="text-uppercase">{{ optional($item->stationery)->nama_barang ?? 'Barang sudah dihapus' }}
+                    </td>
                     <td>{{ $item->amount }}</td>
                     <td>Rp {{ number_format($hargaSatuan, 0, ',', '.') }}</td>
                     <td>Rp {{ number_format($subtotal, 0, ',', '.') }}</td>
@@ -217,7 +218,7 @@
                 <p class="text-capitalize"><strong>{{ $admin->name }}</strong></p>
             </div>
             <div class="signature-box">
-                <p>Wadir</p>
+                <p>Wakil Direktur</p>
                 <img src="{{ $coo->getFirstMediaPath('signature') }}" alt="Tanda Tangan Wadir">
                 <p class="text-capitalize"><strong>{{ $coo->name }}</strong></p>
             </div>
