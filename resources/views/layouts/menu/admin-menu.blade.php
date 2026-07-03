@@ -39,7 +39,7 @@
     </ul>
 </li> --}}
 
-<li class="nav-group {{ request()->is('admin/demand*', 'admin/list_demands*') ? 'show' : '' }}">
+<li class="nav-group {{ request()->is('admin/demand*', 'admin/list_demands*', 'admin/pending*') ? 'show' : '' }}">
     <a class="nav-link nav-group-toggle" href="#">
         <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
             class="bi bi-journal-check" viewBox="0 0 16 16">
@@ -52,6 +52,12 @@
         </svg> Permintaan Barang
     </a>
     <ul class="nav-group-items compact">
+        <li class="nav-item">
+            <a class="nav-link {{ request()->is('admin/pending*') ? 'active' : '' }}"
+                href="{{ route('pending.index') }}">
+                <span class="nav-icon"><span class="nav-icon-bullet"></span></span> Monitoring Pending
+            </a>
+        </li>
         <li class="nav-item">
             <a class="nav-link {{ request()->is('admin/demand*') ? 'active' : '' }}"
                 href="{{ route('demand.index') }}">

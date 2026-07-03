@@ -38,8 +38,8 @@
             @endforeach
             <td style="border:1px solid #000;">{{ $item['total'] }}</td>
             <td style="border:1px solid #000;">{{ $item['satuan'] }}</td>
-            <td style="border:1px solid #000;">{{ 'Rp ' . number_format($item['harga'], 0, ',', '.') }}</td>
-            <td style="border:1px solid #000;">{{ 'Rp ' . number_format($item['jumlah'], 0, ',', '.') }}</td>
+            <td style="border:1px solid #000;" data-format='"Rp" #,##0'>{{ $item['harga'] }}</td>
+            <td style="border:1px solid #000;" data-format='"Rp" #,##0'>{{ $item['jumlah'] }}</td>
         </tr>
         @php $grandTotal += $item['jumlah']; @endphp
     @endforeach
@@ -47,7 +47,7 @@
         <td colspan="{{ 5 + count($dates) }}" style="text-align:right; font-weight:bold; border:1px solid #000;">TOTAL
         </td>
         {{-- <td style="font-weight:bold; border:1px solid #000;">Rp</td> --}}
-        <td style="font-weight:bold; border:1px solid #000;">{{ 'Rp ' . number_format($grandTotal, 0, ',', '.') }}</td>
+        <td style="font-weight:bold; border:1px solid #000;" data-format='"Rp" #,##0'>{{ $grandTotal }}</td>
     </tr>
     <tr>
         <td colspan="{{ 7 + count($dates) }}"></td>

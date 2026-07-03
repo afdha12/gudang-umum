@@ -34,6 +34,10 @@ class ProfileController extends Controller
 
         $request->user()->save();
 
+        if ($request->hasFile('signature')) {
+            $request->user()->addMediaFromRequest('signature')->toMediaCollection('signature');
+        }
+
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 

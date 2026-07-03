@@ -23,28 +23,23 @@
     @endphp --}}
 
     <div class="max-h-auto overflow-y-auto border shadow-lg rounded-lg">
-        <div class="flex flex-row gap-2 m-3">
-            <div>
-                <form id="print-form" action="{{ route('list_demands.store') }}" method="POST" target="_blank">
-                    @csrf
-                    <input type="hidden" name="user_id" value="{{ request('user_id') }}">
-                    <input type="hidden" name="from" value="{{ request('from') }}">
-                    <input type="hidden" name="to" value="{{ request('to') }}">
-                    <button type="submit" id="print-selected"
-                        class="px-3 py-2 rounded bg-emerald-600 text-white hover:bg-emerald-700">
-                        <i class="bi bi-file-earmark-pdf"></i> Cetak Data
-                    </button>
-                </form>
-            </div>
+        <div class="flex flex-row items-center gap-2 m-3">
+            <form id="print-form" action="{{ route('list_demands.store') }}" method="POST" target="_blank" class="m-0">
+                @csrf
+                <input type="hidden" name="user_id" value="{{ request('user_id') }}">
+                <input type="hidden" name="from" value="{{ request('from') }}">
+                <input type="hidden" name="to" value="{{ request('to') }}">
+                <x-primary-button type="submit" id="print-selected">
+                    <i class="bi bi-file-earmark-pdf"></i>Cetak Data
+                </x-primary-button>
+            </form>
+
             <div class="me-auto">
-                <!-- Tombol trigger modal -->
                 @include('components.export-excel-button', ['btn' => 'Export Data'])
-                <!-- Modal Export Excel -->
                 @include('components.export-excel-modal', [
                     'availablePeriods' => $availablePeriods,
                     'action' => route('export.bulanan'),
                 ])
-
             </div>
             <form action="{{ route('list_demands.index') }}" method="GET" id="filter-form" class="d-flex gap-2">
                 <div>
@@ -66,8 +61,9 @@
                         placeholder="Pilih Tanggal Sampai" value="{{ request('to') }}">
                 </div>
                 <div>
-                    <button type="submit"
-                        class="px-3 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">Filter</button>
+                    <x-primary-button type="submit">
+                        Filter
+                    </x-primary-button>
                 </div>
                 <div>
                     @if (request('user_id') || request('from') || request('to'))
@@ -108,7 +104,7 @@
             @include('partials.pagination', ['data' => $approvedItems])
         </div>
     </div>
-    
+
     @include('components.export-excel-script', ['availablePeriods' => $availablePeriods])
 
 @endsection

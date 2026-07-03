@@ -13,7 +13,7 @@
         @csrf
     </form>
 
-    <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6">
+    <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6" enctype="multipart/form-data">
         @csrf
         @method('patch')
 
@@ -47,8 +47,56 @@
             @endif
         </div>
 
+        <div>
+            <x-input-label for="signature" :value="__('Tanda Tangan')" />
+            
+            <div x-data="{ photoName: null, photoPreview: null }" class="mt-1">
+                <!-- Signature File Input -->
+                <input type="file" id="signature" name="signature" class="hidden"
+                            x-ref="signature"
+                            x-on:change="
+                                    photoName = $refs.signature.files[0].name;
+                                    const reader = new FileReader();
+                                    reader.onload = (e) => {
+                                        photoPreview = e.target.result;
+                                    };
+                                    reader.readAsDataURL($refs.signature.files[0]);
+                            " />
+
+                <!-- Current Signature -->
+                <div class="mt-2" x-show="! photoPreview">
+                    @if($user->getFirstMediaUrl('signature'))
+                        <img src="{{ $user->getFirstMediaUrl('signature') }}" alt="Signature" class="rounded-md h-20 object-contain">
+                    @else
+                        <div class="rounded-md h-20 w-32 bg-gray-100 border border-dashed flex items-center justify-center text-gray-400 text-sm">
+                            Tidak ada
+                        </div>
+                    @endif
+                </div>
+
+                <!-- New Signature Preview -->
+                <div class="mt-2" x-show="photoPreview" style="display: none;">
+                    <span class="block rounded-md h-20 w-32 bg-contain bg-no-repeat bg-left"
+                          x-bind:style="'background-image: url(\'' + photoPreview + '\');'">
+                    </span>
+                </div>
+
+                <x-secondary-button class="mt-2" type="button" x-on:click.prevent="$refs.signature.click()">
+                    {{ __('Pilih Tanda Tangan') }}
+                </x-secondary-button>
+
+                <x-input-error class="mt-2" :messages="$errors->get('signature')" />
+            </div>
+        </div>
+
         <div class="flex items-center gap-4">
-            <x-primary-button>{{ __('Save') }}</x-primary-button>
+            <x-primary-button>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-floppy" viewBox="0 0 16 16">
+                    <path d="M11 2H9v3h2z"/>
+                    <path d="M1.5 0h11.586a1.5 1.5 0 0 1 1.06.44l1.415 1.414A1.5 1.5 0 0 1 16 2.914V14.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 14.5v-13A1.5 1.5 0 0 1 1.5 0M1 1.5v13a.5.5 0 0 0 .5.5H2v-4.5A1.5 1.5 0 0 1 3.5 9h9a1.5 1.5 0 0 1 1.5 1.5V15h.5a.5.5 0 0 0 .5-.5V2.914a.5.5 0 0 0-.146-.353l-1.415-1.415A.5.5 0 0 0 13.086 1H13v4.5A1.5 1.5 0 0 1 11.5 7h-7A1.5 1.5 0 0 1 3 5.5V1H1.5a.5.5 0 0 0-.5.5m3 4a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 .5-.5V1H4zM3 15h10v-4.5a.5.5 0 0 0-.5-.5h-9a.5.5 0 0 0-.5.5z"/>
+                </svg>
+                {{ __('Save') }}
+            </x-primary-button>
 
             @if (session('status') === 'profile-updated')
                 <p

@@ -3,14 +3,24 @@
 @section('title', 'Edit Permintaan Barang')
 
 @php
-    $rolePrefix = match (auth()->user()->role) {
+    $role = auth()->user()->role;
+    $rolePrefix = match ($role) {
         'manager' => 'item_demands',
         'coo' => 'user_demands',
         'admin' => 'demand',
         default => 'item-demand',
     };
 
-    $adaBelumDisetujui = $items->contains(fn($item) => $item->status === null);
+    $adaBelumDisetujui = $items->contains(function($item) use ($role) {
+        if ($role === 'manager') {
+            return is_null($item->manager_approval);
+        } elseif ($role === 'coo') {
+            return is_null($item->coo_approval);
+        } elseif ($role === 'admin') {
+            return is_null($item->status);
+        }
+        return is_null($item->status);
+    });
 @endphp
 
 @section('content')
@@ -212,7 +222,13 @@
                                         $isCancelledFromForm = old("is_cancelled.{$item->id}") === '1';
 
                                         // Skip perhitungan jika item direject atau dicancel
-                                        if ($isRejected || $isRejectedFromForm || $isRejectedStatus || $isCancelled || $isCancelledFromForm) {
+                                        if (
+                                            $isRejected ||
+                                            $isRejectedFromForm ||
+                                            $isRejectedStatus ||
+                                            $isCancelled ||
+                                            $isCancelledFromForm
+                                        ) {
                                             continue;
                                         }
 
@@ -238,16 +254,22 @@
                         </h5>
                     </div>
 
-                    <div class="flex justify-between items-center">
+                    <div class="flex justify-between items-center mt-6">
                         @if ($adaBelumDisetujui)
-                            <button type="submit" name="action" value="{{ $role === 'user' ? 'update' : 'approve' }}"
-                                class="px-4 py-2 {{ $role === 'user' ? 'bg-blue-600' : 'bg-green-600' }} text-white rounded hover:{{ $role === 'user' ? 'bg-blue-700' : 'bg-green-700' }} text-sm">
-                                <i class="bi {{ $role === 'user' ? 'bi-save' : 'bi-check-circle' }}"></i>
-                                {{ $role === 'user' ? 'Simpan Perubahan' : 'Setujui Semua' }}
-                            </button>
+                            @if ($role === 'user')
+                                <x-primary-button type="submit" name="action" value="update">
+                                    <i class="bi bi-save"></i> Simpan Perubahan
+                                </x-primary-button>
+                            @else
+                                <x-success-button type="submit" name="action" value="approve">
+                                    <i class="bi bi-check-circle"></i> Setujui Semua
+                                </x-success-button>
+                            @endif
                         @endif
-                        <a href="{{ route($rolePrefix . '.index') }}"
-                            class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 text-sm">Kembali</a>
+                        
+                        <x-secondary-link href="{{ route($rolePrefix . '.index') }}">
+                            <i class="bi bi-arrow-left"></i> Kembali
+                        </x-secondary-link>
                     </div>
                 </form>
             </div>

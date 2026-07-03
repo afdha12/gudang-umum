@@ -36,11 +36,13 @@
             <input type="hidden" name="to" id="toExport">
 
             <div class="flex justify-end gap-2">
-                <button type="button" onclick="document.getElementById('exportExcelModal').classList.add('hidden')"
-                    class="px-4 py-2 rounded border text-gray-700 hover:bg-gray-100">Batal</button>
+                <x-secondary-button type="button" onclick="document.getElementById('exportExcelModal').classList.add('hidden')">
+                    Batal
+                </x-secondary-button>
 
-                <button type="submit"
-                    class="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700">Download</button>
+                <x-success-button type="submit">
+                    <i class="bi bi-download mr-2"></i> Download
+                </x-success-button>
             </div>
         </form>
     </div>

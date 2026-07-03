@@ -64,7 +64,7 @@
                 <div class="dropdown-menu dropdown-menu-end pt-0">
                     <div class="dropdown-header bg-body-tertiary text-body-secondary fw-semibold rounded-top mb-2">
                         Account</div>
-                    <a class="dropdown-item" href="#">
+                    <a class="dropdown-item" href="{{ route('profile.edit') }}">
                         <svg class="icon me-2">
                             <use xlink:href="{{ asset('modules/coreui/icons/sprites/free.svg#cil-user') }}"></use>
                         </svg> Profile</a>

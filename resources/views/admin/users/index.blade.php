@@ -5,9 +5,15 @@
 @section('content')
 
     <div class="max-h-auto overflow-y-auto border shadow-lg rounded-lg">
-        <div class="m-3">
-            <a class="btn btn-primary" href="{{ route('users-management.create', ['type' => 'supplies']) }}">Tambah User</a>
-            <a class="btn btn-secondary" href="#" data-bs-toggle="modal" data-bs-target="#selectDivisionsModal">Pengaturan Unit</a>
+        <div class="flex m-3 gap-2">
+            <x-primary-link href="{{ route('users-management.create', ['type' => 'supplies']) }}">
+                <i class="bi bi-person-plus"></i>
+                Tambah User
+            </x-primary-link>
+            <x-secondary-link href="#" data-bs-toggle="modal" data-bs-target="#selectDivisionsModal">
+                <i class="bi bi-gear"></i>
+                Pengaturan Unit
+            </x-secondary-link>
         </div>
 
         <div>
@@ -37,11 +43,16 @@
                             <td class="py-3 px-4 text-capitalize">{{ $item->division->division_name ?? '' }}</td>
                             <td class="py-3 px-4">{{ $item->role }}</td>
                             <td class="py-3 px-4 text-center">
-                                <a href="{{ route('users-management.edit', $item->id) }}"
-                                    class="btn btn-outline-primary btn-sm mr-2"><i class="bi bi-pencil"></i></i></a>
-                                <a href="{{ route('users-management.destroy', $item->id) }}"
-                                    class="btn btn-outline-danger btn-sm" data-confirm-delete="true"><i
-                                        class="bi bi-trash"></i></a>
+                                <div class="flex items-center justify-center gap-2">
+                                    <x-primary-link href="{{ route('users-management.edit', $item->id) }}"
+                                        class="!px-3 !py-1.5">
+                                        <i class="bi bi-pencil"></i>
+                                    </x-primary-link>
+                                    <x-danger-link href="{{ route('users-management.destroy', $item->id) }}"
+                                        class="!px-3 !py-1.5" data-confirm-delete="true">
+                                        <i class="bi bi-trash"></i>
+                                    </x-danger-link>
+                                </div>
                             </td>
                         </tr>
                     @endforeach

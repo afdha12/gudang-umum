@@ -26,6 +26,7 @@ class PrintDemandController extends Controller
         $users = User::whereIn('id', ItemDemand::pluck('user_id')->unique())->get();
 
         $approvedItems = ItemDemand::with(['user.division', 'stationery'])
+            ->where('is_cancelled', 0)
             ->where('status', 1)
             ->when($request->user_id, function ($query) use ($request) {
                 $query->where('user_id', $request->user_id);
@@ -42,6 +43,7 @@ class PrintDemandController extends Controller
 
         // Ambil daftar bulan dan tahun unik dari ItemDemand
         $availablePeriods = ItemDemand::selectRaw('YEAR(dos) as tahun, MONTH(dos) as bulan')
+            ->where('is_cancelled', 0)
             ->where('status', 1)
             ->distinct()
             ->orderByDesc('tahun')
@@ -83,9 +85,10 @@ class PrintDemandController extends Controller
         }
 
         $totalJumlah = $approvedData->sum('amount');
-        $division = optional($approvedData->first())->user->division_id;
-        $manager = User::where('role', 'manager')->where('division_id', $division)->first() ??
-            User::where('role', 'coo')->first();
+        // ponytail: null-safe — user atau divisi bisa saja sudah dihapus
+        $division = $approvedData->first()?->user?->division_id;
+        $manager = User::where('role', 'manager')->where('division_id', $division)->first()
+            ?? User::where('role', 'coo')->first();
         $coo = User::where('role', 'coo')->first();
         $admin = User::where('role', 'admin')->first();
 

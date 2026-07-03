@@ -182,14 +182,14 @@
             @php $totalHarga = 0; @endphp
             @foreach ($approvedData as $index => $item)
                 @php
-                    $hargaSatuan = $item->stationery->harga_barang ?? 0;
+                    $hargaSatuan = $item->stationery?->harga_barang ?? 0;
                     $subtotal = $item->amount * $hargaSatuan;
                     $totalHarga += $subtotal;
                 @endphp
                 <tr>
                     <td>{{ $index + 1 }}</td>
                     <td>{{ date('d M Y', strtotime($item->dos)) }}</td>
-                    <td class="text-capitalize">{{ strtolower($item->user->name) }}</td>
+                    <td class="text-capitalize">{{ strtolower($item->user?->name ?? 'User dihapus') }}</td>
                     <td class="text-uppercase">{{ optional($item->stationery)->nama_barang ?? 'Barang sudah dihapus' }}
                     </td>
                     <td>{{ $item->amount }}</td>
@@ -205,22 +205,35 @@
     </table>
 
     <!-- Tanda Tangan - DIPERBAIKI HORIZONTAL -->
+    {{-- ponytail: null-safe — manager/admin/coo/signature bisa null --}}
     <div class="signature-section">
         <div class="signature-row">
             <div class="signature-box">
-                <p class="text-capitalize">Manager {{ $item->user->division->division_name }}</p>
-                <img src="{{ $manager->getFirstMediaPath('signature') }}" alt="Tanda Tangan Manager">
-                <p class="text-capitalize"><strong>{{ strtolower($manager->name) }}</strong></p>
+                <p class="text-capitalize">Manager {{ $approvedData->first()?->user?->division?->division_name ?? '-' }}</p>
+                @if($manager && $manager->getFirstMediaPath('signature'))
+                    <img src="{{ $manager->getFirstMediaPath('signature') }}" alt="Tanda Tangan Manager">
+                @else
+                    <div style="height:60px;"></div>
+                @endif
+                <p class="text-capitalize"><strong>{{ strtolower($manager->name ?? '-') }}</strong></p>
             </div>
             <div class="signature-box">
                 <p>Admin Gudang</p>
-                <img src="{{ $admin->getFirstMediaPath('signature') }}" alt="Tanda Tangan Admin">
-                <p class="text-capitalize"><strong>{{ $admin->name }}</strong></p>
+                @if($admin && $admin->getFirstMediaPath('signature'))
+                    <img src="{{ $admin->getFirstMediaPath('signature') }}" alt="Tanda Tangan Admin">
+                @else
+                    <div style="height:60px;"></div>
+                @endif
+                <p class="text-capitalize"><strong>{{ $admin->name ?? '-' }}</strong></p>
             </div>
             <div class="signature-box">
                 <p>Wakil Direktur</p>
-                <img src="{{ $coo->getFirstMediaPath('signature') }}" alt="Tanda Tangan Wadir">
-                <p class="text-capitalize"><strong>{{ $coo->name }}</strong></p>
+                @if($coo && $coo->getFirstMediaPath('signature'))
+                    <img src="{{ $coo->getFirstMediaPath('signature') }}" alt="Tanda Tangan Wadir">
+                @else
+                    <div style="height:60px;"></div>
+                @endif
+                <p class="text-capitalize"><strong>{{ $coo->name ?? '-' }}</strong></p>
             </div>
         </div>
     </div>

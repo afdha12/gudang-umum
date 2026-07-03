@@ -65,7 +65,7 @@
                             class="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none sm:text-sm/6"
                             placeholder="0.00" /> --}}
                         <div class="grid rounded-r border shrink-0 grid-cols-1 focus-within:relative">
-                            <button type="button" class="btn" data-bs-toggle="modal" data-bs-target="#addDivisionModal">
+                            <button type="button" class="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 border border-transparent rounded-r-lg font-semibold text-sm text-white tracking-wide shadow-md hover:from-blue-500 hover:to-indigo-500 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:scale-95 transition-all ease-in-out duration-200" data-bs-toggle="modal" data-bs-target="#addDivisionModal">
                                 <i class="bi bi-plus-lg"></i>
                             </button>
                             {{-- <svg class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4"
@@ -95,7 +95,11 @@
                     @enderror
                 </div>
 
-                <button type="submit" class="btn btn-primary">Create User</button>
+                <div class="mt-6 flex justify-end">
+                    <x-primary-button type="submit">
+                        <i class="bi bi-person-plus mr-2"></i> Create User
+                    </x-primary-button>
+                </div>
             </form>
         </div>
     </div>
@@ -137,7 +141,9 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-success" id="saveDivisionBtn">Simpan</button>
+                    <x-success-button type="button" id="saveDivisionBtn">
+                        <i class="bi bi-floppy mr-2"></i> Simpan
+                    </x-success-button>
                 </div>
             </div>
         </div>

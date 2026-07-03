@@ -57,9 +57,9 @@ class StationeryMonthlyExport implements
             ->where('tanggal', '<', $startMonth)
             ->sum('jumlah');
 
-        // Keluar = jenis 'keluar' yang bukan reversal
+        // Keluar = jenis 'keluar' + 'defisit' yang bukan reversal
         $outBefore = BarangHistory::where('stationery_id', $item->id)
-            ->where('jenis', 'keluar')
+            ->whereIn('jenis', ['keluar', 'defisit'])
             ->where(function ($q) {
                 $q->whereNull('reference_type')
                     ->orWhere('reference_type', '!=', 'reversal');
@@ -86,9 +86,9 @@ class StationeryMonthlyExport implements
             ->whereBetween('tanggal', [$startMonth, $endMonth])
             ->sum('jumlah');
 
-        // Pengeluaran bulan ini (jenis 'keluar')
+        // Pengeluaran bulan ini (jenis 'keluar' + 'defisit')
         $pengeluaranKotor = BarangHistory::where('stationery_id', $item->id)
-            ->where('jenis', 'keluar')
+            ->whereIn('jenis', ['keluar', 'defisit'])
             ->whereBetween('tanggal', [$startMonth, $endMonth])
             ->sum('jumlah');
 

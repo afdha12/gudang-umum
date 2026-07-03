@@ -21,8 +21,10 @@
                     @endforeach
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-success">Simpan Perubahan</button>
+                    <x-secondary-button data-bs-dismiss="modal">Batal</x-secondary-button>
+                    <x-success-button type="submit">
+                        <i class="bi bi-floppy"></i> Simpan Perubahan
+                    </x-success-button>
                 </div>
             </div>
         </form>

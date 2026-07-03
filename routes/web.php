@@ -22,6 +22,7 @@ use App\Http\Controllers\User\DashboardController as UserDashboardController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\User\ItemDemandController as UserItemDemandController;
 use App\Http\Controllers\Admin\ItemDemandController as AdminItemDemandController;
+use App\Http\Controllers\Admin\PendingMonitorController;
 use App\Http\Controllers\Manager\DashboardController as ManagerDashboardController;
 use App\Http\Controllers\Manager\ItemDemandController as ManagerItemDemandController;
 
@@ -64,6 +65,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Route::post('/change-password', [FirstLoginController::class, 'update'])->name('password.update');
     Route::resource('change-password', FirstLoginController::class);
     // Route::resource('act-btn', ActionButtonController::class);
+
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::get('/proxy/stationeries', function () {
         $token = env('GO_API_TOKEN');
 
@@ -136,6 +141,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/demand/{user}/date/{date}', [AdminItemDemandController::class, 'updateByDate'])
             ->name('demand.update_by_date');
         Route::get('/export-bulanan', [PrintDemandController::class, 'exportExcel'])->name('export.bulanan');
+
+        // Route untuk Monitoring Permintaan Pending
+        Route::get('/pending', [PendingMonitorController::class, 'index'])->name('pending.index');
+        Route::get('/pending/user/{userId}', [PendingMonitorController::class, 'detailByUser'])->name('pending.detail.user');
+        Route::get('/pending/date/{date}', [PendingMonitorController::class, 'detailByDate'])->name('pending.detail.date');
+        Route::get('/pending/item/{stationeryId}', [PendingMonitorController::class, 'detailByItem'])->name('pending.detail.item');
     });
 });
 

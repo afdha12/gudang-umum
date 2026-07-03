@@ -236,7 +236,9 @@ class ItemDemand extends Model
 
             case 'coo':
                 // COO bisa proses jika manager sudah approve dan COO belum ada keputusan
-                return $this->manager_approval === 1 && is_null($this->coo_approval);
+                // atau jika divisi user dikelola langsung oleh COO
+                $isManagedByCoo = $this->user?->division?->managed_by_coo ?? false;
+                return ($this->manager_approval == 1 || ($isManagedByCoo && is_null($this->manager_approval))) && is_null($this->coo_approval);
 
             case 'admin':
                 // Admin bisa proses jika manager dan COO sudah approve, admin belum ada keputusan

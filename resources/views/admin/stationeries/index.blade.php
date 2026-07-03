@@ -9,11 +9,12 @@
     @include('components.export-excel-script', ['availablePeriods' => $availablePeriods])
 
     <div class="max-h-auto overflow-y-auto border shadow-lg rounded-lg">
-        <div class="d-flex m-3">
-            <div>
-                <a class="btn btn-primary" href="{{ route('stationeries.create', ['type' => '1']) }}">Tambah Data Barang</a>
-            </div>
-            <div class="mx-2">
+        <div class="flex flex-row items-center m-3">
+            <div class="flex gap-2">
+                <x-primary-link href="{{ route('stationeries.create', ['type' => '1']) }}">
+                    <i class="bi bi-plus-lg"></i>
+                    Tambah Data Barang
+                </x-primary-link>
                 @include('components.export-excel-button', ['btn' => 'Export Data Barang'])
             </div>
             <div class="ms-auto">

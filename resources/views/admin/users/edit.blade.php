@@ -48,7 +48,7 @@
                                 @endforeach
                             </select>
                             <div class="ms-1 rounded-r border-y border-r">
-                                <button type="button" class="btn" data-bs-toggle="modal"
+                                <button type="button" class="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 border border-transparent rounded-r-lg font-semibold text-sm text-white tracking-wide shadow-md hover:from-blue-500 hover:to-indigo-500 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:scale-95 transition-all ease-in-out duration-200" data-bs-toggle="modal"
                                     data-bs-target="#addDivisionModal">
                                     <i class="bi bi-plus-lg"></i>
                                 </button>
@@ -103,8 +103,12 @@
 
             </div>
             <div class="d-flex justify-content-around mt-5">
-                <a class="btn btn-danger" href="{{ route('users-management.index') }}">Batal</a>
-                <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+                <x-secondary-link href="{{ route('users-management.index') }}">
+                    <i class="bi bi-x-circle mr-2"></i> Batal
+                </x-secondary-link>
+                <x-primary-button type="submit">
+                    <i class="bi bi-floppy mr-2"></i> Submit
+                </x-primary-button>
             </div>
         </form>
     </div>
@@ -125,7 +129,9 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-success" id="saveDivisionBtn">Simpan</button>
+                    <x-success-button type="button" id="saveDivisionBtn">
+                        <i class="bi bi-floppy mr-2"></i> Simpan
+                    </x-success-button>
                 </div>
             </div>
         </div>

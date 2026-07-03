@@ -80,50 +80,73 @@ class ItemDemandController extends Controller
      */
     public function store(Request $request)
     {
-        // $validated = $request->validate([
-        //     'user_id' => 'required|string|max:255',
-        //     'stationery_id' => 'required|string|max:255',
-        //     'amount' => 'required|integer|max:255',
-        //     'dos' => 'required|date|max:255',
-        //     'manager_approval' => 'nullable|integer|max:255',
-        //     'status' => 'nullable|integer|max:255',
-        //     // 'satuan' => 'required|string|max:255',
-        //     // 'masuk' => 'required|integer',
-        //     // 'keluar' => 'required|integer',
-        //     // 'stok' => 'required|integer',
-        // ]);
-
-        // // Ambil stok dari database berdasarkan stationery_id
-        // $stationery = Stationery::find($request->stationery_id);
-
-        // if ($request->amount > $stationery->stok) {
-        //     return back()->with('error', 'Jumlah barang yang diminta melebihi stok yang ada.');
-        // } else {
-        //     ItemDemand::create($validated);
-        //     return redirect()->route('item-demand.index')->with('success', 'Permintaan barang berhasil ditambahkan.');
-        // }
-
         $request->validate([
             'items' => 'required|array',
             'items.*.stationery_id' => 'required|exists:stationeries,id',
             'items.*.amount' => 'required|integer|min:1',
         ]);
 
-        foreach ($request->items as $item) {
-            $stationery = Stationery::find($item['stationery_id']);
-            if ($item['amount'] > $stationery->stok) {
-                return back()->with('error', 'Jumlah barang "' . $stationery->nama_barang . '" yang diminta melebihi stok yang ada.');
-            }
-            // Simpan permintaan barang
-            ItemDemand::create([
-                'user_id' => auth()->id(),
-                'stationery_id' => $item['stationery_id'],
-                'amount' => $item['amount'],
-                'dos' => now()->toDateString(), // atau bisa dikirim dari form juga
-            ]);
-        }
+        // Gunakan transaksi untuk mencegah race condition
+        return DB::transaction(function () use ($request) {
+            // Hitung pending demands untuk semua barang yang diajukan
+            $stationeryIds = collect($request->items)->pluck('stationery_id')->unique();
 
-        return redirect()->route('item-demand.index')->with('success', 'Pengajuan berhasil disimpan!');
+            $pendingDemands = ItemDemand::select('stationery_id', DB::raw('SUM(amount) as total_pending'))
+                ->whereIn('stationery_id', $stationeryIds)
+                ->whereNull('status')
+                ->where(function ($q) {
+                    $q->whereNull('manager_approval')
+                        ->orWhere('manager_approval', 1);
+                })
+                ->where(function ($q) {
+                    $q->whereNull('coo_approval')
+                        ->orWhere('coo_approval', 1);
+                })
+                ->where(function ($q) {
+                    $q->whereNull('is_cancelled')
+                        ->orWhere('is_cancelled', 0);
+                })
+                ->groupBy('stationery_id')
+                ->pluck('total_pending', 'stationery_id');
+
+            foreach ($request->items as $item) {
+                $stationery = Stationery::find($item['stationery_id']);
+                $pending = $pendingDemands->get($item['stationery_id'], 0);
+                $availableStock = $stationery->stok - $pending;
+
+                if ($item['amount'] > $availableStock) {
+                    return back()->with('error', 'Jumlah barang "' . $stationery->nama_barang . '" yang diminta melebihi stok yang tersedia (tersedia: ' . $availableStock . ').');
+                }
+
+                // Cek apakah sudah ada pengajuan yang sama (user, barang, tanggal) dan belum diproses
+                $existingDemand = ItemDemand::where('user_id', auth()->id())
+                    ->where('stationery_id', $item['stationery_id'])
+                    ->whereDate('dos', now()->toDateString())
+                    ->whereNull('manager_approval')
+                    ->whereNull('coo_approval')
+                    ->whereNull('status')
+                    ->where(function ($q) {
+                        $q->whereNull('is_cancelled')
+                            ->orWhere('is_cancelled', 0);
+                    })
+                    ->first();
+
+                if ($existingDemand) {
+                    // Tambahkan jumlah ke pengajuan yang sudah ada
+                    $existingDemand->increment('amount', $item['amount']);
+                } else {
+                    // Buat pengajuan baru
+                    ItemDemand::create([
+                        'user_id' => auth()->id(),
+                        'stationery_id' => $item['stationery_id'],
+                        'amount' => $item['amount'],
+                        'dos' => now()->toDateString(),
+                    ]);
+                }
+            }
+
+            return redirect()->route('item-demand.index')->with('success', 'Pengajuan berhasil disimpan!');
+        });
     }
 
     /**
