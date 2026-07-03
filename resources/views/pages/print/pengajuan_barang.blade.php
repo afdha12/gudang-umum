@@ -210,8 +210,17 @@
         <div class="signature-row">
             <div class="signature-box">
                 <p class="text-capitalize">Manager {{ $approvedData->first()?->user?->division?->division_name ?? '-' }}</p>
-                @if($manager && $manager->getFirstMediaPath('signature'))
-                    <img src="{{ $manager->getFirstMediaPath('signature') }}" alt="Tanda Tangan Manager">
+                @php
+                    $managerSignature = null;
+                    if ($manager) {
+                        $media = $manager->getFirstMedia('signature');
+                        if ($media && file_exists($media->getPath())) {
+                            $managerSignature = $media->getPath();
+                        }
+                    }
+                @endphp
+                @if($managerSignature)
+                    <img src="{{ $managerSignature }}" alt="Tanda Tangan Manager">
                 @else
                     <div style="height:60px;"></div>
                 @endif
@@ -219,8 +228,17 @@
             </div>
             <div class="signature-box">
                 <p>Admin Gudang</p>
-                @if($admin && $admin->getFirstMediaPath('signature'))
-                    <img src="{{ $admin->getFirstMediaPath('signature') }}" alt="Tanda Tangan Admin">
+                @php
+                    $adminSignature = null;
+                    if ($admin) {
+                        $media = $admin->getFirstMedia('signature');
+                        if ($media && file_exists($media->getPath())) {
+                            $adminSignature = $media->getPath();
+                        }
+                    }
+                @endphp
+                @if($adminSignature)
+                    <img src="{{ $adminSignature }}" alt="Tanda Tangan Admin">
                 @else
                     <div style="height:60px;"></div>
                 @endif
@@ -228,8 +246,17 @@
             </div>
             <div class="signature-box">
                 <p>Wakil Direktur</p>
-                @if($coo && $coo->getFirstMediaPath('signature'))
-                    <img src="{{ $coo->getFirstMediaPath('signature') }}" alt="Tanda Tangan Wadir">
+                @php
+                    $cooSignature = null;
+                    if ($coo) {
+                        $media = $coo->getFirstMedia('signature');
+                        if ($media && file_exists($media->getPath())) {
+                            $cooSignature = $media->getPath();
+                        }
+                    }
+                @endphp
+                @if($cooSignature)
+                    <img src="{{ $cooSignature }}" alt="Tanda Tangan Wadir">
                 @else
                     <div style="height:60px;"></div>
                 @endif
